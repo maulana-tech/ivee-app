@@ -3,72 +3,16 @@ node_modules/
 
 # Build outputs
 dist/
-public/blog/
-api/[[...path]].js
-api/[domain]/v1/[rpc].js
 
 # Environment
 .env
 .env.local
-.env.production
-.env.example
-.env.vercel-backup
-.env.vercel-export
 
 # IDE
 .idea/
 .vscode/
 .cursor/
 .claude/
-.claudedocs/
-.windsurf/
-
-# CI/CD & Vercel
-.vercel
-.wrangler
-
-# Testing
-test-results/
-.playwright-mcp/
-*-network.txt
-
-# Generated/cache files
-api-cache.json
-verbose-mode.json
-skills-lock.json
-tmp/
-api/data/city-coords.js
-
-# Large data files (reproduced by scripts)
-scripts/data/pizzint-processed.json
-scripts/data/osm-military-processed.json
-scripts/data/military-bases-final.json
-scripts/data/dedup-dropped-pairs.json
-scripts/data/pizzint-partial.json
-scripts/data/gpsjam-latest.json
-scripts/data/mirta-raw.geojson
-scripts/data/osm-military-raw.json
-scripts/data/forecast-replays/
-scripts/data/iran-events-latest.json
-
-# Sidecar
-src-tauri/sidecar/node/*
-!src-tauri/sidecar/node/.gitkeep
-
-# Scripts (references external URLs)
-scripts/rebuild-military-bases.mjs
-
-# Docs internal (not for public repo)
-docs/internal/
-docs/ideation/
-docs/plans/
-docs/brainstorms/
-internal/
-playground-pricing.html
-
-# Planning
-ideas/
-.clplanning/
 
 # System
 .DS_Store
