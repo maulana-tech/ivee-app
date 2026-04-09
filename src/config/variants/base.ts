@@ -78,14 +78,14 @@ export const MONITOR_COLORS = [
 
 // Storage keys - shared
 export const STORAGE_KEYS = {
-  panels: 'worldmonitor-panels',
-  monitors: 'worldmonitor-monitors',
-  mapLayers: 'worldmonitor-layers',
-  disabledFeeds: 'worldmonitor-disabled-feeds',
-  liveChannels: 'worldmonitor-live-channels',
-  mapMode: 'worldmonitor-map-mode',          // 'flat' | 'globe'
-  activeChannel: 'worldmonitor-active-channel',
-  webcamPrefs: 'worldmonitor-webcam-prefs',
+  panels: 'ivee-panels',
+  monitors: 'ivee-monitors',
+  mapLayers: 'ivee-layers',
+  disabledFeeds: 'ivee-disabled-feeds',
+  liveChannels: 'ivee-live-channels',
+  mapMode: 'ivee-map-mode',          // 'flat' | 'globe'
+  activeChannel: 'ivee-active-channel',
+  webcamPrefs: 'ivee-webcam-prefs',
 } as const;
 
 // Type definitions for variant configs

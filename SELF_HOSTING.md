@@ -12,8 +12,8 @@ Run the full World Monitor stack locally with Docker/Podman.
 
 ```bash
 # 1. Clone and enter the repo
-git clone https://github.com/koala73/worldmonitor.git
-cd worldmonitor
+git clone https://github.com/koala73/ivee.git
+cd ivee
 npm install
 
 # 2. Start the stack
@@ -34,7 +34,7 @@ Create a `docker-compose.override.yml` to inject your keys. This file is **gitig
 
 ```yaml
 services:
-  worldmonitor:
+  ivee:
     environment:
       # 🤖 LLM — pick one or both (used for intelligence assessments)
       GROQ_API_KEY: ""            # https://console.groq.com (free, 14.4K req/day)
@@ -94,7 +94,7 @@ To automate, add a cron job:
 
 ```bash
 # Re-seed every 30 minutes
-*/30 * * * * cd /path/to/worldmonitor && ./scripts/run-seeders.sh >> /tmp/wm-seeders.log 2>&1
+*/30 * * * * cd /path/to/ivee && ./scripts/run-seeders.sh >> /tmp/wm-seeders.log 2>&1
 ```
 
 ### 🔧 Manual seeder invocation
@@ -130,10 +130,10 @@ node scripts/seed-military-flights.mjs
 
 | Container | Purpose | Port |
 |-----------|---------|------|
-| `worldmonitor` | nginx + Node.js API (supervisord) | 3000 → 8080 |
-| `worldmonitor-redis` | Data store | 6379 (internal) |
-| `worldmonitor-redis-rest` | Upstash-compatible REST proxy | 8079 |
-| `worldmonitor-ais-relay` | Live vessel tracking WebSocket | 3004 (internal) |
+| `ivee` | nginx + Node.js API (supervisord) | 3000 → 8080 |
+| `ivee-redis` | Data store | 6379 (internal) |
+| `ivee-redis-rest` | Upstash-compatible REST proxy | 8079 |
+| `ivee-ais-relay` | Live vessel tracking WebSocket | 3004 (internal) |
 
 ## 🔨 Building from Source
 
@@ -142,7 +142,7 @@ node scripts/seed-military-flights.mjs
 npx vite build
 
 # Full Docker image
-docker build -t worldmonitor:latest -f Dockerfile .
+docker build -t ivee:latest -f Dockerfile .
 
 # Rebuild and restart
 docker compose down && docker compose up -d
@@ -184,7 +184,7 @@ Any OpenAI-compatible endpoint works (Ollama, vLLM, llama.cpp server, etc.):
 ```yaml
 # docker-compose.override.yml
 services:
-  worldmonitor:
+  ivee:
     environment:
       LLM_API_URL: "http://your-host:8000/v1/chat/completions"
       LLM_API_KEY: "your-key"
@@ -198,9 +198,9 @@ services:
 | Issue | Fix |
 |-------|-----|
 | 📡 `0/55 OK` on health check | Seeders haven't run — `./scripts/run-seeders.sh` |
-| 🔴 nginx won't start | Check `podman logs worldmonitor` — likely missing `gettext` package |
+| 🔴 nginx won't start | Check `podman logs ivee` — likely missing `gettext` package |
 | 🔑 Seeders say "Missing UPSTASH_REDIS_REST_URL" | Stack isn't running, or run via `./scripts/run-seeders.sh` (auto-sets env vars) |
 | 📦 `npm ci` fails in Docker build | Lockfile mismatch — regenerate with `docker run --rm -v $(pwd):/app -w /app node:22-alpine npm install --package-lock-only` |
-| 🚢 No vessel data | Set `AISSTREAM_API_KEY` in both `worldmonitor` and `ais-relay` services |
+| 🚢 No vessel data | Set `AISSTREAM_API_KEY` in both `ivee` and `ais-relay` services |
 | 🔥 No wildfire data | Set `NASA_FIRMS_API_KEY` |
 | 🌐 No outage data | Requires `CLOUDFLARE_API_TOKEN` (paid Radar access) |

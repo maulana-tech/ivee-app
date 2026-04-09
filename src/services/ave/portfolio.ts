@@ -28,7 +28,7 @@ const portfolioBreaker = createCircuitBreaker<PortfolioSummary>({
   persistCache: false,
 });
 
-const STORAGE_KEY = 'worldmonitor-crypto-portfolio';
+const STORAGE_KEY = 'ivee-crypto-portfolio';
 
 export interface PortfolioPosition {
   token: string;

@@ -10,7 +10,7 @@ import {
   type GetOceanIceDataResponse,
   type ListClimateAnomaliesResponse,
   type ListClimateDisastersResponse,
-} from '@/generated/client/worldmonitor/climate/v1/service_client';
+} from '@/generated/client/ivee/climate/v1/service_client';
 import { createCircuitBreaker } from '@/utils';
 import { getHydratedData } from '@/services/bootstrap';
 import {

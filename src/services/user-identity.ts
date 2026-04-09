@@ -23,7 +23,7 @@
  * the real Clerk user ID. The anon ID should be read from localStorage
  * before it is replaced by the real identity.
  *
- * @see https://github.com/koala73/worldmonitor/issues/2078
+ * @see https://github.com/koala73/ivee/issues/2078
  */
 
 import { getCurrentClerkUser } from './clerk';

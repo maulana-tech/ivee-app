@@ -29,7 +29,7 @@ If you've ever tried to monitor a developing situation, whether it's a military 
 
 Each tool has its own interface, its own refresh cycle, its own learning curve. Cross-referencing between them is manual and slow. By the time you've built a picture, the situation has moved.
 
-World Monitor integrates all of these data sources (and many more) into a single, layered map with real-time updates. Learn more about [what World Monitor is and how it works](/blog/posts/what-is-worldmonitor-real-time-global-intelligence/).
+World Monitor integrates all of these data sources (and many more) into a single, layered map with real-time updates. Learn more about [what World Monitor is and how it works](/blog/posts/what-is-ivee-real-time-global-intelligence/).
 
 ## 435+ Intelligence Feeds, Zero Configuration
 
@@ -112,7 +112,7 @@ You can also share map states via URL: the map position, active layers, time ran
 
 ## Getting Started with World Monitor for OSINT
 
-1. **Open worldmonitor.app** in any modern browser
+1. **Open ivee.app** in any modern browser
 2. **Toggle layers** using the left sidebar: start with "Conflicts" and "Military Bases"
 3. **Click any data point** on the map for details and source links
 4. **Open the [Command Palette](/blog/posts/command-palette-search-everything-instantly/)** (Cmd+K / Ctrl+K) to fuzzy-search across 24 result types and 250+ country commands
@@ -136,8 +136,8 @@ Yes. Every feature, data source, and AI capability is available at no cost with 
 No. The interface is designed for analysts of all skill levels. Toggle layers on the sidebar, click data points for details, and use the Command Palette (Cmd+K) to search across all intelligence sources instantly.
 
 **How does World Monitor compare to traditional OSINT tools?**
-World Monitor consolidates 435+ feeds, live tracking, AI analysis, and 45 data layers into one dashboard. Traditional tools require juggling dozens of separate platforms. See our [detailed comparison with traditional intelligence tools](/blog/posts/worldmonitor-vs-traditional-intelligence-tools/).
+World Monitor consolidates 435+ feeds, live tracking, AI analysis, and 45 data layers into one dashboard. Traditional tools require juggling dozens of separate platforms. See our [detailed comparison with traditional intelligence tools](/blog/posts/ivee-vs-traditional-intelligence-tools/).
 
 ---
 
-**Start your OSINT workflow at [worldmonitor.app](https://worldmonitor.app). Free, open source, and no login required.**
+**Start your OSINT workflow at [ivee.app](https://ivee.app). Free, open source, and no login required.**

@@ -27,7 +27,7 @@ function reportServerError(res: Response, input: RequestInfo | URL): void {
   if (res.status < 500) return;
   try {
     const href = input instanceof Request ? input.url : String(input);
-    const path = new URL(href, globalThis.location?.href ?? 'https://worldmonitor.app').pathname;
+    const path = new URL(href, globalThis.location?.href ?? 'https://ivee.app').pathname;
     Sentry.captureMessage(`API ${res.status}: ${path}`, {
       level: 'error',
       tags: { kind: 'api_5xx' },
@@ -69,7 +69,7 @@ export async function premiumFetch(
 ): Promise<Response> {
   // Skip injection if the caller already set an auth header.
   const existing = new Headers(init?.headers);
-  if (existing.has('Authorization') || existing.has('X-WorldMonitor-Key')) {
+  if (existing.has('Authorization') || existing.has('X-Ivee-Key')) {
     const res = await globalThis.fetch(input, init);
     reportServerError(res, input);
     return res;
@@ -80,7 +80,7 @@ export async function premiumFetch(
     const { getRuntimeConfigSnapshot } = await import('@/services/runtime-config');
     const wmKey = getRuntimeConfigSnapshot().secrets['WORLDMONITOR_API_KEY']?.value;
     if (wmKey) {
-      existing.set('X-WorldMonitor-Key', wmKey);
+      existing.set('X-Ivee-Key', wmKey);
       const res = await globalThis.fetch(input, { ...init, headers: existing });
       reportServerError(res, input);
       return res;
@@ -95,7 +95,7 @@ export async function premiumFetch(
   const testerKeys = await loadTesterKeys();
   for (const testerKey of testerKeys) {
     const testerHeaders = new Headers(existing);
-    testerHeaders.set('X-WorldMonitor-Key', testerKey);
+    testerHeaders.set('X-Ivee-Key', testerKey);
     const res = await globalThis.fetch(input, { ...init, headers: testerHeaders });
     if (res.status !== 401) {
       reportServerError(res, input);

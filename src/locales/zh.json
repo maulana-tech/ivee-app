@@ -1768,7 +1768,7 @@
       "infoTooltip": "<strong>航空情报</strong> 实时航空公司运营数据：航线暂停、空域关闭、承运商公告和紧急改航。来源：航空当局NOTAM和承运商通报。"
     },
     "chatAnalyst": {
-      "infoTooltip": "<strong>WM 分析师</strong> 具有地缘政治、市场、军事和经济领域实时上下文的AI分析师。由Claude驱动，注入WorldMonitor活跃数据源的实时数据。"
+      "infoTooltip": "<strong>WM 分析师</strong> 具有地缘政治、市场、军事和经济领域实时上下文的AI分析师。由Claude驱动，注入Ivee活跃数据源的实时数据。"
     },
     "cotPositioning": {
       "infoTooltip": "<strong>CFTC COT 持仓</strong> 交易者承诺报告：商品和金融期货中商业机构、大型投机者和小型交易者的净持仓。每周五发布。来源：CFTC。"
@@ -1798,7 +1798,7 @@
       "infoTooltip": "<strong>宏观指标</strong> 美国和欧元区关键宏观经济指标：CPI、失业率、GDP和央行利率。显示值含与前期的差值。来源：FRED（联邦储备经济数据）。"
     },
     "monitors": {
-      "infoTooltip": "<strong>关键词监控</strong> 添加任何词汇，实时追踪WorldMonitor所有来源中的新闻提及。匹配文章被收录时结果实时更新。"
+      "infoTooltip": "<strong>关键词监控</strong> 添加任何词汇，实时追踪Ivee所有来源中的新闻提及。匹配文章被收录时结果实时更新。"
     },
     "renewable": {
       "infoTooltip": "<strong>可再生能源</strong> 全球可再生能源项目管道：太阳能、风能、水电和储能容量新增。按地区和技术类型追踪已宣布、在建和已投运项目。"

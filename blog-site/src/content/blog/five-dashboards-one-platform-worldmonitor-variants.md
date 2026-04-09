@@ -4,7 +4,7 @@ description: "World Monitor offers 5 free intelligence dashboards: geopolitical,
 metaTitle: "5 Intelligence Dashboards, One Platform | World Monitor"
 keywords: "intelligence dashboard variants, tech monitoring dashboard, positive news dashboard, multi-purpose intelligence platform, specialized monitoring tools"
 audience: "General tech audience, product managers, developers, knowledge workers, content creators"
-heroImage: "/blog/images/blog/five-dashboards-one-platform-worldmonitor-variants.jpg"
+heroImage: "/blog/images/blog/five-dashboards-one-platform-ivee-variants.jpg"
 pubDate: "2026-02-12"
 ---
 
@@ -14,7 +14,7 @@ World Monitor runs **five specialized dashboards** from a single codebase. Switc
 
 ## 1. World Monitor: The Geopolitical Command Center
 
-**URL:** worldmonitor.app
+**URL:** ivee.app
 **Panels:** 45
 **Focus:** Conflicts, military, infrastructure, geopolitical risk
 
@@ -37,7 +37,7 @@ This is the flagship. World Monitor is built for OSINT analysts, defense researc
 
 ## 2. Tech Monitor: The Silicon Valley Radar
 
-**URL:** tech.worldmonitor.app
+**URL:** tech.ivee.app
 **Panels:** 28
 **Focus:** AI/ML, startups, cybersecurity, cloud infrastructure
 
@@ -60,7 +60,7 @@ Tech Monitor maps the global technology landscape: where AI is being built, wher
 
 ## 3. Finance Monitor: Markets with Context
 
-**URL:** finance.worldmonitor.app
+**URL:** finance.ivee.app
 **Panels:** 27
 **Focus:** Markets, central banks, forex, Gulf FDI, macro signals
 
@@ -84,7 +84,7 @@ Finance Monitor is for [traders and analysts](/blog/posts/real-time-market-intel
 
 ## 4. Commodity Monitor: Raw Materials Intelligence
 
-**URL:** commodity.worldmonitor.app
+**URL:** commodity.ivee.app
 **Panels:** 16
 **Focus:** Mining, metals, energy, supply chain disruption
 
@@ -105,7 +105,7 @@ Commodity Monitor tracks the physical resources that power the global economy: w
 
 ## 5. Happy Monitor: The Antidote to Doom Scrolling
 
-**URL:** happy.worldmonitor.app
+**URL:** happy.ivee.app
 **Panels:** 10
 **Focus:** Good news, human progress, conservation, renewable energy
 
@@ -201,8 +201,8 @@ No. All five variants are completely free with no time limits, feature gates, or
 
 **Pick your variant and start exploring:**
 
-- [worldmonitor.app](https://worldmonitor.app) for geopolitics
-- [tech.worldmonitor.app](https://tech.worldmonitor.app) for technology
-- [finance.worldmonitor.app](https://finance.worldmonitor.app) for markets
-- [commodity.worldmonitor.app](https://commodity.worldmonitor.app) for commodities
-- [happy.worldmonitor.app](https://happy.worldmonitor.app) for good news
+- [ivee.app](https://ivee.app) for geopolitics
+- [tech.ivee.app](https://tech.ivee.app) for technology
+- [finance.ivee.app](https://finance.ivee.app) for markets
+- [commodity.ivee.app](https://commodity.ivee.app) for commodities
+- [happy.ivee.app](https://happy.ivee.app) for good news

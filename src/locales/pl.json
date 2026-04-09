@@ -1767,7 +1767,7 @@
       "infoTooltip": "<strong>Wywiad lotniczy</strong> Dane operacyjne linii lotniczych w czasie rzeczywistym: zawieszenia tras, zamknięcia przestrzeni powietrznej, komunikaty przewoźników i awaryjne przekierowania. Źródło: NOTAM władz lotniczych i biuletyny przewoźników."
     },
     "chatAnalyst": {
-      "infoTooltip": "<strong>Analityk WM</strong> Analityk AI z kontekstem na żywo w domenach geopolitycznej, rynkowej, wojskowej i ekonomicznej. Zasilany przez Claude z danymi w czasie rzeczywistym z aktywnych kanałów WorldMonitor."
+      "infoTooltip": "<strong>Analityk WM</strong> Analityk AI z kontekstem na żywo w domenach geopolitycznej, rynkowej, wojskowej i ekonomicznej. Zasilany przez Claude z danymi w czasie rzeczywistym z aktywnych kanałów Ivee."
     },
     "cotPositioning": {
       "infoTooltip": "<strong>Pozycjonowanie CFTC COT</strong> Raport zobowiązań traderów: pozycja netto podmiotów komercyjnych, dużych spekulantów i małych traderów w towarowych i finansowych kontraktach terminowych. Publikowany cotygodniowo (piątek). Źródło: CFTC."
@@ -1797,7 +1797,7 @@
       "infoTooltip": "<strong>Wskaźniki makro</strong> Kluczowe wskaźniki makroekonomiczne dla USA i strefy euro: CPI, bezrobocie, GDP i stopy banków centralnych. Wartości z deltą w stosunku do poprzedniego okresu. Źródło: FRED (Federal Reserve Economic Data)."
     },
     "monitors": {
-      "infoTooltip": "<strong>Monitory słów kluczowych</strong> Dodaj dowolny termin, aby śledzić wzmianki w wiadomościach w czasie rzeczywistym ze wszystkich źródeł WorldMonitor. Wyniki aktualizują się w czasie rzeczywistym w miarę pozyskiwania pasujących artykułów."
+      "infoTooltip": "<strong>Monitory słów kluczowych</strong> Dodaj dowolny termin, aby śledzić wzmianki w wiadomościach w czasie rzeczywistym ze wszystkich źródeł Ivee. Wyniki aktualizują się w czasie rzeczywistym w miarę pozyskiwania pasujących artykułów."
     },
     "renewable": {
       "infoTooltip": "<strong>Energia odnawialna</strong> Globalny pipeline projektów energii odnawialnej: dodatki mocy słonecznej, wiatrowej, wodnej i magazynowania. Śledzi ogłoszone, w budowie i uruchomione projekty według regionu i typu technologii."

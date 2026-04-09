@@ -4,7 +4,7 @@ description: "Compare World Monitor to Bloomberg, Palantir, Dataminr, and Record
 metaTitle: "World Monitor vs Bloomberg, Palantir, Dataminr"
 keywords: "Bloomberg Terminal alternative free, Palantir alternative open source, Dataminr alternative, intelligence platform comparison, free OSINT alternative"
 audience: "Analysts evaluating tools, budget-conscious teams, procurement decision-makers, open-source advocates"
-heroImage: "/blog/images/blog/worldmonitor-vs-traditional-intelligence-tools.jpg"
+heroImage: "/blog/images/blog/ivee-vs-traditional-intelligence-tools.jpg"
 pubDate: "2026-03-11"
 ---
 
@@ -159,7 +159,7 @@ Every scoring algorithm is auditable. Every data source is documented. Every API
 - **Security teams** can verify there are no backdoors or data exfiltration
 - **Researchers** can reproduce and cite the scoring methodologies
 - **Developers** can build custom integrations using the 22 typed API services
-- **Organizations** can self-host for complete control. See the [Developer API and Open Source guide](/blog/posts/build-on-worldmonitor-developer-api-open-source/) for integration details.
+- **Organizations** can self-host for complete control. See the [Developer API and Open Source guide](/blog/posts/build-on-ivee-developer-api-open-source/) for integration details.
 
 The AGPL-3.0 license ensures that improvements to the core platform benefit everyone. Forks must also be open source. The commons stays common.
 
@@ -172,7 +172,7 @@ Intelligence shouldn't be English-only. World Monitor supports **21 languages** 
 - AI analysis in your preferred language
 - Native character support for CJK languages
 
-This means analysts worldwide can use the tool in their working language, not just as a translation layer over English sources. Read the full breakdown in [World Monitor in 21 Languages](/blog/posts/worldmonitor-in-21-languages-global-intelligence-for-everyone/).
+This means analysts worldwide can use the tool in their working language, not just as a translation layer over English sources. Read the full breakdown in [World Monitor in 21 Languages](/blog/posts/ivee-in-21-languages-global-intelligence-for-everyone/).
 
 ## Frequently Asked Questions
 
@@ -187,4 +187,4 @@ It means seeing how a conflict zone overlaps with an undersea cable, how a naval
 
 ---
 
-**Compare for yourself at [worldmonitor.app](https://worldmonitor.app). Free, open source, and ready in seconds.**
+**Compare for yourself at [ivee.app](https://ivee.app). Free, open source, and ready in seconds.**

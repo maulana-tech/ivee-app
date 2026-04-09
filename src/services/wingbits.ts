@@ -14,7 +14,7 @@ import {
   MilitaryServiceClient,
   type AircraftDetails,
   type WingbitsLiveFlight,
-} from '@/generated/client/worldmonitor/military/v1/service_client';
+} from '@/generated/client/ivee/military/v1/service_client';
 
 export type { WingbitsLiveFlight };
 

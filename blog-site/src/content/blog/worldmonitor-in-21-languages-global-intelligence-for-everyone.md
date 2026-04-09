@@ -4,7 +4,7 @@ description: "World Monitor supports 21 languages with full RTL Arabic, CJK, and
 metaTitle: "World Monitor in 21 Languages | Multilingual OSINT"
 keywords: "multilingual intelligence dashboard, Arabic OSINT tool, Japanese intelligence platform, global dashboard localized, RTL intelligence dashboard"
 audience: "Non-English-speaking analysts, international organizations, global enterprises, multilingual researchers"
-heroImage: "/blog/images/blog/worldmonitor-in-21-languages-global-intelligence-for-everyone.jpg"
+heroImage: "/blog/images/blog/ivee-in-21-languages-global-intelligence-for-everyone.jpg"
 pubDate: "2026-03-04"
 ---
 
@@ -165,4 +165,4 @@ Yes. World Monitor is open source and uses JSON-based translation files. Bilingu
 
 ---
 
-**Use World Monitor in your language at [worldmonitor.app](https://worldmonitor.app). 21 languages, full RTL support, locale-specific feeds. Free for everyone, everywhere.**
+**Use World Monitor in your language at [ivee.app](https://ivee.app). 21 languages, full RTL support, locale-specific feeds. Free for everyone, everywhere.**

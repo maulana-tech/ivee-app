@@ -32,13 +32,13 @@ function buildTallWidgetHtml(title: string, markerClass: string): string {
       </div>
       <div class="economic-header" style="display:grid;gap:4px;">
         <strong>${title}</strong>
-        <span>Live WorldMonitor snapshot</span>
+        <span>Live Ivee snapshot</span>
       </div>
       <div class="economic-grid" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;">
         ${rows}
       </div>
       <div class="economic-footer">
-        <span>Source: WorldMonitor</span>
+        <span>Source: Ivee</span>
       </div>
     </div>
   `;
@@ -176,7 +176,7 @@ test.describe('AI widget builder', () => {
       if (!sessionStorage.getItem('__widget_e2e_init__')) {
         localStorage.clear();
         sessionStorage.clear();
-        localStorage.setItem('worldmonitor-variant', 'happy');
+        localStorage.setItem('ivee-variant', 'happy');
         localStorage.setItem('wm-widget-key', key);
         sessionStorage.setItem('__widget_e2e_init__', '1');
         return;
@@ -195,7 +195,7 @@ test.describe('AI widget builder', () => {
       [
         {
           delayMs: 250,
-          endpoint: '/rpc/worldmonitor.markets.v1.MarketsService/GetCommodities',
+          endpoint: '/rpc/ivee.markets.v1.MarketsService/GetCommodities',
           title: 'Oil vs Gold',
           html: createHtml,
         },
@@ -297,12 +297,12 @@ test.describe('AI widget builder', () => {
     const requestBodies: unknown[] = [];
     await installWidgetAgentMocks(page, [
       {
-        endpoint: '/rpc/worldmonitor.markets.v1.MarketsService/GetCommodities',
+        endpoint: '/rpc/ivee.markets.v1.MarketsService/GetCommodities',
         title: 'Oil vs Gold',
         html: buildTallWidgetHtml('Oil vs Gold', 'oil-gold-widget'),
       },
       {
-        endpoint: '/rpc/worldmonitor.aviation.v1.AviationService/GetAirportDelays',
+        endpoint: '/rpc/ivee.aviation.v1.AviationService/GetAirportDelays',
         title: 'Flight Delay Watch',
         html: buildTallWidgetHtml('Flight Delay Watch', 'flight-delay-widget'),
       },
@@ -388,8 +388,8 @@ test.describe('AI widget builder', () => {
     expect(secondRequest?.conversationHistory?.some((entry) => entry.content.includes('Generated widget: Oil vs Gold'))).toBe(true);
 
     await page.evaluate((widgetId: string) => {
-      localStorage.setItem('worldmonitor-panel-spans', JSON.stringify({ [widgetId]: 2 }));
-      localStorage.setItem('worldmonitor-panel-col-spans', JSON.stringify({ [widgetId]: 3 }));
+      localStorage.setItem('ivee-panel-spans', JSON.stringify({ [widgetId]: 2 }));
+      localStorage.setItem('ivee-panel-col-spans', JSON.stringify({ [widgetId]: 3 }));
     }, storedWidgetMeta!.id);
 
     await page.evaluate(() => {
@@ -403,8 +403,8 @@ test.describe('AI widget builder', () => {
     const cleanedStorage = await page.evaluate(() => {
       return {
         widgets: localStorage.getItem('wm-custom-widgets'),
-        rowSpans: localStorage.getItem('worldmonitor-panel-spans'),
-        colSpans: localStorage.getItem('worldmonitor-panel-col-spans'),
+        rowSpans: localStorage.getItem('ivee-panel-spans'),
+        colSpans: localStorage.getItem('ivee-panel-col-spans'),
       };
     });
     expect(cleanedStorage.widgets).toBe('[]');
@@ -426,7 +426,7 @@ test.describe('AI widget builder — PRO tier', () => {
         if (!sessionStorage.getItem('__widget_pro_e2e_init__')) {
           localStorage.clear();
           sessionStorage.clear();
-          localStorage.setItem('worldmonitor-variant', 'happy');
+          localStorage.setItem('ivee-variant', 'happy');
           localStorage.setItem('wm-widget-key', wKey);
           localStorage.setItem('wm-pro-key', pKey);
           sessionStorage.setItem('__widget_pro_e2e_init__', '1');
@@ -445,7 +445,7 @@ test.describe('AI widget builder — PRO tier', () => {
     const proHtml = buildProWidgetBody('Oil vs Gold Interactive', 'pro-oil-gold');
     await installProWidgetAgentMocks(page, [
       {
-        endpoint: '/rpc/worldmonitor.markets.v1.MarketsService/GetCommodities',
+        endpoint: '/rpc/ivee.markets.v1.MarketsService/GetCommodities',
         title: 'Oil vs Gold Interactive',
         html: proHtml,
       },
@@ -493,7 +493,7 @@ test.describe('AI widget builder — PRO tier', () => {
     const proHtml = buildProWidgetBody('Crypto Table', 'pro-crypto');
     await installProWidgetAgentMocks(page, [
       {
-        endpoint: '/rpc/worldmonitor.markets.v1.MarketsService/GetCommodities',
+        endpoint: '/rpc/ivee.markets.v1.MarketsService/GetCommodities',
         title: 'Crypto Table',
         html: proHtml,
       },
@@ -541,12 +541,12 @@ test.describe('AI widget builder — PRO tier', () => {
       page,
       [
         {
-          endpoint: '/rpc/worldmonitor.markets.v1.MarketsService/GetCommodities',
+          endpoint: '/rpc/ivee.markets.v1.MarketsService/GetCommodities',
           title: 'Oil vs Gold Interactive',
           html: buildProWidgetBody('Oil vs Gold Interactive', 'pro-oil-gold'),
         },
         {
-          endpoint: '/rpc/worldmonitor.aviation.v1.AviationService/GetAirportDelays',
+          endpoint: '/rpc/ivee.aviation.v1.AviationService/GetAirportDelays',
           title: 'Flight Interactive',
           html: buildProWidgetBody('Flight Interactive', 'pro-flight'),
         },

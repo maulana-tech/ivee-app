@@ -1563,7 +1563,7 @@
       "infoTooltip": "<strong>Luchtvaart-intelligence</strong> Operationele luchtvaartgegevens in realtime: routeonderbrekingen, luchtruimsluitingen, adviezen van luchtvaartmaatschappijen en noodomleidingen. Bron: NOTAM van luchtvaartautoriteiten en bulletins van luchtvaartmaatschappijen."
     },
     "chatAnalyst": {
-      "infoTooltip": "<strong>WM Analist</strong> AI-analist met live context over geopolitieke, markt-, militaire en economische domeinen. Aangedreven door Claude met realtime data uit actieve WorldMonitor-feeds."
+      "infoTooltip": "<strong>WM Analist</strong> AI-analist met live context over geopolitieke, markt-, militaire en economische domeinen. Aangedreven door Claude met realtime data uit actieve Ivee-feeds."
     },
     "cotPositioning": {
       "infoTooltip": "<strong>CFTC COT Positionering</strong> Commitments of Traders-rapport: nettopositie van commerciëlen, grote speculanten en kleine handelaren in grondstof- en financiële futures. Wekelijks gepubliceerd (vrijdag). Bron: CFTC."
@@ -1593,7 +1593,7 @@
       "infoTooltip": "<strong>Macro-indicatoren</strong> Belangrijke macro-economische indicatoren voor de VS en de eurozone: CPI, werkloosheid, GDP en centrale banktarieven. Waarden getoond met delta ten opzichte van de voorgaande periode. Bron: FRED (Federal Reserve Economic Data)."
     },
     "monitors": {
-      "infoTooltip": "<strong>Zoekwoordmonitoren</strong> Voeg een willekeurige term toe om live nieuwsvermeldingen over alle WorldMonitor-bronnen te volgen. Resultaten worden in realtime bijgewerkt naarmate overeenkomende artikelen worden opgenomen."
+      "infoTooltip": "<strong>Zoekwoordmonitoren</strong> Voeg een willekeurige term toe om live nieuwsvermeldingen over alle Ivee-bronnen te volgen. Resultaten worden in realtime bijgewerkt naarmate overeenkomende artikelen worden opgenomen."
     },
     "renewable": {
       "infoTooltip": "<strong>Hernieuwbare energie</strong> Wereldwijde pijplijn voor hernieuwbare-energieprojecten: toevoegingen van zonne-, wind-, waterkracht- en opslagcapaciteit. Volgt aangekondigde, in aanbouw zijnde en in gebruik genomen projecten per regio en technologietype."

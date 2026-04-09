@@ -163,7 +163,7 @@ Dedicated disaster monitoring platforms exist (GDACS, ReliefWeb, PDC Global). Wo
 - AI analysis for rapid situation synthesis
 - Multi-source verification (satellite, seismic, news, webcam, OSINT)
 
-A disaster doesn't happen in isolation. Its impact depends on the political stability of the affected country, the infrastructure that fails, the markets that react, and the humanitarian capacity available. World Monitor shows all of these in one view. Learn more about [what World Monitor is and how it works](/blog/posts/what-is-worldmonitor-real-time-global-intelligence/).
+A disaster doesn't happen in isolation. Its impact depends on the political stability of the affected country, the infrastructure that fails, the markets that react, and the humanitarian capacity available. World Monitor shows all of these in one view. Learn more about [what World Monitor is and how it works](/blog/posts/what-is-ivee-real-time-global-intelligence/).
 
 ## Frequently Asked Questions
 
@@ -178,4 +178,4 @@ Yes. Use Custom Keyword Monitors for terms like "earthquake," "wildfire," or "fl
 
 ---
 
-**Monitor natural disasters in context at [worldmonitor.app](https://worldmonitor.app). USGS, NASA, and AI analysis, all in one free dashboard.**
+**Monitor natural disasters in context at [ivee.app](https://ivee.app). USGS, NASA, and AI analysis, all in one free dashboard.**

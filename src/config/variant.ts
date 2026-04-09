@@ -11,7 +11,7 @@ export const SITE_VARIANT: string = (() => {
 
   const isTauri = '__TAURI_INTERNALS__' in window || '__TAURI__' in window;
   if (isTauri) {
-    const stored = localStorage.getItem('worldmonitor-variant');
+    const stored = localStorage.getItem('ivee-variant');
     if (stored === 'tech' || stored === 'full' || stored === 'finance' || stored === 'happy' || stored === 'commodity' || stored === 'crypto') return stored;
     return buildVariant;
   }
@@ -24,7 +24,7 @@ export const SITE_VARIANT: string = (() => {
   if (h.startsWith('crypto.')) return 'crypto';
 
   if (h === 'localhost' || h === '127.0.0.1') {
-    const stored = localStorage.getItem('worldmonitor-variant');
+    const stored = localStorage.getItem('ivee-variant');
     if (stored === 'tech' || stored === 'full' || stored === 'finance' || stored === 'happy' || stored === 'commodity' || stored === 'crypto') return stored;
     return buildVariant;
   }

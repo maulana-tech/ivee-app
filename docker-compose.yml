@@ -12,12 +12,12 @@
 
 services:
 
-  worldmonitor:
+  ivee:
     build:
       context: .
       dockerfile: Dockerfile
-    image: worldmonitor:latest
-    container_name: worldmonitor
+    image: ivee:latest
+    container_name: ivee
     ports:
       - "${WM_PORT:-3000}:8080"
     environment:
@@ -62,8 +62,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.relay
-    image: worldmonitor-ais-relay:latest
-    container_name: worldmonitor-ais-relay
+    image: ivee-ais-relay:latest
+    container_name: ivee-ais-relay
     environment:
       AISSTREAM_API_KEY: "${AISSTREAM_API_KEY:-}"
       PORT: "3004"
@@ -71,7 +71,7 @@ services:
 
   redis:
     image: docker.io/redis:7-alpine
-    container_name: worldmonitor-redis
+    container_name: ivee-redis
     command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
     volumes:
       - redis-data:/data
@@ -81,8 +81,8 @@ services:
     build:
       context: docker
       dockerfile: Dockerfile.redis-rest
-    image: worldmonitor-redis-rest:latest
-    container_name: worldmonitor-redis-rest
+    image: ivee-redis-rest:latest
+    container_name: ivee-redis-rest
     ports:
       - "127.0.0.1:8079:80"
     environment:

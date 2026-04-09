@@ -3,7 +3,7 @@ import {
   HealthServiceClient,
   type AirQualityAlert,
   type ListAirQualityAlertsResponse,
-} from '@/generated/client/worldmonitor/health/v1/service_client';
+} from '@/generated/client/ivee/health/v1/service_client';
 
 export type { AirQualityAlert, ListAirQualityAlertsResponse };
 

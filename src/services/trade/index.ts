@@ -19,7 +19,7 @@ import {
   type TradeFlowRecord,
   type TradeBarrier,
   type CustomsRevenueMonth,
-} from '@/generated/client/worldmonitor/trade/v1/service_client';
+} from '@/generated/client/ivee/trade/v1/service_client';
 import { createCircuitBreaker } from '@/utils';
 import { isFeatureAvailable } from '../runtime-config';
 import { getHydratedData } from '@/services/bootstrap';

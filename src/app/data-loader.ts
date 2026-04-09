@@ -128,10 +128,10 @@ import { getAiFlowSettings } from '@/services/ai-flow-settings';
 import { t, getCurrentLanguage } from '@/services/i18n';
 import { getHydratedData } from '@/services/bootstrap';
 import { ingestHeadlines } from '@/services/trending-keywords';
-import type { ListFeedDigestResponse } from '@/generated/client/worldmonitor/news/v1/service_client';
-import type { GetSectorSummaryResponse, ListMarketQuotesResponse, ListCommodityQuotesResponse } from '@/generated/client/worldmonitor/market/v1/service_client';
+import type { ListFeedDigestResponse } from '@/generated/client/ivee/news/v1/service_client';
+import type { GetSectorSummaryResponse, ListMarketQuotesResponse, ListCommodityQuotesResponse } from '@/generated/client/ivee/market/v1/service_client';
 import { mountCommunityWidget } from '@/components/CommunityWidget';
-import { ResearchServiceClient } from '@/generated/client/worldmonitor/research/v1/service_client';
+import { ResearchServiceClient } from '@/generated/client/ivee/research/v1/service_client';
 import {
   MarketPanel,
   StockAnalysisPanel,
@@ -185,7 +185,7 @@ import {
 } from '@/services/daily-market-brief';
 import { fetchCachedRiskScores } from '@/services/cached-risk-scores';
 import type { ThreatLevel as ClientThreatLevel } from '@/types';
-import type { NewsItem as ProtoNewsItem, ThreatLevel as ProtoThreatLevel } from '@/generated/client/worldmonitor/news/v1/service_client';
+import type { NewsItem as ProtoNewsItem, ThreatLevel as ProtoThreatLevel } from '@/generated/client/ivee/news/v1/service_client';
 import { fetchMarketImplications } from '@/services/market-implications';
 import { fetchDiseaseOutbreaks } from '@/services/disease-outbreaks';
 import { fetchSocialVelocity } from '@/services/social-velocity';
@@ -1574,7 +1574,7 @@ export class DataLoaderManager implements AppModule {
           sentiment: cats.sentiment ? { score: Number(cats.sentiment.score ?? 0) } : undefined,
         };
       }
-      const { MarketServiceClient } = await import('@/generated/client/worldmonitor/market/v1/service_client');
+      const { MarketServiceClient } = await import('@/generated/client/ivee/market/v1/service_client');
       const { getRpcBaseUrl } = await import('@/services/rpc-client');
       const client = new MarketServiceClient(getRpcBaseUrl(), { fetch: (...args: Parameters<typeof fetch>) => globalThis.fetch(...args) });
       const resp = await client.getFearGreedIndex({});
@@ -1598,7 +1598,7 @@ export class DataLoaderManager implements AppModule {
 
   private async _collectYieldCurveContext(): Promise<YieldCurveContext | undefined> {
     try {
-      const { EconomicServiceClient } = await import('@/generated/client/worldmonitor/economic/v1/service_client');
+      const { EconomicServiceClient } = await import('@/generated/client/ivee/economic/v1/service_client');
       const { getRpcBaseUrl } = await import('@/services/rpc-client');
       const client = new EconomicServiceClient(getRpcBaseUrl(), { fetch: (...args: Parameters<typeof fetch>) => globalThis.fetch(...args) });
       const resp = await client.getFredSeriesBatch({ seriesIds: ['DGS2', 'DGS10', 'DGS30'], limit: 1 });
@@ -1685,7 +1685,7 @@ export class DataLoaderManager implements AppModule {
 
   async loadForecasts(): Promise<void> {
     try {
-      const hydrated = getHydratedData('forecasts') as { predictions?: import('@/generated/client/worldmonitor/forecast/v1/service_client').Forecast[] } | undefined;
+      const hydrated = getHydratedData('forecasts') as { predictions?: import('@/generated/client/ivee/forecast/v1/service_client').Forecast[] } | undefined;
       if (hydrated?.predictions?.length) {
         this.callPanel('forecast', 'updateForecasts', hydrated.predictions);
         return;
@@ -1897,7 +1897,7 @@ export class DataLoaderManager implements AppModule {
       }
     })());
 
-    const hydratedUcdp = getHydratedData('ucdpEvents') as import('@/generated/client/worldmonitor/conflict/v1/service_client').ListUcdpEventsResponse | undefined;
+    const hydratedUcdp = getHydratedData('ucdpEvents') as import('@/generated/client/ivee/conflict/v1/service_client').ListUcdpEventsResponse | undefined;
 
     tasks.push((async () => {
       try {
@@ -2813,13 +2813,13 @@ export class DataLoaderManager implements AppModule {
       const economicPanel = this.ctx.panels['economic'] as EconomicPanel | undefined;
       if (!economicPanel) return;
 
-      const hydrated = getHydratedData('economicStress') as import('@/generated/client/worldmonitor/economic/v1/service_client').GetEconomicStressResponse | undefined;
+      const hydrated = getHydratedData('economicStress') as import('@/generated/client/ivee/economic/v1/service_client').GetEconomicStressResponse | undefined;
       if (hydrated && !hydrated.unavailable && Number.isFinite(hydrated.compositeScore)) {
         economicPanel.updateStress(hydrated);
         return;
       }
 
-      const { EconomicServiceClient } = await import('@/generated/client/worldmonitor/economic/v1/service_client');
+      const { EconomicServiceClient } = await import('@/generated/client/ivee/economic/v1/service_client');
       const client = new EconomicServiceClient(getRpcBaseUrl(), { fetch: (...args: Parameters<typeof fetch>) => globalThis.fetch(...args) });
       const resp = await client.getEconomicStress({});
       if (!resp.unavailable && Number.isFinite(resp.compositeScore)) {

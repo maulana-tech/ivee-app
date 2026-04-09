@@ -1563,7 +1563,7 @@
       "infoTooltip": "<strong>Inteligência aeronáutica</strong> Dados operacionais de companhias aéreas em tempo real: suspensões de rotas, encerramentos de espaço aéreo, avisos de transportadoras e desvios de emergência. Fonte: NOTAM de autoridades de aviação e boletins de transportadoras."
     },
     "chatAnalyst": {
-      "infoTooltip": "<strong>Analista WM</strong> Analista de IA com contexto em tempo real nos domínios geopolítico, de mercado, militar e económico. Alimentado pelo Claude com dados em tempo real injetados dos feeds ativos do WorldMonitor."
+      "infoTooltip": "<strong>Analista WM</strong> Analista de IA com contexto em tempo real nos domínios geopolítico, de mercado, militar e económico. Alimentado pelo Claude com dados em tempo real injetados dos feeds ativos do Ivee."
     },
     "cotPositioning": {
       "infoTooltip": "<strong>Posicionamento CFTC COT</strong> Relatório de Compromissos dos Traders: posicionamento líquido de comerciais, grandes especuladores e pequenos traders em futuros de commodities e financeiros. Publicado semanalmente (sexta-feira). Fonte: CFTC."
@@ -1593,7 +1593,7 @@
       "infoTooltip": "<strong>Indicadores macro</strong> Indicadores macroeconómicos-chave para os EUA e zona euro: CPI, desemprego, GDP e taxas de bancos centrais. Valores mostrados com delta do período anterior. Fonte: FRED (Federal Reserve Economic Data)."
     },
     "monitors": {
-      "infoTooltip": "<strong>Monitores de palavras-chave</strong> Adicione qualquer termo para rastrear menções em notícias em tempo real em todas as fontes do WorldMonitor. Os resultados atualizam-se em tempo real à medida que artigos correspondentes são ingeridos."
+      "infoTooltip": "<strong>Monitores de palavras-chave</strong> Adicione qualquer termo para rastrear menções em notícias em tempo real em todas as fontes do Ivee. Os resultados atualizam-se em tempo real à medida que artigos correspondentes são ingeridos."
     },
     "renewable": {
       "infoTooltip": "<strong>Energia renovável</strong> Pipeline global de projetos de energia renovável: adições de capacidade solar, eólica, hídrica e de armazenamento. Rastreia projetos anunciados, em construção e comissionados por região e tipo de tecnologia."

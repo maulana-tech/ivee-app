@@ -17,7 +17,7 @@ import MINING_SITES_RAW from '../shared/mining-sites.js';
 export const config = { runtime: 'edge' };
 
 const MCP_PROTOCOL_VERSION = '2025-03-26';
-const SERVER_NAME = 'worldmonitor';
+const SERVER_NAME = 'ivee';
 const SERVER_VERSION = '1.0';
 
 // ---------------------------------------------------------------------------
@@ -76,7 +76,7 @@ type ToolDef = CacheToolDef | RpcToolDef;
 const TOOL_REGISTRY: ToolDef[] = [
   {
     name: 'get_market_data',
-    description: 'Real-time equity quotes, commodity prices (including gold futures GC=F), crypto prices, forex FX rates (USD/EUR, USD/JPY etc.), sector performance, ETF flows, and Gulf market quotes from WorldMonitor\'s curated bootstrap cache.',
+    description: 'Real-time equity quotes, commodity prices (including gold futures GC=F), crypto prices, forex FX rates (USD/EUR, USD/JPY etc.), sector performance, ETF flows, and Gulf market quotes from Ivee\'s curated bootstrap cache.',
     inputSchema: { type: 'object', properties: {}, required: [] },
     _cacheKeys: [
       'market:stocks-bootstrap:v1',
@@ -113,7 +113,7 @@ const TOOL_REGISTRY: ToolDef[] = [
   },
   {
     name: 'get_news_intelligence',
-    description: 'AI-classified geopolitical threat news summaries, GDELT intelligence signals, cross-source signals, and security advisories from WorldMonitor\'s intelligence layer.',
+    description: 'AI-classified geopolitical threat news summaries, GDELT intelligence signals, cross-source signals, and security advisories from Ivee\'s intelligence layer.',
     inputSchema: { type: 'object', properties: {}, required: [] },
     _cacheKeys: [
       'news:insights:v1',
@@ -248,7 +248,7 @@ const TOOL_REGISTRY: ToolDef[] = [
   },
   {
     name: 'get_forecast_predictions',
-    description: 'AI-generated geopolitical and economic forecasts from WorldMonitor\'s predictive models. Covers upcoming risk events and probability assessments.',
+    description: 'AI-generated geopolitical and economic forecasts from Ivee\'s predictive models. Covers upcoming risk events and probability assessments.',
     inputSchema: { type: 'object', properties: {}, required: [] },
     _cacheKeys: ['forecast:predictions:v2'],
     _seedMetaKey: 'seed-meta:forecast:predictions',
@@ -281,10 +281,10 @@ const TOOL_REGISTRY: ToolDef[] = [
       required: [],
     },
     _execute: async (params, base, apiKey) => {
-      const UA = 'worldmonitor-mcp-edge/1.0';
+      const UA = 'ivee-mcp-edge/1.0';
       // Step 1: fetch current geopolitical headlines (budget: 6 s, leaves ~24 s for LLM)
       const digestRes = await fetch(`${base}/api/news/v1/list-feed-digest?variant=geo&lang=en`, {
-        headers: { 'X-WorldMonitor-Key': apiKey, 'User-Agent': UA },
+        headers: { 'X-Ivee-Key': apiKey, 'User-Agent': UA },
         signal: AbortSignal.timeout(6_000),
       });
       if (!digestRes.ok) throw new Error(`feed-digest HTTP ${digestRes.status}`);
@@ -298,7 +298,7 @@ const TOOL_REGISTRY: ToolDef[] = [
       // Step 2: summarize with LLM (budget: 18 s — combined 24 s, well under 30 s edge ceiling)
       const briefRes = await fetch(`${base}/api/news/v1/summarize-article`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-WorldMonitor-Key': apiKey, 'User-Agent': UA },
+        headers: { 'Content-Type': 'application/json', 'X-Ivee-Key': apiKey, 'User-Agent': UA },
         body: JSON.stringify({
           provider: 'openrouter',
           headlines,
@@ -325,7 +325,7 @@ const TOOL_REGISTRY: ToolDef[] = [
       required: ['country_code'],
     },
     _execute: async (params, base, apiKey) => {
-      const UA = 'worldmonitor-mcp-edge/1.0';
+      const UA = 'ivee-mcp-edge/1.0';
       const countryCode = String(params.country_code ?? '').toUpperCase().slice(0, 2);
 
       // Fetch current geopolitical headlines to ground the LLM (budget: 2 s — cached endpoint).
@@ -334,7 +334,7 @@ const TOOL_REGISTRY: ToolDef[] = [
       let contextParam = '';
       try {
         const digestRes = await fetch(`${base}/api/news/v1/list-feed-digest?variant=geo&lang=en`, {
-          headers: { 'X-WorldMonitor-Key': apiKey, 'User-Agent': UA },
+          headers: { 'X-Ivee-Key': apiKey, 'User-Agent': UA },
           signal: AbortSignal.timeout(2_000),
         });
         if (digestRes.ok) {
@@ -356,7 +356,7 @@ const TOOL_REGISTRY: ToolDef[] = [
 
       const res = await fetch(briefUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-WorldMonitor-Key': apiKey, 'User-Agent': UA },
+        headers: { 'Content-Type': 'application/json', 'X-Ivee-Key': apiKey, 'User-Agent': UA },
         body: JSON.stringify({ country_code: countryCode, framework: String(params.framework ?? '') }),
         signal: AbortSignal.timeout(22_000),
       });
@@ -379,7 +379,7 @@ const TOOL_REGISTRY: ToolDef[] = [
       const res = await fetch(
         `${base}/api/intelligence/v1/get-country-risk?country_code=${encodeURIComponent(code)}`,
         {
-          headers: { 'X-WorldMonitor-Key': apiKey, 'User-Agent': 'worldmonitor-mcp-edge/1.0' },
+          headers: { 'X-Ivee-Key': apiKey, 'User-Agent': 'ivee-mcp-edge/1.0' },
           signal: AbortSignal.timeout(8_000),
         },
       );
@@ -411,8 +411,8 @@ const TOOL_REGISTRY: ToolDef[] = [
       if (!bbox) return { error: `Unknown country code: ${code}. Use ISO 3166-1 alpha-2 (e.g. "AE", "US", "GB").` };
       const [sw_lat, sw_lon, ne_lat, ne_lon] = bbox;
       const type = String(params.type ?? 'all');
-      const UA = 'worldmonitor-mcp-edge/1.0';
-      const headers = { 'X-WorldMonitor-Key': apiKey, 'User-Agent': UA };
+      const UA = 'ivee-mcp-edge/1.0';
+      const headers = { 'X-Ivee-Key': apiKey, 'User-Agent': UA };
       const bboxQ = `sw_lat=${sw_lat}&sw_lon=${sw_lon}&ne_lat=${ne_lat}&ne_lon=${ne_lon}`;
 
       type CivilianResp = {
@@ -494,7 +494,7 @@ const TOOL_REGISTRY: ToolDef[] = [
       if (!bbox) return { error: `Unknown country code: ${code}. Use ISO 3166-1 alpha-2 (e.g. "AE", "SA", "JP").` };
       const [sw_lat, sw_lon, ne_lat, ne_lon] = bbox;
       const bboxQ = `sw_lat=${sw_lat}&sw_lon=${sw_lon}&ne_lat=${ne_lat}&ne_lon=${ne_lon}`;
-      const headers = { 'X-WorldMonitor-Key': apiKey, 'User-Agent': 'worldmonitor-mcp-edge/1.0' };
+      const headers = { 'X-Ivee-Key': apiKey, 'User-Agent': 'ivee-mcp-edge/1.0' };
 
       type VesselResp = {
         snapshot?: {
@@ -544,7 +544,7 @@ const TOOL_REGISTRY: ToolDef[] = [
     _execute: async (params, base, apiKey) => {
       const res = await fetch(`${base}/api/intelligence/v1/deduct-situation`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-WorldMonitor-Key': apiKey, 'User-Agent': 'worldmonitor-mcp-edge/1.0' },
+        headers: { 'Content-Type': 'application/json', 'X-Ivee-Key': apiKey, 'User-Agent': 'ivee-mcp-edge/1.0' },
         body: JSON.stringify({ query: String(params.query ?? ''), geoContext: String(params.context ?? ''), framework: String(params.framework ?? '') }),
         signal: AbortSignal.timeout(25_000),
       });
@@ -567,7 +567,7 @@ const TOOL_REGISTRY: ToolDef[] = [
       // 25 s — stays within Vercel Edge's ~30 s hard ceiling (was 60 s, which exceeded the limit)
       const res = await fetch(`${base}/api/forecast/v1/get-forecasts`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-WorldMonitor-Key': apiKey, 'User-Agent': 'worldmonitor-mcp-edge/1.0' },
+        headers: { 'Content-Type': 'application/json', 'X-Ivee-Key': apiKey, 'User-Agent': 'ivee-mcp-edge/1.0' },
         body: JSON.stringify({ domain: String(params.domain ?? ''), region: String(params.region ?? '') }),
         signal: AbortSignal.timeout(25_000),
       });
@@ -604,7 +604,7 @@ const TOOL_REGISTRY: ToolDef[] = [
         passengers: String(Math.max(1, Math.min(Number(params.passengers ?? 1), 9))),
       });
       const res = await fetch(`${base}/api/aviation/v1/search-google-flights?${qs}`, {
-        headers: { 'X-WorldMonitor-Key': apiKey, 'User-Agent': 'worldmonitor-mcp-edge/1.0' },
+        headers: { 'X-Ivee-Key': apiKey, 'User-Agent': 'ivee-mcp-edge/1.0' },
         signal: AbortSignal.timeout(25_000),
       });
       if (!res.ok) throw new Error(`search-google-flights HTTP ${res.status}`);
@@ -642,7 +642,7 @@ const TOOL_REGISTRY: ToolDef[] = [
         passengers: String(Math.max(1, Math.min(Number(params.passengers ?? 1), 9))),
       });
       const res = await fetch(`${base}/api/aviation/v1/search-google-dates?${qs}`, {
-        headers: { 'X-WorldMonitor-Key': apiKey, 'User-Agent': 'worldmonitor-mcp-edge/1.0' },
+        headers: { 'X-Ivee-Key': apiKey, 'User-Agent': 'ivee-mcp-edge/1.0' },
         signal: AbortSignal.timeout(25_000),
       });
       if (!res.ok) throw new Error(`search-google-dates HTTP ${res.status}`);
@@ -776,7 +776,7 @@ export default async function handler(req: Request): Promise<Response> {
   }
   // Auth chain (in priority order):
   //   1. Authorization: Bearer <oauth_token> — issued by /oauth/token (spec-compliant OAuth 2.0)
-  //   2. X-WorldMonitor-Key header — direct API key (curl, custom integrations)
+  //   2. X-Ivee-Key header — direct API key (curl, custom integrations)
   let apiKey = '';
   const authHeader = req.headers.get('Authorization') ?? '';
   if (authHeader.startsWith('Bearer ')) {
@@ -797,15 +797,15 @@ export default async function handler(req: Request): Promise<Response> {
       // Bearer token present but unresolvable — expired or invalid UUID
       return new Response(
         JSON.stringify({ jsonrpc: '2.0', id: null, error: { code: -32001, message: 'Invalid or expired OAuth token. Re-authenticate via /oauth/token.' } }),
-        { status: 401, headers: { 'Content-Type': 'application/json', 'WWW-Authenticate': 'Bearer realm="worldmonitor", error="invalid_token", resource_metadata="https://api.worldmonitor.app/.well-known/oauth-protected-resource"', ...corsHeaders } }
+        { status: 401, headers: { 'Content-Type': 'application/json', 'WWW-Authenticate': 'Bearer realm="ivee", error="invalid_token", resource_metadata="https://api.ivee.app/.well-known/oauth-protected-resource"', ...corsHeaders } }
       );
     }
   } else {
-    const candidateKey = req.headers.get('X-WorldMonitor-Key') ?? '';
+    const candidateKey = req.headers.get('X-Ivee-Key') ?? '';
     if (!candidateKey) {
       return new Response(
-        JSON.stringify({ jsonrpc: '2.0', id: null, error: { code: -32001, message: 'Authentication required. Use OAuth (/oauth/token) or pass your API key via X-WorldMonitor-Key header.' } }),
-        { status: 401, headers: { 'Content-Type': 'application/json', 'WWW-Authenticate': 'Bearer realm="worldmonitor", resource_metadata="https://api.worldmonitor.app/.well-known/oauth-protected-resource"', ...corsHeaders } }
+        JSON.stringify({ jsonrpc: '2.0', id: null, error: { code: -32001, message: 'Authentication required. Use OAuth (/oauth/token) or pass your API key via X-Ivee-Key header.' } }),
+        { status: 401, headers: { 'Content-Type': 'application/json', 'WWW-Authenticate': 'Bearer realm="ivee", resource_metadata="https://api.ivee.app/.well-known/oauth-protected-resource"', ...corsHeaders } }
       );
     }
     const validKeys = (process.env.WORLDMONITOR_VALID_KEYS || '').split(',').filter(Boolean);

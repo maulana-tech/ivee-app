@@ -1,8 +1,8 @@
 import { loadFromStorage, saveToStorage } from '@/utils';
 
 const STORAGE_KEY = 'wm-mcp-panels';
-const PANEL_SPANS_KEY = 'worldmonitor-panel-spans';
-const PANEL_COL_SPANS_KEY = 'worldmonitor-panel-col-spans';
+const PANEL_SPANS_KEY = 'ivee-panel-spans';
+const PANEL_COL_SPANS_KEY = 'ivee-panel-col-spans';
 const MAX_PANELS = 10;
 
 export interface McpPreset {

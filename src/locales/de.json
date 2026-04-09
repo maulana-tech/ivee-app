@@ -1767,7 +1767,7 @@
       "infoTooltip": "<strong>Airline-Aufklärung</strong> Betriebsdaten von Fluggesellschaften in Echtzeit: Routenaussetzungen, Luftraumsperrungen, Carrier-Hinweise und Notfallumleitungen. Quelle: NOTAM der Luftfahrtbehörden und Carrier-Bulletins."
     },
     "chatAnalyst": {
-      "infoTooltip": "<strong>WM Analyst</strong> KI-Analyst mit Live-Kontext über geopolitische, Markt-, Militär- und Wirtschaftsbereiche. Betrieben durch Claude mit Echtzeitdaten aus aktiven WorldMonitor-Feeds."
+      "infoTooltip": "<strong>WM Analyst</strong> KI-Analyst mit Live-Kontext über geopolitische, Markt-, Militär- und Wirtschaftsbereiche. Betrieben durch Claude mit Echtzeitdaten aus aktiven Ivee-Feeds."
     },
     "cotPositioning": {
       "infoTooltip": "<strong>CFTC COT Positionierung</strong> Commitments of Traders-Bericht: Nettopositionen von Commercials, großen Spekulanten und kleinen Händlern in Rohstoff- und Finanz-Futures. Wöchentlich veröffentlicht (Freitag). Quelle: CFTC."
@@ -1797,7 +1797,7 @@
       "infoTooltip": "<strong>Makro-Indikatoren</strong> Wichtige makroökonomische Indikatoren für die USA und den Euroraum: CPI, Arbeitslosigkeit, GDP und Zentralbankzinsen. Werte mit Delta zum Vorperiodenzeitraum. Quelle: FRED (Federal Reserve Economic Data)."
     },
     "monitors": {
-      "infoTooltip": "<strong>Stichwort-Monitore</strong> Fügen Sie einen beliebigen Begriff hinzu, um Live-Nachrichtenerwähnungen über alle WorldMonitor-Quellen zu verfolgen. Ergebnisse werden in Echtzeit aktualisiert, wenn passende Artikel aufgenommen werden."
+      "infoTooltip": "<strong>Stichwort-Monitore</strong> Fügen Sie einen beliebigen Begriff hinzu, um Live-Nachrichtenerwähnungen über alle Ivee-Quellen zu verfolgen. Ergebnisse werden in Echtzeit aktualisiert, wenn passende Artikel aufgenommen werden."
     },
     "renewable": {
       "infoTooltip": "<strong>Erneuerbare Energie</strong> Globale Pipeline für Erneuerbare-Energien-Projekte: Solar-, Wind-, Wasser- und Speicherkapazitätserweiterungen. Verfolgt angekündigte, im Bau befindliche und in Betrieb genommene Projekte nach Region und Technologietyp."

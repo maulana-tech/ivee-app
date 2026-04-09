@@ -1767,7 +1767,7 @@
       "infoTooltip": "<strong>Intelligence aeronautica</strong> Dati operativi delle compagnie aeree in tempo reale: sospensioni di rotte, chiusure dello spazio aereo, avvisi dei vettori e deviazioni di emergenza. Fonte: NOTAM delle autorità aeronautiche e bollettini dei vettori."
     },
     "chatAnalyst": {
-      "infoTooltip": "<strong>Analista WM</strong> Analista AI con contesto in tempo reale nei domini geopolitico, dei mercati, militare ed economico. Alimentato da Claude con dati in tempo reale iniettati dai feed attivi di WorldMonitor."
+      "infoTooltip": "<strong>Analista WM</strong> Analista AI con contesto in tempo reale nei domini geopolitico, dei mercati, militare ed economico. Alimentato da Claude con dati in tempo reale iniettati dai feed attivi di Ivee."
     },
     "cotPositioning": {
       "infoTooltip": "<strong>Posizionamento CFTC COT</strong> Rapporto sugli impegni dei trader: posizionamento netto di commerciali, grandi speculatori e piccoli trader in futures su materie prime e finanziari. Pubblicato settimanalmente (venerdì). Fonte: CFTC."
@@ -1797,7 +1797,7 @@
       "infoTooltip": "<strong>Indicatori macro</strong> Indicatori macroeconomici chiave per USA e zona euro: CPI, disoccupazione, GDP e tassi delle banche centrali. Valori con delta rispetto al periodo precedente. Fonte: FRED (Federal Reserve Economic Data)."
     },
     "monitors": {
-      "infoTooltip": "<strong>Monitor di parole chiave</strong> Aggiungi qualsiasi termine per tracciare le menzioni nelle notizie in tempo reale da tutte le fonti WorldMonitor. I risultati si aggiornano in tempo reale man mano che gli articoli corrispondenti vengono acquisiti."
+      "infoTooltip": "<strong>Monitor di parole chiave</strong> Aggiungi qualsiasi termine per tracciare le menzioni nelle notizie in tempo reale da tutte le fonti Ivee. I risultati si aggiornano in tempo reale man mano che gli articoli corrispondenti vengono acquisiti."
     },
     "renewable": {
       "infoTooltip": "<strong>Energia rinnovabile</strong> Pipeline globale di progetti di energia rinnovabile: aggiunte di capacità solare, eolica, idrica e di accumulo. Traccia progetti annunciati, in costruzione e commissionati per regione e tipo di tecnologia."

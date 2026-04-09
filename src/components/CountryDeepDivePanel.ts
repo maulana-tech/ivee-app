@@ -27,7 +27,7 @@ import type {
 import type { MapContainer } from './MapContainer';
 import { ResilienceWidget } from './ResilienceWidget';
 import { toApiUrl } from '@/services/runtime';
-import type { ComputeEnergyShockScenarioResponse, ProductImpact } from '@/generated/client/worldmonitor/intelligence/v1/service_client';
+import type { ComputeEnergyShockScenarioResponse, ProductImpact } from '@/generated/client/ivee/intelligence/v1/service_client';
 
 type ThreatLevel = 'critical' | 'high' | 'medium' | 'low' | 'info';
 type TrendDirection = 'up' | 'down' | 'flat';

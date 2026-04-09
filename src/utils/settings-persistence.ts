@@ -18,12 +18,12 @@ const MAX_IMPORT_SIZE_BYTES = 5 * 1024 * 1024;
 const SETTINGS_KEY_PREFIXES: readonly string[] = [
   ...CLOUD_SYNC_KEYS,
   // device-local / export-only (excluded from cloud sync)
-  'worldmonitor-live-channels',
-  'worldmonitor-active-channel',
-  'worldmonitor-runtime-feature-toggles',
+  'ivee-live-channels',
+  'ivee-active-channel',
+  'ivee-runtime-feature-toggles',
   'wm-globe-render-scale',
   'wm-live-streams-always-on',
-  'worldmonitor-webcam-prefs',
+  'ivee-webcam-prefs',
   'wm-map-theme:',
   'map-height',
   'map-pinned',
@@ -48,7 +48,7 @@ export function exportSettings(): void {
   const exportData: ExportedSettings = {
     version: 1,
     timestamp: new Date().toISOString(),
-    variant: localStorage.getItem('worldmonitor-variant') || 'full',
+    variant: localStorage.getItem('ivee-variant') || 'full',
     data,
   };
 
@@ -57,7 +57,7 @@ export function exportSettings(): void {
   const a = document.createElement('a');
   a.href = url;
   const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-  a.download = `worldmonitor-settings-${ts}.json`;
+  a.download = `ivee-settings-${ts}.json`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);

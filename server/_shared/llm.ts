@@ -78,7 +78,7 @@ export function getProviderCredentials(
       headers: {
         'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://worldmonitor.app',
+        'HTTP-Referer': 'https://ivee.app',
         'X-Title': 'World Monitor',
       },
     };

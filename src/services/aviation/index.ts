@@ -11,7 +11,7 @@ import {
   type CabinClass,
   type GoogleFlightResult as ProtoGoogleFlightResult,
   type DatePriceEntry as ProtoDatePriceEntry,
-} from '@/generated/client/worldmonitor/aviation/v1/service_client';
+} from '@/generated/client/ivee/aviation/v1/service_client';
 import { createCircuitBreaker } from '@/utils';
 import { getHydratedData } from '@/services/bootstrap';
 

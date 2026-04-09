@@ -10,7 +10,7 @@ const ENV = (() => {
 })();
 
 const WS_API_URL = ENV.VITE_WS_API_URL || '';
-const DEFAULT_WEB_API_URL = 'https://api.worldmonitor.app';
+const DEFAULT_WEB_API_URL = 'https://api.ivee.app';
 const KEYED_CLOUD_API_PATTERN = /^\/api\/(?:[^/]+\/v1\/|bootstrap(?:\?|$)|polymarket(?:\?|$)|ais-snapshot(?:\?|$))/;
 
 const DEFAULT_REMOTE_HOSTS: Record<string, string> = {
@@ -120,10 +120,10 @@ export function getApiBaseUrl(): string {
   return `http://127.0.0.1:${getLocalApiPort()}`;
 }
 
-function isWorldMonitorWebHost(hostname: string): boolean {
-  return hostname === 'worldmonitor.app'
-    || hostname === 'www.worldmonitor.app'
-    || hostname.endsWith('.worldmonitor.app');
+function isIveeWebHost(hostname: string): boolean {
+  return hostname === 'ivee.app'
+    || hostname === 'www.ivee.app'
+    || hostname.endsWith('.ivee.app');
 }
 
 export function getConfiguredWebApiBaseUrl(): string {
@@ -140,7 +140,7 @@ export function getConfiguredWebApiBaseUrl(): string {
   }
 
   const hostname = window.location?.hostname ?? '';
-  if (!isWorldMonitorWebHost(hostname)) {
+  if (!isIveeWebHost(hostname)) {
     return '';
   }
 
@@ -166,7 +166,7 @@ export function getRemoteApiBaseUrl(): string {
   if (fromHosts) return fromHosts;
 
   // Desktop builds may not set VITE_WS_API_URL; default to production.
-  if (isDesktopRuntime()) return 'https://worldmonitor.app';
+  if (isDesktopRuntime()) return 'https://ivee.app';
   return '';
 }
 
@@ -210,10 +210,10 @@ function extractHostnames(...urls: (string | undefined)[]): string[] {
 }
 
 const APP_HOSTS = new Set([
-  'worldmonitor.app',
-  'www.worldmonitor.app',
-  'tech.worldmonitor.app',
-  'api.worldmonitor.app',
+  'ivee.app',
+  'www.ivee.app',
+  'tech.ivee.app',
+  'api.ivee.app',
   'localhost',
   '127.0.0.1',
   ...extractHostnames(WS_API_URL, ENV.VITE_WS_RELAY_URL),
@@ -223,7 +223,7 @@ function isAppOriginUrl(urlStr: string): boolean {
   try {
     const u = new URL(urlStr);
     const host = u.hostname;
-    return APP_HOSTS.has(host) || host.endsWith('.worldmonitor.app');
+    return APP_HOSTS.has(host) || host.endsWith('.ivee.app');
   } catch {
     return false;
   }
@@ -675,7 +675,7 @@ export function installRuntimeFetchPatch(): void {
         const { getRuntimeConfigSnapshot } = await import('@/services/runtime-config');
         const wmKeyValue = getRuntimeConfigSnapshot().secrets['WORLDMONITOR_API_KEY']?.value;
         if (wmKeyValue) {
-          cloudHeaders.set('X-WorldMonitor-Key', wmKeyValue);
+          cloudHeaders.set('X-Ivee-Key', wmKeyValue);
         }
       }
       return nativeFetch(cloudUrl, { ...init, headers: cloudHeaders });
@@ -735,7 +735,7 @@ export function installRuntimeFetchPatch(): void {
 
 import { PREMIUM_RPC_PATHS as WEB_PREMIUM_API_PATHS } from '@/shared/premium-paths';
 
-const ALLOWED_REDIRECT_HOSTS = /^https:\/\/([a-z0-9]([a-z0-9-]*[a-z0-9])?\.)*worldmonitor\.app(:\d+)?$/;
+const ALLOWED_REDIRECT_HOSTS = /^https:\/\/([a-z0-9]([a-z0-9-]*[a-z0-9])?\.)*ivee\.app(:\d+)?$/;
 
 function isAllowedRedirectTarget(url: string): boolean {
   try {
@@ -763,8 +763,8 @@ export function installWebApiRedirect(): void {
    * For premium API paths, inject auth when the user has premium access but no
    * existing auth header is present. Priority order:
    *   1. Existing auth headers — left unchanged (API key users keep their flow)
-   *   2. WORLDMONITOR_API_KEY from runtime config → X-WorldMonitor-Key
-   *   3. Tester key (wm-pro-key / wm-widget-key) → X-WorldMonitor-Key
+   *   2. WORLDMONITOR_API_KEY from runtime config → X-Ivee-Key
+   *   3. Tester key (wm-pro-key / wm-widget-key) → X-Ivee-Key
    *   4. Clerk Pro session → Authorization: Bearer <token>
    * Runs on every web deployment (with or without API base redirect).
    * Returns the original init unchanged for non-premium paths (zero overhead).
@@ -774,13 +774,13 @@ export function installWebApiRedirect(): void {
     if (!WEB_PREMIUM_API_PATHS.has(path)) return init;
     const headers = new Headers(init?.headers);
     // Don't overwrite existing auth headers
-    if (headers.has('Authorization') || headers.has('X-WorldMonitor-Key')) return init;
+    if (headers.has('Authorization') || headers.has('X-Ivee-Key')) return init;
     // WORLDMONITOR_API_KEY from env or runtime config
     try {
       const { getRuntimeConfigSnapshot } = await import('@/services/runtime-config');
       const wmKey = getRuntimeConfigSnapshot().secrets['WORLDMONITOR_API_KEY']?.value;
       if (wmKey) {
-        headers.set('X-WorldMonitor-Key', wmKey);
+        headers.set('X-Ivee-Key', wmKey);
         return { ...init, headers };
       }
     } catch { /* runtime-config unavailable — fall through */ }
@@ -790,7 +790,7 @@ export function installWebApiRedirect(): void {
     const { getBrowserTesterKey } = await import('@/services/widget-store');
     const testerKey = getBrowserTesterKey();
     if (testerKey) {
-      headers.set('X-WorldMonitor-Key', testerKey);
+      headers.set('X-Ivee-Key', testerKey);
       return { ...init, headers };
     }
     // Clerk Pro: inject Bearer token (fallback for users without a tester key)
@@ -833,7 +833,7 @@ export function installWebApiRedirect(): void {
           return fetchWithRedirectFallback(`${API_BASE}${input}`, input, enriched);
         }
         // Absolute URL already targeting the API base (generated clients call fetch
-        // with full URLs like https://api.worldmonitor.app/api/...) — just inject auth.
+        // with full URLs like https://api.ivee.app/api/...) — just inject auth.
         if (input.startsWith(`${API_BASE}/api/`)) {
           const pathAndSearch = input.slice(API_BASE.length);
           const enriched = await enrichInitForPremium(pathAndSearch, init);

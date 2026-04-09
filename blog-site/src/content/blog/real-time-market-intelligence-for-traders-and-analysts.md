@@ -14,7 +14,7 @@ Traditional financial dashboards show you price. World Monitor shows you context
 
 ## Finance Monitor: Markets Meet Geopolitics
 
-World Monitor's Finance variant (finance.worldmonitor.app) combines traditional market data with the geopolitical intelligence that drives price action. It's built for traders who understand that a Reuters headline and a ship position can be more valuable than a moving average.
+World Monitor's Finance variant (finance.ivee.app) combines traditional market data with the geopolitical intelligence that drives price action. It's built for traders who understand that a Reuters headline and a ship position can be more valuable than a moving average.
 
 Here's what you get:
 
@@ -65,7 +65,7 @@ For commodity traders, World Monitor maps the **10 major commodity exchanges** (
 - Critical minerals (lithium, cobalt, rare earths)
 - Agricultural commodities
 
-The Commodity Monitor variant (commodity.worldmonitor.app) goes deeper with mining company locations, pipeline infrastructure, and supply chain disruption alerts. For more on supply chain tracking, see [monitoring global supply chains and commodity disruptions](/blog/posts/monitor-global-supply-chains-and-commodity-disruptions/).
+The Commodity Monitor variant (commodity.ivee.app) goes deeper with mining company locations, pipeline infrastructure, and supply chain disruption alerts. For more on supply chain tracking, see [monitoring global supply chains and commodity disruptions](/blog/posts/monitor-global-supply-chains-and-commodity-disruptions/).
 
 ## Crypto Intelligence
 
@@ -97,7 +97,7 @@ Here's what makes World Monitor different from every other financial dashboard: 
 
 When you see oil prices spiking, you can toggle the military layer and check if there's unusual naval activity in the Strait of Hormuz. When a currency drops, you can check if the country's CII (Country Instability Index) has been rising. When equities sell off, you can look at the Strategic Theater Posture to see if a military theater has escalated.
 
-This cross-domain intelligence used to be the province of hedge fund research desks with million-dollar budgets. World Monitor puts it in your browser for free. See how it [compares to traditional intelligence tools](/blog/posts/worldmonitor-vs-traditional-intelligence-tools/).
+This cross-domain intelligence used to be the province of hedge fund research desks with million-dollar budgets. World Monitor puts it in your browser for free. See how it [compares to traditional intelligence tools](/blog/posts/ivee-vs-traditional-intelligence-tools/).
 
 ## 19 Financial Centers Ranked
 
@@ -150,4 +150,4 @@ Market data refreshes in real time during trading hours. Central bank trackers, 
 
 ---
 
-**Open Finance Monitor at [finance.worldmonitor.app](https://finance.worldmonitor.app). Your geopolitical edge starts here.**
+**Open Finance Monitor at [finance.ivee.app](https://finance.ivee.app). Your geopolitical edge starts here.**

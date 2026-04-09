@@ -10,7 +10,7 @@ pubDate: "2026-03-07"
 
 Every time you paste a sensitive document into ChatGPT, that data touches someone else's servers. For intelligence analysts, security researchers, and anyone handling sensitive geopolitical information, that's not just inconvenient. It's a risk.
 
-World Monitor takes a different approach. Every AI feature in the platform can run entirely on your own hardware, with no data leaving your machine. If you're new to the platform, learn [what World Monitor is and how it works](/blog/posts/what-is-worldmonitor-real-time-global-intelligence/).
+World Monitor takes a different approach. Every AI feature in the platform can run entirely on your own hardware, with no data leaving your machine. If you're new to the platform, learn [what World Monitor is and how it works](/blog/posts/what-is-ivee-real-time-global-intelligence/).
 
 ## The Problem with Cloud-Based Intelligence Tools
 
@@ -105,7 +105,7 @@ ollama pull llama3.1
 
 ### Step 2: Open World Monitor
 
-Navigate to worldmonitor.app or install the desktop app from GitHub releases.
+Navigate to ivee.app or install the desktop app from GitHub releases.
 
 ### Step 3: Configure AI
 
@@ -136,7 +136,7 @@ Material non-public information (MNPI) requirements mean certain geopolitical an
 
 ## Open Source: Trust Through Transparency
 
-You don't have to take our word for the privacy claims. World Monitor is fully open source under AGPL-3.0. Every network call, every data flow, every AI prompt is in the codebase for you to audit. Developers can explore the full [typed API layer and proto-first architecture](/blog/posts/build-on-worldmonitor-developer-api-open-source/) to verify exactly how data flows through the system.
+You don't have to take our word for the privacy claims. World Monitor is fully open source under AGPL-3.0. Every network call, every data flow, every AI prompt is in the codebase for you to audit. Developers can explore the full [typed API layer and proto-first architecture](/blog/posts/build-on-ivee-developer-api-open-source/) to verify exactly how data flows through the system.
 
 The proto-first API architecture (92 proto files, 22 typed services) means even the API contracts are transparent. You can see exactly what data each endpoint expects and returns.
 
@@ -153,4 +153,4 @@ For most intelligence tasks, local models like Llama 3.1 70B produce comparable 
 
 ---
 
-**Run intelligence analysis on your own terms at [worldmonitor.app](https://worldmonitor.app). Install Ollama for fully private AI. No login, no tracking, no compromise.**
+**Run intelligence analysis on your own terms at [ivee.app](https://ivee.app). Install Ollama for fully private AI. No login, no tracking, no compromise.**

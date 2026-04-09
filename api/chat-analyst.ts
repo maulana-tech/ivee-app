@@ -18,9 +18,9 @@ export const config = { runtime: 'edge', regions: ['iad1', 'lhr1', 'fra1', 'sfo1
 import { getCorsHeaders } from './_cors.js';
 import { isCallerPremium } from '../server/_shared/premium-check';
 import { checkRateLimit } from '../server/_shared/rate-limit';
-import { assembleAnalystContext } from '../server/worldmonitor/intelligence/v1/chat-analyst-context';
-import { buildAnalystSystemPrompt } from '../server/worldmonitor/intelligence/v1/chat-analyst-prompt';
-import { buildActionEvents } from '../server/worldmonitor/intelligence/v1/chat-analyst-actions';
+import { assembleAnalystContext } from '../server/ivee/intelligence/v1/chat-analyst-context';
+import { buildAnalystSystemPrompt } from '../server/ivee/intelligence/v1/chat-analyst-prompt';
+import { buildActionEvents } from '../server/ivee/intelligence/v1/chat-analyst-actions';
 import { callLlmReasoningStream } from '../server/_shared/llm';
 import { sanitizeForPrompt } from '../server/_shared/llm-sanitize.js';
 
@@ -76,7 +76,7 @@ export default async function handler(req: Request): Promise<Response> {
       headers: {
         ...corsHeaders,
         'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-WorldMonitor-Key',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Ivee-Key',
       },
     });
   }

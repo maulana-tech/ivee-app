@@ -10,7 +10,7 @@ import {
   type CriticalMineral,
   type MineralProducer,
   type ShippingRatePoint,
-} from '@/generated/client/worldmonitor/supply_chain/v1/service_client';
+} from '@/generated/client/ivee/supply_chain/v1/service_client';
 import { createCircuitBreaker } from '@/utils';
 import { getHydratedData } from '@/services/bootstrap';
 

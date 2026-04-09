@@ -12,7 +12,7 @@ In March 2021, the Ever Given blocked the Suez Canal for six days. Global trade 
 
 The companies that recovered fastest were the ones that already had multi-source monitoring in place: ship positions, port congestion data, commodity prices, and alternative route analysis, all visible before the situation hit mainstream news.
 
-World Monitor's Commodity Monitor (commodity.worldmonitor.app) gives every supply chain team that capability.
+World Monitor's Commodity Monitor (commodity.ivee.app) gives every supply chain team that capability.
 
 ## The Supply Chain Visibility Gap
 
@@ -162,7 +162,7 @@ World Monitor maps these jamming zones using H3 hexagonal grid classification, u
 
 **Daily Morning Check:**
 
-1. Open commodity.worldmonitor.app
+1. Open commodity.ivee.app
 2. Review commodity price changes in the dashboard
 3. Check the CII heatmap for rising instability in sourcing countries
 4. Scan hotspot escalation scores for new disruption risks
@@ -189,7 +189,7 @@ World Monitor maps these jamming zones using H3 hexagonal grid classification, u
 
 Enterprise supply chain risk platforms (Resilinc, Everstream Analytics, Interos) charge five to six figures annually and require weeks of onboarding. World Monitor is available now, in your browser, for free.
 
-It's not a replacement for a full supply chain management platform. It's the situational awareness layer that tells you where to look, before your logistics system shows delays. See how World Monitor compares to [traditional intelligence tools](/blog/posts/worldmonitor-vs-traditional-intelligence-tools/).
+It's not a replacement for a full supply chain management platform. It's the situational awareness layer that tells you where to look, before your logistics system shows delays. See how World Monitor compares to [traditional intelligence tools](/blog/posts/ivee-vs-traditional-intelligence-tools/).
 
 ## Frequently Asked Questions
 
@@ -204,4 +204,4 @@ Yes. The Country Instability Index (CII), conflict layers, and Infrastructure Ca
 
 ---
 
-**Start monitoring at [commodity.worldmonitor.app](https://commodity.worldmonitor.app). Free real-time intelligence for supply chain professionals.**
+**Start monitoring at [commodity.ivee.app](https://commodity.ivee.app). Free real-time intelligence for supply chain professionals.**

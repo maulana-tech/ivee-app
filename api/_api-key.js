@@ -6,8 +6,8 @@ const DESKTOP_ORIGIN_PATTERNS = [
 ];
 
 const BROWSER_ORIGIN_PATTERNS = [
-  /^https:\/\/(.*\.)?worldmonitor\.app$/,
-  /^https:\/\/worldmonitor-[a-z0-9-]+-elie-[a-z0-9]+\.vercel\.app$/,
+  /^https:\/\/(.*\.)?ivee\.app$/,
+  /^https:\/\/ivee-[a-z0-9-]+-elie-[a-z0-9]+\.vercel\.app$/,
   ...(process.env.NODE_ENV === 'production' ? [] : [
     /^https?:\/\/localhost(:\d+)?$/,
     /^https?:\/\/127\.0\.0\.1(:\d+)?$/,
@@ -33,7 +33,7 @@ function extractOriginFromReferer(referer) {
 
 export function validateApiKey(req, options = {}) {
   const forceKey = options.forceKey === true;
-  const key = req.headers.get('X-WorldMonitor-Key');
+  const key = req.headers.get('X-Ivee-Key');
   // Same-origin browser requests don't send Origin (per CORS spec).
   // Fall back to Referer to identify trusted same-origin callers.
   const origin = req.headers.get('Origin') || extractOriginFromReferer(req.headers.get('Referer')) || '';
@@ -46,7 +46,7 @@ export function validateApiKey(req, options = {}) {
     return { valid: true, required: true };
   }
 
-  // Trusted browser origin (worldmonitor.app, Vercel previews, localhost dev) — no key needed
+  // Trusted browser origin (ivee.app, Vercel previews, localhost dev) — no key needed
   if (isTrustedBrowserOrigin(origin)) {
     if (forceKey && !key) {
       return { valid: false, required: true, error: 'API key required' };

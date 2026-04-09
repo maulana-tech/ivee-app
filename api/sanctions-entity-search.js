@@ -63,7 +63,7 @@ export default async function handler(req) {
 
     const resp = await fetch(url.toString(), {
       headers: {
-        'User-Agent': 'WorldMonitor/1.0 sanctions-search',
+        'User-Agent': 'Ivee/1.0 sanctions-search',
         Accept: 'application/json',
       },
       signal: AbortSignal.timeout(OPENSANCTIONS_TIMEOUT_MS),

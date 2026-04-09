@@ -10,7 +10,7 @@ pubDate: "2026-03-06"
 
 You're monitoring a developing situation. News breaks about a military incident in the South China Sea. You need Taiwan's intelligence dossier, the military bases layer, the AIS maritime panel, and the strategic theater posture, right now.
 
-In most dashboards, that's four separate navigation actions. In World Monitor, it's one: **Cmd+K** (or Ctrl+K on Windows/Linux), type what you need, hit Enter. This is one of the key advantages that sets World Monitor apart from [traditional intelligence tools](/blog/posts/worldmonitor-vs-traditional-intelligence-tools/).
+In most dashboards, that's four separate navigation actions. In World Monitor, it's one: **Cmd+K** (or Ctrl+K on Windows/Linux), type what you need, hit Enter. This is one of the key advantages that sets World Monitor apart from [traditional intelligence tools](/blog/posts/ivee-vs-traditional-intelligence-tools/).
 
 ## The 150+ Command Universe
 
@@ -64,7 +64,7 @@ Results are grouped by category (Navigate, Layers, Panels, View, Actions, Countr
 
 ## Multilingual Search
 
-With [21 languages supported](/blog/posts/worldmonitor-in-21-languages-global-intelligence-for-everyone/), the command palette adapts to your locale. Country names and common commands are searchable in:
+With [21 languages supported](/blog/posts/ivee-in-21-languages-global-intelligence-for-everyone/), the command palette adapts to your locale. Country names and common commands are searchable in:
 
 English, French, German, Spanish, Italian, Portuguese, Dutch, Swedish, Polish, Czech, Romanian, Bulgarian, Greek, Russian, Turkish, Arabic, Chinese (Simplified), Japanese, Korean, Thai, Vietnamese
 
@@ -126,7 +126,7 @@ The command palette is panel-aware. When you have specific panels open, related 
 3. Cmd+K → "prediction" → Enter (Polymarket)
 4. Cmd+K → "commodity" → Enter (price panel)
 
-The command palette turns World Monitor from a visual dashboard into a queryable intelligence system. Ask it anything, get there instantly. Explore the [five dashboard variants](/blog/posts/five-dashboards-one-platform-worldmonitor-variants/) to see how the palette adapts to different operational contexts.
+The command palette turns World Monitor from a visual dashboard into a queryable intelligence system. Ask it anything, get there instantly. Explore the [five dashboard variants](/blog/posts/five-dashboards-one-platform-ivee-variants/) to see how the palette adapts to different operational contexts.
 
 ## Why It Matters
 
@@ -147,4 +147,4 @@ The palette is context-aware: it ranks results based on your currently active pa
 
 ---
 
-**Try it now: open [worldmonitor.app](https://worldmonitor.app) and press Cmd+K. Your intelligence is one search away.**
+**Try it now: open [ivee.app](https://ivee.app) and press Cmd+K. Your intelligence is one search away.**

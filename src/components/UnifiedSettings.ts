@@ -362,11 +362,11 @@ export class UnifiedSettings {
   private handleUpgradeClick(): void {
     this.close();
     if (this.config.isDesktopApp) {
-      window.open('https://worldmonitor.app/pro', '_blank');
+      window.open('https://ivee.app/pro', '_blank');
       return;
     }
     import('@/services/checkout').then(m => import('@/config/products').then(p => m.startCheckout(p.DEFAULT_UPGRADE_PRODUCT))).catch(() => {
-      window.open('https://worldmonitor.app/pro', '_blank');
+      window.open('https://ivee.app/pro', '_blank');
     });
   }
 

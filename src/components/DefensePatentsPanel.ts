@@ -2,8 +2,8 @@ import { Panel } from './Panel';
 import { getRpcBaseUrl } from '@/services/rpc-client';
 import { h, replaceChildren } from '@/utils/dom-utils';
 import { sanitizeUrl } from '@/utils/sanitize';
-import { MilitaryServiceClient } from '@/generated/client/worldmonitor/military/v1/service_client';
-import type { DefensePatentFiling } from '@/generated/client/worldmonitor/military/v1/service_client';
+import { MilitaryServiceClient } from '@/generated/client/ivee/military/v1/service_client';
+import type { DefensePatentFiling } from '@/generated/client/ivee/military/v1/service_client';
 
 type ViewMode = 'all' | 'H04B' | 'H01L' | 'F42B' | 'G06N' | 'C12N';
 
