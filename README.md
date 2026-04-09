@@ -1,77 +1,28 @@
-# Ivee
+# Ivee - AVE Claw Hackathon
 
-**Real-time global intelligence dashboard** — AI-powered news aggregation, geopolitical monitoring, and infrastructure tracking in a unified situational awareness interface.
+**Real-time crypto trading intelligence dashboard** — whale alerts, trading signals, portfolio tracking, and risk scanning powered by AVE Skills API.
 
-[![GitHub stars](https://img.shields.io/github/stars/koala73/ivee?style=social)](https://github.com/koala73/ivee/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/koala73/ivee?style=social)](https://github.com/koala73/ivee/network/members)
-[![Discord](https://img.shields.io/badge/Discord-Join-5865F2?style=flat&logo=discord&logoColor=white)](https://discord.gg/re63kWKxaz)
-[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+Built for the [AVE Claw Hackathon](https://clawhackathon.aveai.trade/) — Complete Application Track.
+
+[![GitHub stars](https://img.shields.io/github/stars/maulana-tech/ivee-app?style=social)](https://github.com/maulana-tech/ivee-app/stargazers)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Last commit](https://img.shields.io/github/last-commit/koala73/ivee)](https://github.com/koala73/ivee/commits/main)
-[![Latest release](https://img.shields.io/github/v/release/koala73/ivee?style=flat)](https://github.com/koala73/ivee/releases/latest)
-
-<p align="center">
-  <a href="https://ivee.app"><img src="https://img.shields.io/badge/Web_App-ivee.app-blue?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Web App"></a>&nbsp;
-  <a href="https://tech.ivee.app"><img src="https://img.shields.io/badge/Tech_Variant-tech.ivee.app-0891b2?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Tech Variant"></a>&nbsp;
-  <a href="https://finance.ivee.app"><img src="https://img.shields.io/badge/Finance_Variant-finance.ivee.app-059669?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Finance Variant"></a>&nbsp;
-  <a href="https://commodity.ivee.app"><img src="https://img.shields.io/badge/Commodity_Variant-commodity.ivee.app-b45309?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Commodity Variant"></a>&nbsp;
-  <a href="https://happy.ivee.app"><img src="https://img.shields.io/badge/Happy_Variant-happy.ivee.app-f59e0b?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Happy Variant"></a>
-</p>
-
-<p align="center">
-  <a href="https://ivee.app/api/download?platform=windows-exe"><img src="https://img.shields.io/badge/Download-Windows_(.exe)-0078D4?style=for-the-badge&logo=windows&logoColor=white" alt="Download Windows"></a>&nbsp;
-  <a href="https://ivee.app/api/download?platform=macos-arm64"><img src="https://img.shields.io/badge/Download-macOS_Apple_Silicon-000000?style=for-the-badge&logo=apple&logoColor=white" alt="Download macOS ARM"></a>&nbsp;
-  <a href="https://ivee.app/api/download?platform=macos-x64"><img src="https://img.shields.io/badge/Download-macOS_Intel-555555?style=for-the-badge&logo=apple&logoColor=white" alt="Download macOS Intel"></a>&nbsp;
-  <a href="https://ivee.app/api/download?platform=linux-appimage"><img src="https://img.shields.io/badge/Download-Linux_(.AppImage)-FCC624?style=for-the-badge&logo=linux&logoColor=black" alt="Download Linux"></a>
-</p>
-
-<p align="center">
-  <a href="https://www.ivee.app/docs/documentation"><strong>Documentation</strong></a> &nbsp;·&nbsp;
-  <a href="https://github.com/koala73/ivee/releases/latest"><strong>Releases</strong></a> &nbsp;·&nbsp;
-  <a href="https://www.ivee.app/docs/contributing"><strong>Contributing</strong></a>
-</p>
-
-![World Monitor Dashboard](docs/images/ivee-7-mar-2026.jpg)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ---
 
-## What It Does
+## Features
 
-- **435+ curated news feeds** across 15 categories, AI-synthesized into briefs
-- **Dual map engine** — 3D globe (globe.gl) and WebGL flat map (deck.gl) with 45 data layers
-- **Cross-stream correlation** — military, economic, disaster, and escalation signal convergence
-- **Country Intelligence Index** — composite risk scoring across 12 signal categories
-- **Finance radar** — 92 stock exchanges, commodities, crypto, and 7-signal market composite
-- **Local AI** — run everything with Ollama, no API keys required
-- **5 site variants** from a single codebase (world, tech, finance, commodity, happy)
-- **Native desktop app** (Tauri 2) for macOS, Windows, and Linux
-- **21 languages** with native-language feeds and RTL support
+### Trading Intelligence
+- **Whale Alert Panel** — Real-time large transaction monitoring on Base chain
+- **Trading Signals Panel** — AI-powered buy/sell signals with confidence scores
+- **Portfolio Panel** — Holdings tracking and P&L calculation
+- **Risk Scanner Panel** — Token security and risk analysis
+- **Trending Panel** — Hot tokens and top gainers
 
-For the full feature list, architecture, data sources, and algorithms, see the **[documentation](https://www.ivee.app/docs/documentation)**.
-
----
-
-## Quick Start
-
-```bash
-git clone https://github.com/koala73/ivee.git
-cd ivee
-npm install
-npm run dev
-```
-
-Open [localhost:5173](http://localhost:5173). No environment variables required for basic operation.
-
-For variant-specific development:
-
-```bash
-npm run dev:tech       # tech.ivee.app
-npm run dev:finance    # finance.ivee.app
-npm run dev:commodity  # commodity.ivee.app
-npm run dev:happy      # happy.ivee.app
-```
-
-See the **[self-hosting guide](https://www.ivee.app/docs/getting-started)** for deployment options (Vercel, Docker, static).
+### Technology
+- **130+ chains** supported via AVE Cloud API
+- **Real-time monitoring** with circuit breaker pattern
+- **Testnet trading** via AVE Trading API (Chain Wallet)
 
 ---
 
@@ -79,89 +30,92 @@ See the **[self-hosting guide](https://www.ivee.app/docs/getting-started)** for 
 
 | Category | Technologies |
 |----------|-------------|
-| **Frontend** | Vanilla TypeScript, Vite, globe.gl + Three.js, deck.gl + MapLibre GL |
-| **Desktop** | Tauri 2 (Rust) with Node.js sidecar |
-| **AI/ML** | Ollama / Groq / OpenRouter, Transformers.js (browser-side) |
-| **API Contracts** | Protocol Buffers (92 protos, 22 services), sebuf HTTP annotations |
-| **Deployment** | Vercel Edge Functions (60+), Railway relay, Tauri, PWA |
-| **Caching** | Redis (Upstash), 3-tier cache, CDN, service worker |
-
-Full stack details in the **[architecture docs](https://www.ivee.app/docs/architecture)**.
+| **Frontend** | TypeScript, Vite, Preact |
+| **Crypto API** | [AVE Cloud API](https://cloud.ave.ai), [AVE Trading API](https://docs.aveai.trade/) |
+| **Architecture** | Panel-based SPA with circuit breakers |
 
 ---
 
-## Flight Data
+## Getting Started
 
-Flight data provided gracefully by [Wingbits](https://wingbits.com?utm_source=ivee&utm_medium=referral&utm_campaign=ivee), the most advanced ADS-B flight data solution.
+### 1. Get AVE API Keys
 
----
+Register at [AVE Cloud](https://cloud.ave.ai/register) for free tier access.
 
-## Data Sources
-
-Ivee aggregates 65+ external data sources across geopolitics, finance, energy, climate, aviation, cyber, military, infrastructure, and news intelligence. See the full [data sources catalog](https://www.ivee.app/docs/data-sources) for providers, feed tiers, and collection methods.
-
----
-
-## Contributing
-
-Contributions welcome! See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
+### 2. Configure Environment
 
 ```bash
-npm run typecheck        # Type checking
-npm run build:full       # Production build
+cp .env.example .env.local
+# Add your AVE_API_KEY
 ```
+
+### 3. Run Development Server
+
+```bash
+npm install
+npm run dev
+```
+
+### 4. Run Crypto Variant
+
+```bash
+VITE_VARIANT=crypto npm run dev
+```
+
+---
+
+## Project Structure
+
+```
+src/
+├── components/ave/     # Crypto trading panels
+│   ├── WhaleAlertPanel.ts
+│   ├── SignalsPanel.ts
+│   ├── PortfolioPanel.ts
+│   ├── RiskScannerPanel.ts
+│   └── TrendingPanel.ts
+├── services/ave/      # AVE API integration
+│   ├── client.ts
+│   ├── monitor.ts
+│   ├── signals.ts
+│   └── portfolio.ts
+└── config/            # Variant configs
+```
+
+---
+
+## API Reference
+
+### AVE Cloud API Endpoints
+
+| Endpoint | Description |
+|----------|-------------|
+| `GET /v1/token/transfers` | Large transactions (whale alerts) |
+| `GET /v1/token/trending` | Trending tokens |
+| `GET /v1/defi/risk-score` | Token risk analysis |
+
+### AVE Trading API
+
+Wallet-based trading on 130+ chains. See [docs](https://docs.aveai.trade/).
+
+---
+
+## Hackathon Submission
+
+- **Track**: Complete Application
+- **Demo**: [Video](https://clowf.es) (max 5 min)
+- **Deadline**: April 15, 2026
 
 ---
 
 ## License
 
-**AGPL-3.0** for non-commercial use. **Commercial license** required for any commercial use.
-
-| Use Case | Allowed? |
-|----------|----------|
-| Personal / research / educational | Yes |
-| Self-hosted (non-commercial) | Yes, with attribution |
-| Fork and modify (non-commercial) | Yes, share source under AGPL-3.0 |
-| Commercial use / SaaS / rebranding | Requires commercial license |
-
-See [LICENSE](LICENSE) for full terms. For commercial licensing, contact the maintainer.
-
-Copyright (C) 2024-2026 Elie Habib. All rights reserved.
-
----
-
-## Author
-
-**Elie Habib** — [GitHub](https://github.com/koala73)
-
-## Contributors
-
-<a href="https://github.com/koala73/ivee/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=koala73/ivee" />
-</a>
-
-## Security Acknowledgments
-
-We thank the following researchers for responsibly disclosing security issues:
-
-- **Cody Richard** — Disclosed three security findings covering IPC command exposure, renderer-to-sidecar trust boundary analysis, and fetch patch credential injection architecture (2026)
-
-See our [Security Policy](./SECURITY.md) for responsible disclosure guidelines.
+**MIT License** — Free for personal and commercial use.
 
 ---
 
 <p align="center">
-  <a href="https://ivee.app">ivee.app</a> &nbsp;·&nbsp;
-  <a href="https://www.ivee.app/docs/documentation">docs.ivee.app</a> &nbsp;·&nbsp;
-  <a href="https://finance.ivee.app">finance.ivee.app</a> &nbsp;·&nbsp;
-  <a href="https://commodity.ivee.app">commodity.ivee.app</a>
+  <a href="https://cloud.ave.ai"><strong>AVE Cloud</strong></a> &nbsp;·&nbsp;
+  <a href="https://docs.aveai.trade"><strong>Trading API</strong></a> &nbsp;·&nbsp;
+  <a href="https://clawhackathon.aveai.trade"><strong>Hackathon</strong></a>
 </p>
-
-## Star History
-
-<a href="https://api.star-history.com/svg?repos=koala73/ivee&type=Date">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=koala73/ivee&type=Date&type=Date&theme=dark" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=koala73/ivee&type=Date&type=Date" />
- </picture>
-</a>
