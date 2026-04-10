@@ -1,0 +1,1 @@
+export const createMilitaryServiceRoutes = (handler: any, options: any) => [];

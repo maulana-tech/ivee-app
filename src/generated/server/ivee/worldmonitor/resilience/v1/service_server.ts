@@ -1,0 +1,1 @@
+export const createResilienceServiceRoutes = (handler: any, options: any) => [];

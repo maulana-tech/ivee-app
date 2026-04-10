@@ -1,0 +1,1 @@
+export const createMaritimeServiceRoutes = (handler: any, options: any) => [];

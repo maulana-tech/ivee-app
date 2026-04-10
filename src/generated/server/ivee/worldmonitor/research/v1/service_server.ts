@@ -1,0 +1,1 @@
+export const createResearchServiceRoutes = (handler: any, options: any) => [];

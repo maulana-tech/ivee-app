@@ -1,0 +1,1 @@
+export const createAviationServiceRoutes = (handler: any, options: any) => [];
