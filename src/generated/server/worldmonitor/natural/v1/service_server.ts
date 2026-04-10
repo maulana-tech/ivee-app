@@ -1,1 +1,0 @@
-export const createNaturalServiceRoutes = (handler: any, options: any) => [];
