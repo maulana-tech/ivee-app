@@ -1,0 +1,1 @@
+export const resilienceHandler = async () => new Response('Not implemented', { status: 501 });
