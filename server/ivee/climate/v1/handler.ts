@@ -1,0 +1,1 @@
+export const climateHandler = async () => new Response('Not implemented', { status: 501 });
