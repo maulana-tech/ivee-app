@@ -86,66 +86,14 @@ export class CountryIntelManager implements AppModule {
   }
 
   private setupCountryIntel(): void {
-    if (!this.ctx.map) return;
-    this.ctx.countryBriefPage = new CountryDeepDivePanel(this.ctx.map);
-    this.ctx.countryBriefPage.setShareStoryHandler((code, name) => {
-      this.ctx.countryBriefPage?.hide();
-      this.openCountryStory(code, name);
-    });
-    this.ctx.countryBriefPage.setExportImageHandler(async (code, name) => {
-      try {
-        const signals = this.getCountrySignals(code, name);
-        const cluster = signalAggregator.getCountryClusters().find(c => c.country === code);
-        const regional = signalAggregator.getRegionalConvergence().filter(r => r.countries.includes(code));
-        const convergence = cluster ? {
-          score: cluster.convergenceScore,
-          signalTypes: [...cluster.signalTypes],
-          regionalDescriptions: regional.map(r => r.description),
-        } : null;
-        const posturePanel = this.ctx.panels['strategic-posture'] as StrategicPosturePanel | undefined;
-        const postures = posturePanel?.getPostures() || [];
-        const data = collectStoryData(code, name, this.ctx.latestClusters, postures, this.ctx.latestPredictions, signals, convergence);
-        const canvas = await renderStoryToCanvas(data);
-        const dataUrl = canvas.toDataURL('image/png');
-        const a = document.createElement('a');
-        a.href = dataUrl;
-        a.download = `country-brief-${code.toLowerCase()}-${Date.now()}.png`;
-        a.click();
-      } catch (err) {
-        console.error('[CountryBrief] Image export failed:', err);
-      }
-    });
-
-    this.ctx.map.onCountryClicked(async (countryClick) => {
-      if (countryClick.code && countryClick.name) {
-        trackCountrySelected(countryClick.code, countryClick.name, 'map');
-        this.openCountryBriefByCode(countryClick.code, countryClick.name);
-      } else {
-        this.openCountryBrief(countryClick.lat, countryClick.lon);
-      }
-    });
-
-    this.ctx.map.onMapContextMenu((payload) => {
-      const items = [];
-      if (payload.countryCode && payload.countryName) {
-        items.push({ label: t('contextMenu.openCountryBrief'), action: () => this.openCountryBriefByCode(payload.countryCode!, payload.countryName!) });
-      } else {
-        items.push({ label: t('contextMenu.openCountryBrief'), action: () => this.openCountryBrief(payload.lat, payload.lon) });
-      }
-      items.push({ label: t('contextMenu.copyCoordinates'), action: () => navigator.clipboard.writeText(`${payload.lat.toFixed(5)}, ${payload.lon.toFixed(5)}`).catch(() => {}) });
-      showMapContextMenu(payload.screenX, payload.screenY, items);
-    });
-
-    this.ctx.countryBriefPage.onClose(() => {
-      this.briefRequestToken++;
-      this.ctx.map?.clearCountryHighlight();
-      this.ctx.map?.setRenderPaused(false);
-      this.ctx.countryTimeline?.destroy();
-      this.ctx.countryTimeline = null;
-    });
+    // CountryDeepDivePanel disabled for crypto hackathon
   }
 
-  async openCountryBrief(lat: number, lon: number): Promise<void> {
+  private getCountrySignals(code: string, name: string): any {
+    return {};
+  }
+
+async openCountryBrief(lat: number, lon: number): Promise<void> {
     if (!this.ctx.countryBriefPage) return;
     const token = ++this.briefRequestToken;
     this.ctx.countryBriefPage.showLoading();
