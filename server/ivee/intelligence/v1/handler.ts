@@ -1,0 +1,1 @@
+export const intelligenceHandler = async () => new Response('Not implemented', { status: 501 });
