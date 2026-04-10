@@ -1,1 +1,0 @@
-export const createGivingServiceRoutes = (handler: any, options: any) => [];
