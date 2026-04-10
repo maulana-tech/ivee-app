@@ -1,0 +1,1 @@
+export const infrastructureHandler = async () => new Response('Not implemented', { status: 501 });
