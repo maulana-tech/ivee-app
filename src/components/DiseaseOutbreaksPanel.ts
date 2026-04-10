@@ -1,6 +1,6 @@
 import { Panel } from './Panel';
-export class STUBPanel extends Panel {
+export class DiseaseOutbreaksPanel extends Panel {
   constructor() {
-    super({ id: 'stub', title: 'Stub' });
+    super({ id: 'disease-outbreaks', title: 'DiseaseOutbreaks' });
   }
 }
