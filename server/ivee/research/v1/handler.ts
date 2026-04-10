@@ -1,0 +1,1 @@
+export const researchHandler = async () => new Response('Not implemented', { status: 501 });
