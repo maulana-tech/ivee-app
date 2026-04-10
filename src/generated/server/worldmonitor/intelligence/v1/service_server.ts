@@ -1,1 +1,0 @@
-export const createIntelligenceServiceRoutes = (handler: any, options: any) => [];
