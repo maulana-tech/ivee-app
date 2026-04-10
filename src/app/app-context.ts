@@ -4,8 +4,6 @@ import type { SanctionsPressureResult } from '@/services/sanctions-pressure';
 import type { RadiationWatchResult } from '@/services/radiation';
 import type { SecurityAdvisory } from '@/services/security-advisories';
 import type { Earthquake } from '@/services/earthquakes';
-import type { IranEvent } from '@/generated/client/ivee/conflict/v1/service_client';
-
 export type { CountryBriefSignals } from '@/types';
 
 export interface IntelligenceCache {
@@ -18,15 +16,6 @@ export interface IntelligenceCache {
   earthquakes?: Earthquake[];
   usniFleet?: USNIFleetReport;
   orefAlerts?: { alertCount: number; historyCount24h: number };
-  countryBriefPage: any;
-  correlationEngine: any;
-  statusPanel: any;
-  progressPanel: any;
-  breakthroughsPanel: any;
-  heroPanel: any;
-  digestPanel: any;
-  speciesPanel: any;
-  renewablePanel: any;
   advisories?: SecurityAdvisory[];
   sanctions?: SanctionsPressureResult;
   radiation?: RadiationWatchResult;
