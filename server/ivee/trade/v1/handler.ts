@@ -1,0 +1,1 @@
+export const tradeHandler = async () => new Response('Not implemented', { status: 501 });
