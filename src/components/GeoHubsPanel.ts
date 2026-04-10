@@ -1,6 +1,6 @@
 import { Panel } from './Panel';
-export class STUBPanel extends Panel {
+export class GeoHubsPanel extends Panel {
   constructor() {
-    super({ id: 'stub', title: 'Stub' });
+    super({ id: 'geo-hubs', title: 'GeoHubs' });
   }
 }
