@@ -2,12 +2,7 @@ import type { AppContext, AppModule, CountryBriefSignals } from '@/app/app-conte
 import { getRpcBaseUrl } from '@/services/rpc-client';
 import type { TimelineEvent } from '@/components/CountryTimeline';
 import { CountryTimeline } from '@/components/CountryTimeline';
-import type {
-  CountryDeepDiveEconomicIndicator,
-  CountryDeepDiveMilitarySummary,
-  CountryDeepDiveSignalDetails,
-} from '@/components/CountryBriefPanel';
-import { CountryDeepDivePanel } from '@/components/CountryDeepDivePanel';
+// CountryBriefPanel and CountryDeepDivePanel archived for hackathon
 import { reverseGeocode } from '@/utils/reverse-geocode';
 import {
   getCountryAtCoordinates,
