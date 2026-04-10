@@ -913,9 +913,8 @@ export class EventHandlerManager implements AppModule {
     trackVariantSwitch(SITE_VARIANT, variant);
     await this.exitFullscreenForNavigation();
 
+    // Variant switching disabled: SITE_VARIANT is hardcoded to 'crypto' and App.ts forces crypto reset on every load.
     if (this.ctx.isDesktopApp || options.isLocalDev) {
-      localStorage.setItem('ivee-variant', variant);
-      window.location.reload();
       return;
     }
 
