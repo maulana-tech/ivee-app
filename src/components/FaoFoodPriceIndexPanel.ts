@@ -1,6 +1,6 @@
 import { Panel } from './Panel';
-export class STUBPanel extends Panel {
+export class FaoFoodPriceIndexPanel extends Panel {
   constructor() {
-    super({ id: 'stub', title: 'Stub' });
+    super({ id: 'fao-food-price-index', title: 'FaoFoodPriceIndex' });
   }
 }
