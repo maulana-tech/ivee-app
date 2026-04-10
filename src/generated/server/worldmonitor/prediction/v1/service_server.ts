@@ -1,1 +1,0 @@
-export const createPredictionServiceRoutes = (handler: any, options: any) => [];
