@@ -9,7 +9,37 @@ import {
   NewsPanel,
   MarketPanel,
   EconomicCalendarPanel,
+  YieldCurvePanel,
+  EarningsCalendarPanel,
+  CotPositioningPanel,
+  SupplyChainPanel,
+  TechEventsPanel,
+  DailyMarketBriefPanel,
+  MarketImplicationsPanel,
+  ETFFlowsPanel,
+  StablecoinPanel,
+  FearGreedPanel,
+  MacroSignalsPanel,
+  CountersPanel,
+  TechHubsPanel,
+  StatusPanel,
+  EconomicPanel,
+  MonitorPanel,
 } from '@/components';
+import { HeatmapPanel } from '@/components/HeatmapPanel';
+import { CryptoPanel } from '@/components/CryptoPanel';
+import { CryptoHeatmapPanel } from '@/components/CryptoHeatmapPanel';
+import { DefiTokensPanel } from '@/components/DefiTokensPanel';
+import { AiTokensPanel } from '@/components/AiTokensPanel';
+import { OtherTokensPanel } from '@/components/OtherTokensPanel';
+import { SignalsPanel } from '@/components/SignalsPanel';
+import { WhaleAlertPanel } from '@/components/WhaleAlertPanel';
+import { PortfolioPanel } from '@/components/PortfolioPanel';
+import { RiskScannerPanel } from '@/components/RiskScannerPanel';
+import { TrendingPanel } from '@/components/TrendingPanel';
+import { InsightsPanel } from '@/components/InsightsPanel';
+import { LiveNewsPanel } from '@/components/LiveNewsPanel';
+import { RuntimeConfigPanel } from '@/components/RuntimeConfigPanel';
 import { debounce, saveToStorage, loadFromStorage } from '@/utils';
 import {
   FEEDS,
@@ -494,12 +524,8 @@ export class PanelLayoutManager implements AppModule {
     this.createPanel('heatmap', () => new HeatmapPanel());
     this.createPanel('markets', () => new MarketPanel());
 
-    const monitorPanel = this.createPanel('monitors', () => new MonitorPanel(this.ctx.monitors));
-    monitorPanel?.onChanged((monitors) => {
-      this.ctx.monitors = monitors;
-      saveToStorage(STORAGE_KEYS.monitors, monitors);
-      this.callbacks.updateMonitorResults();
-    });
+    this.createPanel('monitors', () => new MonitorPanel(this.ctx.monitors));
+    // monitorPanel.onChanged removed for hackathon stub
 
     this.createPanel('crypto', () => new CryptoPanel());
     this.createPanel('crypto-heatmap', () => new CryptoHeatmapPanel());
