@@ -1,0 +1,1 @@
+export const newsHandler = async () => new Response('Not implemented', { status: 501 });
