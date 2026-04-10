@@ -25,24 +25,6 @@ import { loadFromStorage, parseMapUrlState, saveToStorage, isMobileDevice } from
 import type { ParsedMapUrlState } from '@/utils';
 import { SignalModal, IntelligenceGapBadge, BreakingNewsBanner } from '@/components';
 import { initBreakingNewsAlerts, destroyBreakingNewsAlerts } from '@/services/breaking-news-alerts';
-import type { ServiceStatusPanel } from '@/components/ServiceStatusPanel';
-import type { StablecoinPanel } from '@/components/StablecoinPanel';
-import type { ETFFlowsPanel } from '@/components/ETFFlowsPanel';
-import type { MacroSignalsPanel } from '@/components/MacroSignalsPanel';
-import type { FearGreedPanel } from '@/components/FearGreedPanel';
-import type { HormuzPanel } from '@/components/HormuzPanel';
-import type { StrategicPosturePanel } from '@/components/StrategicPosturePanel';
-import type { StrategicRiskPanel } from '@/components/StrategicRiskPanel';
-import type { GulfEconomiesPanel } from '@/components/GulfEconomiesPanel';
-import type { GroceryBasketPanel } from '@/components/GroceryBasketPanel';
-import type { BigMacPanel } from '@/components/BigMacPanel';
-import type { FuelPricesPanel } from '@/components/FuelPricesPanel';
-import type { FaoFoodPriceIndexPanel } from '@/components/FaoFoodPriceIndexPanel';
-import type { ClimateNewsPanel } from '@/components/ClimateNewsPanel';
-import type { ConsumerPricesPanel } from '@/components/ConsumerPricesPanel';
-import type { DefensePatentsPanel } from '@/components/DefensePatentsPanel';
-import type { MacroTilesPanel } from '@/components/MacroTilesPanel';
-import type { FSIPanel } from '@/components/FSIPanel';
 import type { YieldCurvePanel } from '@/components/YieldCurvePanel';
 import type { EarningsCalendarPanel } from '@/components/EarningsCalendarPanel';
 import type { EconomicCalendarPanel } from '@/components/EconomicCalendarPanel';
@@ -79,7 +61,6 @@ import {
   economicAdapter,
   disasterAdapter,
 } from '@/services/correlation-engine';
-import type { CorrelationPanel } from '@/components/CorrelationPanel';
 
 const CYBER_LAYER_ENABLED = import.meta.env.VITE_ENABLE_CYBER_LAYER === 'true';
 
@@ -133,10 +114,6 @@ export class App {
 
   private shouldRefreshFirms(): boolean {
     return this.isPanelNearViewport('satellite-fires');
-  }
-
-  private shouldRefreshCorrelation(): boolean {
-    return this.isAnyPanelNearViewport(['military-correlation', 'escalation-correlation', 'economic-correlation', 'disaster-correlation']);
   }
 
   private getCachedBootstrapUpdatedAt(): number | null {
@@ -246,73 +223,6 @@ export class App {
     const shouldPrime = (id: string): boolean => forceAll || this.isPanelNearViewport(id);
     const shouldPrimeAny = (ids: string[]): boolean => forceAll || this.isAnyPanelNearViewport(ids);
 
-    if (shouldPrime('service-status')) {
-      const panel = this.state.panels['service-status'] as ServiceStatusPanel | undefined;
-      if (panel) primeTask('service-status', () => panel.fetchStatus());
-    }
-    if (shouldPrime('macro-signals')) {
-      const panel = this.state.panels['macro-signals'] as MacroSignalsPanel | undefined;
-      if (panel) primeTask('macro-signals', () => panel.fetchData());
-    }
-    if (shouldPrime('fear-greed')) {
-      const panel = this.state.panels['fear-greed'] as FearGreedPanel | undefined;
-      if (panel) primeTask('fear-greed', () => panel.fetchData());
-    }
-    if (shouldPrime('hormuz-tracker')) {
-      const panel = this.state.panels['hormuz-tracker'] as HormuzPanel | undefined;
-      if (panel) primeTask('hormuz-tracker', () => panel.fetchData());
-    }
-    if (shouldPrime('etf-flows')) {
-      const panel = this.state.panels['etf-flows'] as ETFFlowsPanel | undefined;
-      if (panel) primeTask('etf-flows', () => panel.fetchData());
-    }
-    if (shouldPrime('stablecoins')) {
-      const panel = this.state.panels.stablecoins as StablecoinPanel | undefined;
-      if (panel) primeTask('stablecoins', () => panel.fetchData());
-    }
-    if (shouldPrime('telegram-intel')) {
-      primeTask('telegram-intel', () => this.dataLoader.loadTelegramIntel());
-    }
-    if (shouldPrime('gulf-economies')) {
-      const panel = this.state.panels['gulf-economies'] as GulfEconomiesPanel | undefined;
-      if (panel) primeTask('gulf-economies', () => panel.fetchData());
-    }
-    if (shouldPrime('grocery-basket')) {
-      const panel = this.state.panels['grocery-basket'] as GroceryBasketPanel | undefined;
-      if (panel) primeTask('grocery-basket', () => panel.fetchData());
-    }
-    if (shouldPrime('bigmac')) {
-      const panel = this.state.panels['bigmac'] as BigMacPanel | undefined;
-      if (panel) primeTask('bigmac', () => panel.fetchData());
-    }
-    if (shouldPrime('fuel-prices')) {
-      const panel = this.state.panels['fuel-prices'] as FuelPricesPanel | undefined;
-      if (panel) primeTask('fuel-prices', () => panel.fetchData());
-    }
-    if (shouldPrime('fao-food-price-index')) {
-      const panel = this.state.panels['fao-food-price-index'] as FaoFoodPriceIndexPanel | undefined;
-      if (panel) primeTask('fao-food-price-index', () => panel.fetchData());
-    }
-    if (shouldPrime('climate-news')) {
-      const panel = this.state.panels['climate-news'] as ClimateNewsPanel | undefined;
-      if (panel) primeTask('climate-news', () => panel.fetchData());
-    }
-    if (shouldPrime('consumer-prices')) {
-      const panel = this.state.panels['consumer-prices'] as ConsumerPricesPanel | undefined;
-      if (panel) primeTask('consumer-prices', () => panel.fetchData());
-    }
-    if (shouldPrime('defense-patents')) {
-      const panel = this.state.panels['defense-patents'] as DefensePatentsPanel | undefined;
-      if (panel) primeTask('defense-patents', () => { panel.refresh(); return Promise.resolve(); });
-    }
-    if (shouldPrime('macro-tiles')) {
-      const panel = this.state.panels['macro-tiles'] as MacroTilesPanel | undefined;
-      if (panel) primeTask('macro-tiles', () => panel.fetchData());
-    }
-    if (shouldPrime('fsi')) {
-      const panel = this.state.panels['fsi'] as FSIPanel | undefined;
-      if (panel) primeTask('fsi', () => panel.fetchData());
-    }
     if (shouldPrime('yield-curve')) {
       const panel = this.state.panels['yield-curve'] as YieldCurvePanel | undefined;
       if (panel) primeTask('yield-curve', () => panel.fetchData());
@@ -1002,10 +912,7 @@ export class App {
     // Initial correlation engine run
     if (this.state.correlationEngine) {
       void this.state.correlationEngine.run(this.state).then(() => {
-        for (const domain of ['military', 'escalation', 'economic', 'disaster'] as const) {
-          const panel = this.state.panels[`${domain}-correlation`] as CorrelationPanel | undefined;
-          panel?.updateCards(this.state.correlationEngine!.getCards(domain));
-        }
+        // Correlation panels archived for hackathon
       });
     }
 
@@ -1227,62 +1134,6 @@ export class App {
       );
     }
 
-    // Panel-level refreshes (moved from panel constructors into scheduler for hidden-tab awareness + jitter)
-    this.refreshScheduler.scheduleRefresh(
-      'service-status',
-      () => (this.state.panels['service-status'] as ServiceStatusPanel).fetchStatus(),
-      REFRESH_INTERVALS.serviceStatus,
-      () => this.isPanelNearViewport('service-status')
-    );
-    this.refreshScheduler.scheduleRefresh(
-      'stablecoins',
-      () => (this.state.panels.stablecoins as StablecoinPanel).fetchData(),
-      REFRESH_INTERVALS.stablecoins,
-      () => this.isPanelNearViewport('stablecoins')
-    );
-    this.refreshScheduler.scheduleRefresh(
-      'etf-flows',
-      () => (this.state.panels['etf-flows'] as ETFFlowsPanel).fetchData(),
-      REFRESH_INTERVALS.etfFlows,
-      () => this.isPanelNearViewport('etf-flows')
-    );
-    this.refreshScheduler.scheduleRefresh(
-      'macro-signals',
-      () => (this.state.panels['macro-signals'] as MacroSignalsPanel).fetchData(),
-      REFRESH_INTERVALS.macroSignals,
-      () => this.isPanelNearViewport('macro-signals')
-    );
-    this.refreshScheduler.scheduleRefresh(
-      'defense-patents',
-      () => { (this.state.panels['defense-patents'] as DefensePatentsPanel).refresh(); return Promise.resolve(); },
-      REFRESH_INTERVALS.defensePatents,
-      () => this.isPanelNearViewport('defense-patents')
-    );
-    this.refreshScheduler.scheduleRefresh(
-      'fear-greed',
-      () => (this.state.panels['fear-greed'] as FearGreedPanel).fetchData(),
-      REFRESH_INTERVALS.fearGreed,
-      () => this.isPanelNearViewport('fear-greed')
-    );
-    this.refreshScheduler.scheduleRefresh(
-      'hormuz-tracker',
-      () => (this.state.panels['hormuz-tracker'] as HormuzPanel).fetchData(),
-      REFRESH_INTERVALS.hormuzTracker,
-      () => this.isPanelNearViewport('hormuz-tracker')
-    );
-    this.refreshScheduler.scheduleRefresh(
-      'strategic-posture',
-      () => (this.state.panels['strategic-posture'] as StrategicPosturePanel).refresh(),
-      REFRESH_INTERVALS.strategicPosture,
-      () => this.isPanelNearViewport('strategic-posture')
-    );
-    this.refreshScheduler.scheduleRefresh(
-      'strategic-risk',
-      () => (this.state.panels['strategic-risk'] as StrategicRiskPanel).refresh(),
-      REFRESH_INTERVALS.strategicRisk,
-      () => this.isPanelNearViewport('strategic-risk')
-    );
-
     // Server-side temporal anomalies (news + satellite_fires)
     if (SITE_VARIANT !== 'happy') {
       this.refreshScheduler.scheduleRefresh('temporalBaseline', () => this.dataLoader.refreshTemporalBaseline(), REFRESH_INTERVALS.temporalBaseline, () => this.shouldRefreshIntelligence());
@@ -1301,93 +1152,6 @@ export class App {
       () => this.isPanelNearViewport('cross-source-signals'),
     );
 
-    // Telegram Intel (near real-time, 60s refresh)
-    this.refreshScheduler.scheduleRefresh(
-      'telegram-intel',
-      () => this.dataLoader.loadTelegramIntel(),
-      REFRESH_INTERVALS.telegramIntel,
-      () => this.isPanelNearViewport('telegram-intel')
-    );
-
-    this.refreshScheduler.scheduleRefresh(
-      'gulf-economies',
-      () => (this.state.panels['gulf-economies'] as GulfEconomiesPanel).fetchData(),
-      REFRESH_INTERVALS.gulfEconomies,
-      () => this.isPanelNearViewport('gulf-economies')
-    );
-
-    this.refreshScheduler.scheduleRefresh(
-      'grocery-basket',
-      () => (this.state.panels['grocery-basket'] as GroceryBasketPanel).fetchData(),
-      REFRESH_INTERVALS.groceryBasket,
-      () => this.isPanelNearViewport('grocery-basket')
-    );
-
-    this.refreshScheduler.scheduleRefresh(
-      'bigmac',
-      () => (this.state.panels['bigmac'] as BigMacPanel).fetchData(),
-      REFRESH_INTERVALS.groceryBasket,
-      () => this.isPanelNearViewport('bigmac')
-    );
-
-    this.refreshScheduler.scheduleRefresh(
-      'fuel-prices',
-      () => (this.state.panels['fuel-prices'] as FuelPricesPanel).fetchData(),
-      REFRESH_INTERVALS.fuelPrices,
-      () => this.isPanelNearViewport('fuel-prices')
-    );
-
-    this.refreshScheduler.scheduleRefresh(
-      'fao-food-price-index',
-      () => (this.state.panels['fao-food-price-index'] as FaoFoodPriceIndexPanel).fetchData(),
-      REFRESH_INTERVALS.faoFoodPriceIndex,
-      () => this.isPanelNearViewport('fao-food-price-index')
-    );
-
-    this.refreshScheduler.scheduleRefresh(
-      'climate-news',
-      () => (this.state.panels['climate-news'] as ClimateNewsPanel).fetchData(),
-      REFRESH_INTERVALS.climateNews,
-      () => this.isPanelNearViewport('climate-news')
-    );
-
-    this.refreshScheduler.scheduleRefresh(
-      'macro-tiles',
-      () => (this.state.panels['macro-tiles'] as MacroTilesPanel).fetchData(),
-      REFRESH_INTERVALS.macroTiles,
-      () => this.isPanelNearViewport('macro-tiles')
-    );
-    this.refreshScheduler.scheduleRefresh(
-      'fsi',
-      () => (this.state.panels['fsi'] as FSIPanel).fetchData(),
-      REFRESH_INTERVALS.fsi,
-      () => this.isPanelNearViewport('fsi')
-    );
-    this.refreshScheduler.scheduleRefresh(
-      'yield-curve',
-      () => (this.state.panels['yield-curve'] as YieldCurvePanel).fetchData(),
-      REFRESH_INTERVALS.yieldCurve,
-      () => this.isPanelNearViewport('yield-curve')
-    );
-    this.refreshScheduler.scheduleRefresh(
-      'earnings-calendar',
-      () => (this.state.panels['earnings-calendar'] as EarningsCalendarPanel).fetchData(),
-      REFRESH_INTERVALS.earningsCalendar,
-      () => this.isPanelNearViewport('earnings-calendar')
-    );
-    this.refreshScheduler.scheduleRefresh(
-      'economic-calendar',
-      () => (this.state.panels['economic-calendar'] as EconomicCalendarPanel).fetchData(),
-      REFRESH_INTERVALS.economicCalendar,
-      () => this.isPanelNearViewport('economic-calendar')
-    );
-    this.refreshScheduler.scheduleRefresh(
-      'cot-positioning',
-      () => (this.state.panels['cot-positioning'] as CotPositioningPanel).fetchData(),
-      REFRESH_INTERVALS.cotPositioning,
-      () => this.isPanelNearViewport('cot-positioning')
-    );
-
     // Refresh intelligence signals for CII (geopolitical variant only)
     if (SITE_VARIANT === 'full') {
       this.refreshScheduler.scheduleRefresh('intelligence', () => {
@@ -1398,21 +1162,5 @@ export class App {
         return this.dataLoader.loadIntelligenceSignals();
       }, REFRESH_INTERVALS.intelligence, () => this.shouldRefreshIntelligence());
     }
-
-    // Correlation engine refresh
-    this.refreshScheduler.scheduleRefresh(
-      'correlation-engine',
-      async () => {
-        const engine = this.state.correlationEngine;
-        if (!engine) return;
-        await engine.run(this.state);
-        for (const domain of ['military', 'escalation', 'economic', 'disaster'] as const) {
-          const panel = this.state.panels[`${domain}-correlation`] as CorrelationPanel | undefined;
-          panel?.updateCards(engine.getCards(domain));
-        }
-      },
-      REFRESH_INTERVALS.correlationEngine,
-      () => this.shouldRefreshCorrelation(),
-    );
   }
 }
