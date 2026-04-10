@@ -1,0 +1,276 @@
+/**
+ * Unified market service module -- replaces legacy service:
+ *   - src/services/markets.ts (Finnhub + Yahoo + CoinGecko)
+ *
+ * All data now flows through the MarketServiceClient RPCs.
+ */
+import { getRpcBaseUrl } from '@/services/rpc-client';
+import { MarketServiceClient, } from '@/generated/client/ivee/market/v1/service_client';
+import { createCircuitBreaker } from '@/utils/circuit-breaker';
+import { getHydratedData } from '@/services/bootstrap';
+// ---- Client + Circuit Breakers ----
+const client = new MarketServiceClient(getRpcBaseUrl(), { fetch: (...args) => globalThis.fetch(...args) });
+const MARKET_QUOTES_CACHE_TTL_MS = 5 * 60 * 1000;
+const stockBreaker = createCircuitBreaker({ name: 'Market Quotes', cacheTtlMs: MARKET_QUOTES_CACHE_TTL_MS, persistCache: true });
+const commodityBreaker = createCircuitBreaker({ name: 'Commodity Quotes', cacheTtlMs: MARKET_QUOTES_CACHE_TTL_MS, persistCache: true });
+const sectorBreaker = createCircuitBreaker({ name: 'Sector Summary', cacheTtlMs: MARKET_QUOTES_CACHE_TTL_MS, persistCache: true });
+const cryptoBreaker = createCircuitBreaker({ name: 'Crypto Quotes', persistCache: true });
+const cryptoSectorsBreaker = createCircuitBreaker({ name: 'Crypto Sectors', persistCache: true });
+const defiBreaker = createCircuitBreaker({ name: 'DeFi Tokens', persistCache: true });
+const aiBreaker = createCircuitBreaker({ name: 'AI Tokens', persistCache: true });
+const otherBreaker = createCircuitBreaker({ name: 'Other Tokens', persistCache: true });
+const emptyStockFallback = { quotes: [], finnhubSkipped: false, skipReason: '', rateLimited: false };
+const emptyCommodityFallback = { quotes: [] };
+const emptySectorFallback = { sectors: [] };
+const emptyCryptoFallback = { quotes: [] };
+const emptyCryptoSectorsFallback = { sectors: [] };
+const emptyDefiTokensFallback = { tokens: [] };
+const emptyAiTokensFallback = { tokens: [] };
+const emptyOtherTokensFallback = { tokens: [] };
+// ---- Proto -> legacy adapters ----
+function toMarketData(proto, meta) {
+    return {
+        symbol: proto.symbol,
+        name: meta?.name || proto.name,
+        display: meta?.display || proto.display || proto.symbol,
+        price: proto.price != null ? proto.price : null,
+        change: proto.change ?? null,
+        sparkline: proto.sparkline.length > 0 ? proto.sparkline : undefined,
+    };
+}
+function toCryptoData(proto) {
+    return {
+        name: proto.name,
+        symbol: proto.symbol,
+        price: proto.price,
+        change: proto.change,
+        sparkline: proto.sparkline.length > 0 ? proto.sparkline : undefined,
+    };
+}
+// ========================================================================
+// Stocks -- replaces fetchMultipleStocks + fetchStockQuote
+// ========================================================================
+const lastSuccessfulByKey = new Map();
+function symbolSetKey(symbols) {
+    return [...new Set(symbols.map((symbol) => symbol.trim()))].sort().join(',');
+}
+export async function fetchMultipleStocks(symbols, options = {}) {
+    // Preserve exact requested symbols for cache keys and request payloads so
+    // case-distinct instruments do not collapse into one cache entry.
+    const symbolMetaMap = new Map();
+    // Case-insensitive fallback: maps UPPER(symbol) → first requested candidate.
+    // "First wins" is intentional — assumes case-variants are the same instrument
+    // (e.g. btc-usd / BTC-USD both refer to the same asset). When the backend
+    // normalizes casing (e.g. returns "Btc-Usd"), we still recover metadata
+    // rather than silently dropping it as the old null-sentinel approach did.
+    const uppercaseMetaMap = new Map();
+    for (const s of symbols) {
+        const trimmed = s.symbol.trim();
+        if (!symbolMetaMap.has(trimmed))
+            symbolMetaMap.set(trimmed, s);
+        const upper = trimmed.toUpperCase();
+        if (!uppercaseMetaMap.has(upper)) {
+            uppercaseMetaMap.set(upper, s);
+        }
+    }
+    const allSymbolStrings = [...symbolMetaMap.keys()];
+    const setKey = symbolSetKey(allSymbolStrings);
+    const resp = await stockBreaker.execute(async () => {
+        return client.listMarketQuotes({ symbols: allSymbolStrings });
+    }, emptyStockFallback, {
+        cacheKey: setKey,
+        shouldCache: (r) => r.quotes.length > 0,
+    });
+    const results = resp.quotes.map((q) => {
+        const trimmed = q.symbol.trim();
+        const meta = symbolMetaMap.get(trimmed) ?? uppercaseMetaMap.get(trimmed.toUpperCase()) ?? undefined;
+        return toMarketData(q, meta);
+    });
+    // Fire onBatch with whatever we got
+    if (results.length > 0) {
+        options.onBatch?.(results);
+    }
+    if (results.length > 0) {
+        lastSuccessfulByKey.set(setKey, results);
+    }
+    const data = results.length > 0 ? results : (lastSuccessfulByKey.get(setKey) || []);
+    return {
+        data,
+        skipped: resp.finnhubSkipped || undefined,
+        reason: resp.skipReason || undefined,
+        rateLimited: resp.rateLimited || undefined,
+    };
+}
+export async function fetchStockQuote(symbol, name, display) {
+    const result = await fetchMultipleStocks([{ symbol, name, display }]);
+    return result.data[0] || { symbol, name, display, price: null, change: null };
+}
+// ========================================================================
+// Commodities -- uses listCommodityQuotes (reads market:commodities-bootstrap:v1)
+// ========================================================================
+/** Pre-warm the commodity circuit-breaker cache from bootstrap hydration data.
+ *  Called from data-loader when bootstrap quotes are consumed so the SWR path
+ *  has stale data to serve if the first live RPC call fails. */
+export function warmCommodityCache(quotes) {
+    const symbols = quotes.quotes.map((q) => q.symbol);
+    const cacheKey = [...symbols].sort().join(',');
+    commodityBreaker.recordSuccess(quotes, cacheKey);
+}
+/** Pre-warm the sector circuit-breaker cache from bootstrap hydration data. */
+export function warmSectorCache(resp) {
+    sectorBreaker.recordSuccess(resp);
+}
+export async function fetchCommodityQuotes(commodities, options = {}) {
+    const symbols = commodities.map((c) => c.symbol);
+    const meta = new Map(commodities.map((c) => [c.symbol, c]));
+    const cacheKey = [...symbols].sort().join(',');
+    const resp = await commodityBreaker.execute(async () => {
+        return client.listCommodityQuotes({ symbols });
+    }, emptyCommodityFallback, {
+        cacheKey,
+        shouldCache: (r) => r.quotes.length > 0,
+    });
+    const results = resp.quotes.map((q) => {
+        const m = meta.get(q.symbol);
+        return {
+            symbol: q.symbol,
+            name: m?.name ?? q.name,
+            display: m?.display ?? q.display ?? q.symbol,
+            price: q.price,
+            change: q.change,
+            sparkline: q.sparkline?.length > 0 ? q.sparkline : undefined,
+        };
+    });
+    if (results.length > 0)
+        options.onBatch?.(results);
+    return { data: results };
+}
+// ========================================================================
+// Sectors -- uses getSectorSummary (reads market:sectors:v1)
+// ========================================================================
+export async function fetchSectors() {
+    return sectorBreaker.execute(async () => {
+        return client.getSectorSummary({ period: '' });
+    }, emptySectorFallback, {
+        shouldCache: (r) => r.sectors.length > 0,
+    });
+}
+// ========================================================================
+// Crypto -- replaces fetchCrypto
+// ========================================================================
+let lastSuccessfulCrypto = [];
+export async function fetchCrypto() {
+    const hydrated = getHydratedData('cryptoQuotes');
+    if (hydrated?.quotes?.length) {
+        const mapped = hydrated.quotes.map(toCryptoData).filter(c => c.price > 0);
+        if (mapped.length > 0) {
+            lastSuccessfulCrypto = mapped;
+            return mapped;
+        }
+    }
+    const resp = await cryptoBreaker.execute(async () => {
+        return client.listCryptoQuotes({ ids: [] }); // empty = all defaults
+    }, emptyCryptoFallback);
+    const results = resp.quotes
+        .map(toCryptoData)
+        .filter(c => c.price > 0);
+    if (results.length > 0) {
+        lastSuccessfulCrypto = results;
+        return results;
+    }
+    return lastSuccessfulCrypto;
+}
+// ========================================================================
+// Crypto Sectors
+// ========================================================================
+let lastSuccessfulSectors = [];
+export async function fetchCryptoSectors() {
+    const hydrated = getHydratedData('cryptoSectors');
+    if (hydrated?.sectors?.length) {
+        lastSuccessfulSectors = hydrated.sectors;
+        return hydrated.sectors;
+    }
+    const resp = await cryptoSectorsBreaker.execute(async () => {
+        return client.listCryptoSectors({});
+    }, emptyCryptoSectorsFallback);
+    if (resp.sectors.length > 0) {
+        lastSuccessfulSectors = resp.sectors;
+        return resp.sectors;
+    }
+    return lastSuccessfulSectors;
+}
+// ========================================================================
+// Token Panels (DeFi, AI, Other)
+// ========================================================================
+function toTokenData(q) {
+    // Bootstrap hydration delivers the raw seed shape ({change24h}) while the RPC
+    // handler normalises to the proto field name ({change}).  Handle both.
+    const raw = q;
+    return {
+        name: q.name,
+        symbol: q.symbol,
+        price: q.price ?? 0,
+        change24h: (raw.change ?? raw.change24h) ?? 0,
+        change7d: q.change7d ?? 0,
+    };
+}
+let lastSuccessfulDefi = [];
+let lastSuccessfulAi = [];
+let lastSuccessfulOther = [];
+export async function fetchDefiTokens() {
+    const hydrated = getHydratedData('defiTokens');
+    if (hydrated?.tokens?.length) {
+        const mapped = hydrated.tokens.map(toTokenData).filter(t => t.price > 0);
+        if (mapped.length > 0) {
+            lastSuccessfulDefi = mapped;
+            return mapped;
+        }
+    }
+    const resp = await defiBreaker.execute(async () => {
+        return client.listDefiTokens({});
+    }, emptyDefiTokensFallback);
+    const results = resp.tokens.map(toTokenData).filter(t => t.price > 0);
+    if (results.length > 0) {
+        lastSuccessfulDefi = results;
+        return results;
+    }
+    return lastSuccessfulDefi;
+}
+export async function fetchAiTokens() {
+    const hydrated = getHydratedData('aiTokens');
+    if (hydrated?.tokens?.length) {
+        const mapped = hydrated.tokens.map(toTokenData).filter(t => t.price > 0);
+        if (mapped.length > 0) {
+            lastSuccessfulAi = mapped;
+            return mapped;
+        }
+    }
+    const resp = await aiBreaker.execute(async () => {
+        return client.listAiTokens({});
+    }, emptyAiTokensFallback);
+    const results = resp.tokens.map(toTokenData).filter(t => t.price > 0);
+    if (results.length > 0) {
+        lastSuccessfulAi = results;
+        return results;
+    }
+    return lastSuccessfulAi;
+}
+export async function fetchOtherTokens() {
+    const hydrated = getHydratedData('otherTokens');
+    if (hydrated?.tokens?.length) {
+        const mapped = hydrated.tokens.map(toTokenData).filter(t => t.price > 0);
+        if (mapped.length > 0) {
+            lastSuccessfulOther = mapped;
+            return mapped;
+        }
+    }
+    const resp = await otherBreaker.execute(async () => {
+        return client.listOtherTokens({});
+    }, emptyOtherTokensFallback);
+    const results = resp.tokens.map(toTokenData).filter(t => t.price > 0);
+    if (results.length > 0) {
+        lastSuccessfulOther = results;
+        return results;
+    }
+    return lastSuccessfulOther;
+}
