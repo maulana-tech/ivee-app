@@ -20,6 +20,7 @@ export interface IntelligenceCache {
   sanctions?: SanctionsPressureResult;
   radiation?: RadiationWatchResult;
   imageryScenes?: Array<{ id: string; satellite: string; datetime: string; resolutionM: number; mode: string; geometryGeojson: string; previewUrl: string; assetUrl: string }>;
+  iranEvents?: import('@/services/conflict').IranEvent[];
 }
 
 export interface AppContext {
@@ -59,6 +60,8 @@ export interface AppContext {
   pizzintIndicator: import('@/components').PizzIntIndicator | null;
   llmStatusIndicator: import('@/components').LlmStatusIndicator | null;
   countryTimeline: import('@/components/CountryTimeline').CountryTimeline | null;
+  countryBriefPage: import('@/components/CountryBriefPanel').CountryBriefPanel | null;
+  correlationEngine: import('@/services/correlation-engine').CorrelationEngine | null;
 
   countersPanel: import('@/components/CountersPanel').CountersPanel | null;
   authModal: { open(): void; close(): void; destroy(): void } | null;
