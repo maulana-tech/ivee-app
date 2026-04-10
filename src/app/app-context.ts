@@ -1,10 +1,10 @@
 import type { InternetOutage, SocialUnrestEvent, MilitaryFlight, MilitaryFlightCluster, MilitaryVessel, MilitaryVesselCluster, USNIFleetReport, PanelConfig, MapLayers, NewsItem, MarketData, ClusteredEvent, CyberThreat, Monitor } from '@/types';
 import type { AirportDelayAlert, PositionSample } from '@/services/aviation';
-import type { IranEvent } from '@/generated/client/ivee/conflict/v1/service_client';
 import type { SanctionsPressureResult } from '@/services/sanctions-pressure';
 import type { RadiationWatchResult } from '@/services/radiation';
 import type { SecurityAdvisory } from '@/services/security-advisories';
 import type { Earthquake } from '@/services/earthquakes';
+import type { IranEvent } from '@/generated/client/ivee/conflict/v1/service_client';
 
 export type { CountryBriefSignals } from '@/types';
 
@@ -17,8 +17,16 @@ export interface IntelligenceCache {
   military?: { flights: MilitaryFlight[]; flightClusters: MilitaryFlightCluster[]; vessels: MilitaryVessel[]; vesselClusters: MilitaryVesselCluster[] };
   earthquakes?: Earthquake[];
   usniFleet?: USNIFleetReport;
-  iranEvents?: IranEvent[];
   orefAlerts?: { alertCount: number; historyCount24h: number };
+  countryBriefPage: any;
+  correlationEngine: any;
+  statusPanel: any;
+  progressPanel: any;
+  breakthroughsPanel: any;
+  heroPanel: any;
+  digestPanel: any;
+  speciesPanel: any;
+  renewablePanel: any;
   advisories?: SecurityAdvisory[];
   sanctions?: SanctionsPressureResult;
   radiation?: RadiationWatchResult;
@@ -53,7 +61,6 @@ export interface AppContext {
   monitors: Monitor[];
 
   signalModal: import('@/components').SignalModal | null;
-  statusPanel: import('@/components').StatusPanel | null;
   searchModal: import('@/components').SearchModal | null;
   findingsBadge: import('@/components').IntelligenceGapBadge | null;
   breakingBanner: import('@/components/BreakingNewsBanner').BreakingNewsBanner | null;
@@ -61,19 +68,10 @@ export interface AppContext {
   exportPanel: import('@/utils').ExportPanel | null;
   unifiedSettings: import('@/components/UnifiedSettings').UnifiedSettings | null;
   pizzintIndicator: import('@/components').PizzIntIndicator | null;
-  correlationEngine: import('@/services/correlation-engine').CorrelationEngine | null;
   llmStatusIndicator: import('@/components').LlmStatusIndicator | null;
-  countryBriefPage: import('@/components/CountryBriefPanel').CountryBriefPanel | null;
   countryTimeline: import('@/components/CountryTimeline').CountryTimeline | null;
 
-  positivePanel: import('@/components/PositiveNewsFeedPanel').PositiveNewsFeedPanel | null;
   countersPanel: import('@/components/CountersPanel').CountersPanel | null;
-  progressPanel: import('@/components/ProgressChartsPanel').ProgressChartsPanel | null;
-  breakthroughsPanel: import('@/components/BreakthroughsTickerPanel').BreakthroughsTickerPanel | null;
-  heroPanel: import('@/components/HeroSpotlightPanel').HeroSpotlightPanel | null;
-  digestPanel: import('@/components/GoodThingsDigestPanel').GoodThingsDigestPanel | null;
-  speciesPanel: import('@/components/SpeciesComebackPanel').SpeciesComebackPanel | null;
-  renewablePanel: import('@/components/RenewableEnergyPanel').RenewableEnergyPanel | null;
   authModal: { open(): void; close(): void; destroy(): void } | null;
   authHeaderWidget: import('@/components/AuthHeaderWidget').AuthHeaderWidget | null;
   tvMode: import('@/services/tv-mode').TvModeController | null;
