@@ -1,1 +1,0 @@
-export const economicHandler = async () => new Response('Not implemented', { status: 501 });
