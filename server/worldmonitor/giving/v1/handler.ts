@@ -1,1 +1,0 @@
-export const givingHandler = async () => new Response('Not implemented', { status: 501 });
