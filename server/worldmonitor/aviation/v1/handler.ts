@@ -1,0 +1,1 @@
+export const aviationHandler = async () => new Response('Not implemented', { status: 501 });

@@ -1,0 +1,1 @@
+export const unrestHandler = async () => new Response('Not implemented', { status: 501 });
