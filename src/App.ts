@@ -3,7 +3,6 @@ import { normalizeExclusiveChoropleths } from '@/components/resilience-choroplet
 import type { AppContext } from '@/app/app-context';
 import {
   REFRESH_INTERVALS,
-  DEFAULT_PANELS,
   DEFAULT_MAP_LAYERS,
   MOBILE_DEFAULT_MAP_LAYERS,
   STORAGE_KEYS,
@@ -25,18 +24,13 @@ import { loadFromStorage, parseMapUrlState, saveToStorage, isMobileDevice } from
 import type { ParsedMapUrlState } from '@/utils';
 import { SignalModal, IntelligenceGapBadge, BreakingNewsBanner } from '@/components';
 import { initBreakingNewsAlerts, destroyBreakingNewsAlerts } from '@/services/breaking-news-alerts';
-import type { YieldCurvePanel } from '@/components/YieldCurvePanel';
-import type { EarningsCalendarPanel } from '@/components/EarningsCalendarPanel';
-import type { EconomicCalendarPanel } from '@/components/EconomicCalendarPanel';
-import type { CotPositioningPanel } from '@/components/CotPositioningPanel';
 import { isDesktopRuntime, waitForSidecarReady } from '@/services/runtime';
-import { hasPremiumAccess } from '@/services/panel-gating';
 import { BETA_MODE } from '@/config/beta';
 import { trackEvent, trackDeeplinkOpened, initAuthAnalytics } from '@/services/analytics';
 import { preloadCountryGeometry, getCountryNameByCode } from '@/services/country-geometry';
 import { initI18n, t } from '@/services/i18n';
 
-import { computeDefaultDisabledSources, getLocaleBoostedSources, getTotalFeedCount, FEEDS, INTEL_SOURCES } from '@/config/feeds';
+import { FEEDS, INTEL_SOURCES } from '@/config/feeds';
 import { fetchBootstrapData, getBootstrapHydrationState, markBootstrapAsLive, type BootstrapHydrationState } from '@/services/bootstrap';
 import { describeFreshness } from '@/services/persistent-cache';
 import { DesktopUpdater } from '@/app/desktop-updater';
@@ -47,16 +41,12 @@ import { PanelLayoutManager } from '@/app/panel-layout';
 import { DataLoaderManager } from '@/app/data-loader';
 import { EventHandlerManager } from '@/app/event-handlers';
 import { resolveUserRegion, resolvePreciseUserCoordinates, type PreciseCoordinates } from '@/utils/user-location';
-// import { showProBanner } from '@/components/ProBanner'; // Disabled for hackathon
 import { initAuthState, subscribeAuthState } from '@/services/auth-state';
 import { install as installCloudPrefsSync, onSignIn as cloudPrefsSignIn, onSignOut as cloudPrefsSignOut } from '@/utils/cloud-prefs-sync';
 import { getConvexClient, getConvexApi, waitForConvexAuth } from '@/services/convex-client';
 import { initEntitlementSubscription, destroyEntitlementSubscription, resetEntitlementState } from '@/services/entitlements';
 import { initSubscriptionWatch, destroySubscriptionWatch } from '@/services/billing';
 import { capturePendingCheckoutIntentFromUrl, resumePendingCheckout } from '@/services/checkout';
-
-
-const CYBER_LAYER_ENABLED = import.meta.env.VITE_ENABLE_CYBER_LAYER === 'true';
 
 export type { CountryBriefSignals } from '@/app/app-context';
 
@@ -208,37 +198,12 @@ export class App {
     const shouldPrime = (id: string): boolean => forceAll || this.isPanelNearViewport(id);
     const shouldPrimeAny = (ids: string[]): boolean => forceAll || this.isAnyPanelNearViewport(ids);
 
-    if (shouldPrime('yield-curve')) {
-      const panel = this.state.panels['yield-curve'] as YieldCurvePanel | undefined;
-      if (panel) primeTask('yield-curve', () => panel.fetchData());
-    }
-    if (shouldPrime('earnings-calendar')) {
-      const panel = this.state.panels['earnings-calendar'] as EarningsCalendarPanel | undefined;
-      if (panel) primeTask('earnings-calendar', () => panel.fetchData());
+    if (shouldPrimeAny(['markets', 'heatmap', 'commodities', 'crypto', 'crypto-heatmap', 'defi-tokens', 'ai-tokens', 'other-tokens'])) {
+      primeTask('markets', () => this.dataLoader.loadMarkets());
     }
     if (shouldPrime('economic-calendar')) {
       const panel = this.state.panels['economic-calendar'] as EconomicCalendarPanel | undefined;
       if (panel) primeTask('economic-calendar', () => panel.fetchData());
-    }
-    if (shouldPrime('cot-positioning')) {
-      const panel = this.state.panels['cot-positioning'] as CotPositioningPanel | undefined;
-      if (panel) primeTask('cot-positioning', () => panel.fetchData());
-    }
-    if (shouldPrimeAny(['markets', 'heatmap', 'commodities', 'crypto', 'crypto-heatmap', 'defi-tokens', 'ai-tokens', 'other-tokens'])) {
-      primeTask('markets', () => this.dataLoader.loadMarkets());
-    }
-    if (shouldPrime('supply-chain')) {
-      primeTask('supplyChain', () => this.dataLoader.loadSupplyChain());
-    }
-
-    const _wmAccess = hasPremiumAccess();
-    if (_wmAccess) {
-      if (shouldPrime('stock-analysis')) {
-        primeTask('stockAnalysis', () => this.dataLoader.loadStockAnalysis());
-      }
-      if (shouldPrime('stock-backtest')) {
-        primeTask('stockBacktest', () => this.dataLoader.loadStockBacktest());
-      }
     }
 
     if (tasks.length > 0) {
@@ -266,20 +231,13 @@ export class App {
     // Panels that must survive variant switches: desktop config, user-created widgets, MCP panels.
     const isDynamicPanel = (k: string) => k === 'runtime-config' || k.startsWith('cw-') || k.startsWith('mcp-');
 
-    // Check if variant changed - reset all settings to variant defaults
-    const storedVariant = localStorage.getItem('ivee-variant');
     const currentVariant = SITE_VARIANT;
-    console.log(`[App] Variant check: stored="${storedVariant}", current="${currentVariant}"`);
-    if (storedVariant !== currentVariant) {
-      // Variant changed — seed new variant's panels, disable panels not in the new variant
-      console.log('[App] Variant changed - seeding new defaults, disabling cross-variant panels');
+    {
       localStorage.setItem('ivee-variant', currentVariant);
-      // Reset map layers for the new variant (map layers are not user-personalized the same way)
       localStorage.removeItem(STORAGE_KEYS.mapLayers);
       mapLayers = normalizeExclusiveChoropleths(
         sanitizeLayersForVariant({ ...defaultLayers }, currentVariant as MapVariant), null,
       );
-      // Load existing panel prefs (if any), disable panels not belonging to the new variant
       panelSettings = loadFromStorage<Record<string, PanelConfig>>(STORAGE_KEYS.panels, {});
       const newVariantKeys = new Set(VARIANT_DEFAULTS[currentVariant] ?? []);
       for (const key of Object.keys(panelSettings)) {
@@ -292,184 +250,7 @@ export class App {
           panelSettings[key] = { ...getEffectivePanelConfig(key, currentVariant) };
         }
       }
-    } else {
-      mapLayers = normalizeExclusiveChoropleths(
-        sanitizeLayersForVariant(
-          loadFromStorage<MapLayers>(STORAGE_KEYS.mapLayers, defaultLayers),
-          currentVariant as MapVariant,
-        ), null,
-      );
-      panelSettings = loadFromStorage<Record<string, PanelConfig>>(
-        STORAGE_KEYS.panels,
-        DEFAULT_PANELS
-      );
-
-      // One-time migration: preserve user preferences across panel key renames.
-      const PANEL_KEY_RENAMES_MIGRATION_KEY = 'ivee-panel-key-renames-v2.6.8';
-      if (!localStorage.getItem(PANEL_KEY_RENAMES_MIGRATION_KEY)) {
-        let migrated = false;
-        const keyRenames: Array<[string, string]> = [
-          ['live-youtube', 'live-webcams'],
-          ['pinned-webcams', 'windy-webcams'],
-          ...(SITE_VARIANT === 'finance' ? [['regulation', 'fin-regulation'] as [string, string]] : []),
-        ];
-        // In non-finance variants, 'regulation' was dead config (no feeds). Just prune it.
-        if (SITE_VARIANT !== 'finance' && panelSettings['regulation']) {
-          delete panelSettings['regulation'];
-          migrated = true;
-        }
-        for (const [legacyKey, nextKey] of keyRenames) {
-          if (!panelSettings[legacyKey] || panelSettings[nextKey]) continue;
-          panelSettings[nextKey] = {
-            ...DEFAULT_PANELS[nextKey],
-            ...panelSettings[legacyKey],
-            name: DEFAULT_PANELS[nextKey]?.name ?? panelSettings[legacyKey].name,
-          };
-          delete panelSettings[legacyKey];
-          migrated = true;
-        }
-        // Also migrate saved panel order/bottom-set entries for renamed keys
-        for (const [legacyKey, nextKey] of keyRenames) {
-          for (const orderKey of [PANEL_ORDER_KEY, PANEL_ORDER_KEY + '-bottom-set', PANEL_ORDER_KEY + '-bottom']) {
-            try {
-              const raw = localStorage.getItem(orderKey);
-              if (!raw) continue;
-              const arr = JSON.parse(raw);
-              if (!Array.isArray(arr)) continue;
-              const idx = arr.indexOf(legacyKey);
-              if (idx !== -1) { arr[idx] = nextKey; localStorage.setItem(orderKey, JSON.stringify(arr)); migrated = true; }
-            } catch { /* corrupt storage, skip */ }
-          }
-        }
-        if (migrated) saveToStorage(STORAGE_KEYS.panels, panelSettings);
-        localStorage.setItem(PANEL_KEY_RENAMES_MIGRATION_KEY, 'done');
-      }
-
-      // Merge in any panels from ALL_PANELS that didn't exist when settings were saved
-      for (const key of Object.keys(ALL_PANELS)) {
-        if (!(key in panelSettings)) {
-          const config = getEffectivePanelConfig(key, SITE_VARIANT);
-          const isInVariant = (VARIANT_DEFAULTS[SITE_VARIANT] ?? []).includes(key);
-          panelSettings[key] = { ...config, enabled: isInVariant && config.enabled };
-        }
-      }
-
-      // One-time migration: expose all panels to existing users (previously variant-gated)
-      const UNIFIED_MIGRATION_KEY = 'ivee-unified-panels-v1';
-      if (!localStorage.getItem(UNIFIED_MIGRATION_KEY)) {
-        const variantDefaults = new Set(VARIANT_DEFAULTS[SITE_VARIANT] ?? []);
-        for (const key of Object.keys(ALL_PANELS)) {
-          if (!(key in panelSettings)) {
-            const config = getEffectivePanelConfig(key, SITE_VARIANT);
-            panelSettings[key] = { ...config, enabled: variantDefaults.has(key) && config.enabled };
-          }
-        }
-        saveToStorage(STORAGE_KEYS.panels, panelSettings);
-        localStorage.setItem(UNIFIED_MIGRATION_KEY, 'done');
-      }
-
-      // One-time migration: fix happy variant sessions that got cross-variant panels enabled
-      // (regression from #1911 unified panel registry which failed to disable non-variant panels on variant switch)
-      const HAPPY_PANEL_FIX_KEY = 'ivee-happy-panel-fix-v1';
-      if (SITE_VARIANT === 'happy' && !localStorage.getItem(HAPPY_PANEL_FIX_KEY)) {
-        const happyKeys = new Set(VARIANT_DEFAULTS['happy'] ?? []);
-        let fixed = false;
-        for (const key of Object.keys(panelSettings)) {
-          if (!happyKeys.has(key) && !isDynamicPanel(key) && panelSettings[key]?.enabled) {
-            panelSettings[key] = { ...panelSettings[key]!, enabled: false };
-            fixed = true;
-          }
-        }
-        if (fixed) saveToStorage(STORAGE_KEYS.panels, panelSettings);
-        localStorage.setItem(HAPPY_PANEL_FIX_KEY, 'done');
-      }
-
-      console.log('[App] Loaded panel settings from storage:', Object.entries(panelSettings).filter(([_, v]) => !v.enabled).map(([k]) => k));
-
-      // One-time migration: reorder panels for existing users (v1.9 panel layout)
-      const PANEL_ORDER_MIGRATION_KEY = 'ivee-panel-order-v1.9';
-      if (!localStorage.getItem(PANEL_ORDER_MIGRATION_KEY)) {
-        const savedOrder = localStorage.getItem(PANEL_ORDER_KEY);
-        if (savedOrder) {
-          try {
-            const order: string[] = JSON.parse(savedOrder);
-            const priorityPanels = ['insights', 'strategic-posture', 'cii', 'strategic-risk'];
-            const filtered = order.filter(k => !priorityPanels.includes(k) && k !== 'live-news');
-            const liveNewsIdx = order.indexOf('live-news');
-            const newOrder = liveNewsIdx !== -1 ? ['live-news'] : [];
-            newOrder.push(...priorityPanels.filter(p => order.includes(p)));
-            newOrder.push(...filtered);
-            localStorage.setItem(PANEL_ORDER_KEY, JSON.stringify(newOrder));
-            console.log('[App] Migrated panel order to v1.9 layout');
-          } catch {
-            // Invalid saved order, will use defaults
-          }
-        }
-        localStorage.setItem(PANEL_ORDER_MIGRATION_KEY, 'done');
-      }
-
-      // Tech variant migration: move insights to top (after live-news)
-      if (currentVariant === 'tech') {
-        const TECH_INSIGHTS_MIGRATION_KEY = 'ivee-tech-insights-top-v1';
-        if (!localStorage.getItem(TECH_INSIGHTS_MIGRATION_KEY)) {
-          const savedOrder = localStorage.getItem(PANEL_ORDER_KEY);
-          if (savedOrder) {
-            try {
-              const order: string[] = JSON.parse(savedOrder);
-              const filtered = order.filter(k => k !== 'insights' && k !== 'live-news');
-              const newOrder: string[] = [];
-              if (order.includes('live-news')) newOrder.push('live-news');
-              if (order.includes('insights')) newOrder.push('insights');
-              newOrder.push(...filtered);
-              localStorage.setItem(PANEL_ORDER_KEY, JSON.stringify(newOrder));
-              console.log('[App] Tech variant: Migrated insights panel to top');
-            } catch {
-              // Invalid saved order, will use defaults
-            }
-          }
-          localStorage.setItem(TECH_INSIGHTS_MIGRATION_KEY, 'done');
-        }
-      }
-    }
-
-    // One-time migration: prune removed panel keys from stored settings and order
-    const PANEL_PRUNE_KEY = 'ivee-panel-prune-v1';
-    if (!localStorage.getItem(PANEL_PRUNE_KEY)) {
-      const validKeys = new Set(Object.keys(ALL_PANELS));
-      let pruned = false;
-      for (const key of Object.keys(panelSettings)) {
-        if (!validKeys.has(key) && key !== 'runtime-config') {
-          delete panelSettings[key];
-          pruned = true;
-        }
-      }
-      if (pruned) saveToStorage(STORAGE_KEYS.panels, panelSettings);
-      for (const orderKey of [PANEL_ORDER_KEY, PANEL_ORDER_KEY + '-bottom-set', PANEL_ORDER_KEY + '-bottom']) {
-        try {
-          const raw = localStorage.getItem(orderKey);
-          if (!raw) continue;
-          const arr = JSON.parse(raw);
-          if (!Array.isArray(arr)) continue;
-          const filtered = arr.filter((k: string) => validKeys.has(k));
-          if (filtered.length !== arr.length) localStorage.setItem(orderKey, JSON.stringify(filtered));
-        } catch { localStorage.removeItem(orderKey); }
-      }
-      localStorage.setItem(PANEL_PRUNE_KEY, 'done');
-    }
-
-    // One-time migration: clear stale panel ordering and sizing state
-    const LAYOUT_RESET_MIGRATION_KEY = 'ivee-layout-reset-v2.5';
-    if (!localStorage.getItem(LAYOUT_RESET_MIGRATION_KEY)) {
-      const hadSavedOrder = !!localStorage.getItem(PANEL_ORDER_KEY);
-      const hadSavedSpans = !!localStorage.getItem(PANEL_SPANS_KEY);
-      if (hadSavedOrder || hadSavedSpans) {
-        localStorage.removeItem(PANEL_ORDER_KEY);
-        localStorage.removeItem(PANEL_ORDER_KEY + '-bottom');
-        localStorage.removeItem(PANEL_ORDER_KEY + '-bottom-set');
-        localStorage.removeItem(PANEL_SPANS_KEY);
-        console.log('[App] Applied layout reset migration (v2.5): cleared panel order/spans');
-      }
-      localStorage.setItem(LAYOUT_RESET_MIGRATION_KEY, 'done');
+      saveToStorage(STORAGE_KEYS.panels, panelSettings);
     }
 
     // Desktop key management panel must always remain accessible in Tauri.
@@ -491,33 +272,6 @@ export class App {
         sanitizeLayersForVariant(initialUrlState.layers, currentVariant as MapVariant), null,
       );
       initialUrlState.layers = mapLayers;
-    }
-    if (!CYBER_LAYER_ENABLED) {
-      mapLayers.cyberThreats = false;
-    }
-    // One-time migration: reduce default-enabled sources (full variant only)
-    if (currentVariant === 'full') {
-      const baseKey = 'ivee-sources-reduction-v3';
-      if (!localStorage.getItem(baseKey)) {
-        const defaultDisabled = computeDefaultDisabledSources();
-        saveToStorage(STORAGE_KEYS.disabledFeeds, defaultDisabled);
-        localStorage.setItem(baseKey, 'done');
-        const total = getTotalFeedCount();
-        console.log(`[App] Sources reduction: ${defaultDisabled.length} disabled, ${total - defaultDisabled.length} enabled`);
-      }
-      // Locale boost: additively enable locale-matched sources (runs once per locale)
-      const userLang = ((navigator.language ?? 'en').split('-')[0] ?? 'en').toLowerCase();
-      const localeKey = `ivee-locale-boost-${userLang}`;
-      if (userLang !== 'en' && !localStorage.getItem(localeKey)) {
-        const boosted = getLocaleBoostedSources(userLang);
-        if (boosted.size > 0) {
-          const current = loadFromStorage<string[]>(STORAGE_KEYS.disabledFeeds, []);
-          const updated = current.filter(name => !boosted.has(name));
-          saveToStorage(STORAGE_KEYS.disabledFeeds, updated);
-          console.log(`[App] Locale boost (${userLang}): enabled ${current.length - updated.length} sources`);
-        }
-        localStorage.setItem(localeKey, 'done');
-      }
     }
 
     const disabledSources = new Set(loadFromStorage<string[]>(STORAGE_KEYS.disabledFeeds, []));
@@ -763,11 +517,6 @@ export class App {
       this.state.map.setCenter(mobileGeoCoords.lat, mobileGeoCoords.lon, 6);
     }
 
-    // Happy variant: pre-populate panels from persistent cache for instant render
-    if (SITE_VARIANT === 'happy') {
-      await this.dataLoader.hydrateHappyPanelsFromCache();
-    }
-
     // Phase 2: Shared UI components
     this.state.signalModal = new SignalModal();
     this.state.signalModal.setLocationClickHandler((lat, lon) => {
@@ -857,9 +606,6 @@ export class App {
     }
     if (isOutagesConfigured() === false) {
       this.state.map?.hideLayerToggle('outages');
-    }
-    if (!CYBER_LAYER_ENABLED) {
-      this.state.map?.hideLayerToggle('cyberThreats');
     }
 
     // Phase 7: Refresh scheduling
@@ -995,38 +741,14 @@ export class App {
   }
 
   private setupRefreshIntervals(): void {
-    // Always refresh news for all variants
     this.refreshScheduler.scheduleRefresh('news', () => this.dataLoader.loadNews(), REFRESH_INTERVALS.feeds);
-
-    // Happy variant only refreshes news -- skip all geopolitical/financial/military refreshes
-    if (SITE_VARIANT !== 'happy') {
-      this.refreshScheduler.registerAll([
-        {
-          name: 'markets',
-          fn: () => this.dataLoader.loadMarkets(),
-          intervalMs: REFRESH_INTERVALS.markets,
-          condition: () => this.isAnyPanelNearViewport(['markets', 'heatmap', 'commodities', 'crypto', 'crypto-heatmap', 'defi-tokens', 'ai-tokens', 'other-tokens']),
-        },
-      ]);
-    }
-
-    if (SITE_VARIANT === 'finance') {
-      this.refreshScheduler.scheduleRefresh(
-        'stock-analysis',
-        () => this.dataLoader.loadStockAnalysis(),
-        REFRESH_INTERVALS.stockAnalysis,
-        () => hasPremiumAccess() && this.isPanelNearViewport('stock-analysis'),
-      );
-      this.refreshScheduler.scheduleRefresh(
-        'stock-backtest',
-        () => this.dataLoader.loadStockBacktest(),
-        REFRESH_INTERVALS.stockBacktest,
-        () => hasPremiumAccess() && this.isPanelNearViewport('stock-backtest'),
-      );
-    }
-
-    if (SITE_VARIANT === 'full' || SITE_VARIANT === 'finance' || SITE_VARIANT === 'commodity') {
-      this.refreshScheduler.scheduleRefresh('supplyChain', () => this.dataLoader.loadSupplyChain(), REFRESH_INTERVALS.supplyChain, () => this.isPanelNearViewport('supply-chain'));
-    }
+    this.refreshScheduler.registerAll([
+      {
+        name: 'markets',
+        fn: () => this.dataLoader.loadMarkets(),
+        intervalMs: REFRESH_INTERVALS.markets,
+        condition: () => this.isAnyPanelNearViewport(['markets', 'heatmap', 'commodities', 'crypto', 'crypto-heatmap', 'defi-tokens', 'ai-tokens', 'other-tokens']),
+      },
+    ]);
   }
 }
