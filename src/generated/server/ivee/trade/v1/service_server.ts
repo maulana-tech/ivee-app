@@ -1,0 +1,1 @@
+export const createTradeServiceRoutes = (handler: any, options: any) => [];
