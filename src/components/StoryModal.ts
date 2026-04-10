@@ -117,7 +117,7 @@ function downloadStory(): void {
   if (!currentDataUrl) return;
   const a = document.createElement('a');
   a.href = currentDataUrl;
-  a.download = `ivee-${currentData?.countryCode.toLowerCase() || 'story'}-${Date.now()}.png`;
+  a.download = `ave-${currentData?.countryCode.toLowerCase() || 'story'}-${Date.now()}.png`;
   a.click();
   flashButton('.story-save', t('modals.story.saved'), t('modals.story.save'));
 }
