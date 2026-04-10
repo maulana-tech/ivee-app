@@ -54,13 +54,7 @@ import { getConvexClient, getConvexApi, waitForConvexAuth } from '@/services/con
 import { initEntitlementSubscription, destroyEntitlementSubscription, resetEntitlementState } from '@/services/entitlements';
 import { initSubscriptionWatch, destroySubscriptionWatch } from '@/services/billing';
 import { capturePendingCheckoutIntentFromUrl, resumePendingCheckout } from '@/services/checkout';
-import {
-  CorrelationEngine,
-  militaryAdapter,
-  escalationAdapter,
-  economicAdapter,
-  disasterAdapter,
-} from '@/services/correlation-engine';
+
 
 const CYBER_LAYER_ENABLED = import.meta.env.VITE_ENABLE_CYBER_LAYER === 'true';
 
@@ -105,15 +99,6 @@ export class App {
 
   private isAnyPanelNearViewport(panelIds: string[], marginPx = 400): boolean {
     return panelIds.some((panelId) => this.isPanelNearViewport(panelId, marginPx));
-  }
-
-  private shouldRefreshIntelligence(): boolean {
-    return this.isAnyPanelNearViewport(['cii', 'strategic-risk', 'strategic-posture'])
-      || !!this.state.countryBriefPage?.isVisible();
-  }
-
-  private shouldRefreshFirms(): boolean {
-    return this.isPanelNearViewport('satellite-fires');
   }
 
   private getCachedBootstrapUpdatedAt(): number | null {
@@ -239,28 +224,11 @@ export class App {
       const panel = this.state.panels['cot-positioning'] as CotPositioningPanel | undefined;
       if (panel) primeTask('cot-positioning', () => panel.fetchData());
     }
-    if (shouldPrimeAny(['markets', 'heatmap', 'commodities', 'crypto', 'energy-complex'])) {
+    if (shouldPrimeAny(['markets', 'heatmap', 'commodities', 'crypto', 'crypto-heatmap', 'defi-tokens', 'ai-tokens', 'other-tokens'])) {
       primeTask('markets', () => this.dataLoader.loadMarkets());
-    }
-    if (shouldPrime('polymarket')) {
-      primeTask('predictions', () => this.dataLoader.loadPredictions());
-    }
-    if (shouldPrime('economic')) {
-      primeTask('fred', () => this.dataLoader.loadFredData());
-      primeTask('spending', () => this.dataLoader.loadGovernmentSpending());
-      primeTask('bis', () => this.dataLoader.loadBisData());
-    }
-    if (shouldPrime('energy-complex')) {
-      primeTask('oil', () => this.dataLoader.loadOilAnalytics());
-    }
-    if (shouldPrime('trade-policy')) {
-      primeTask('tradePolicy', () => this.dataLoader.loadTradePolicy());
     }
     if (shouldPrime('supply-chain')) {
       primeTask('supplyChain', () => this.dataLoader.loadSupplyChain());
-    }
-    if (shouldPrime('cross-source-signals')) {
-      primeTask('crossSourceSignals', () => this.dataLoader.loadCrossSourceSignals());
     }
 
     const _wmAccess = hasPremiumAccess();
@@ -270,12 +238,6 @@ export class App {
       }
       if (shouldPrime('stock-backtest')) {
         primeTask('stockBacktest', () => this.dataLoader.loadStockBacktest());
-      }
-      if (shouldPrime('daily-market-brief')) {
-        primeTask('dailyMarketBrief', () => this.dataLoader.loadDailyMarketBrief());
-      }
-      if (shouldPrime('market-implications')) {
-        primeTask('marketImplications', () => this.dataLoader.loadMarketImplications());
       }
     }
 
@@ -583,7 +545,6 @@ export class App {
       seenGeoAlerts: new Set(),
       monitors,
       signalModal: null,
-      statusPanel: null,
       searchModal: null,
       findingsBadge: null,
       breakingBanner: null,
@@ -591,18 +552,9 @@ export class App {
       exportPanel: null,
       unifiedSettings: null,
       pizzintIndicator: null,
-      correlationEngine: null,
       llmStatusIndicator: null,
-      countryBriefPage: null,
       countryTimeline: null,
-      positivePanel: null,
       countersPanel: null,
-      progressPanel: null,
-      breakthroughsPanel: null,
-      heroPanel: null,
-      digestPanel: null,
-      speciesPanel: null,
-      renewablePanel: null,
       authModal: null,
       authHeaderWidget: null,
       tvMode: null,
@@ -824,12 +776,10 @@ export class App {
     if (!this.state.isMobile) {
       this.state.findingsBadge = new IntelligenceGapBadge();
       this.state.findingsBadge.setOnSignalClick((signal) => {
-        if (this.state.countryBriefPage?.isVisible()) return;
         if (localStorage.getItem('wm-settings-open') === '1') return;
         this.state.signalModal?.showSignal(signal);
       });
       this.state.findingsBadge.setOnAlertClick((alert) => {
-        if (this.state.countryBriefPage?.isVisible()) return;
         if (localStorage.getItem('wm-settings-open') === '1') return;
         this.state.signalModal?.showAlert(alert);
       });
@@ -848,13 +798,7 @@ export class App {
     this.eventHandlers.setupLlmStatusIndicator();
     this.eventHandlers.setupExportPanel();
 
-    // Correlation engine
-    const correlationEngine = new CorrelationEngine();
-    correlationEngine.registerAdapter(militaryAdapter);
-    correlationEngine.registerAdapter(escalationAdapter);
-    correlationEngine.registerAdapter(economicAdapter);
-    correlationEngine.registerAdapter(disasterAdapter);
-    this.state.correlationEngine = correlationEngine;
+    // Correlation engine removed for crypto hackathon
     this.eventHandlers.setupUnifiedSettings();
     // TODO: isProUser() gate should be removed when we are ready to get new users signing up
     if (isProUser()) this.eventHandlers.setupAuthWidget();
@@ -882,10 +826,6 @@ export class App {
     this.pendingDeepLinkStoryCode = earlyParams.get('c') ?? null;
     this.eventHandlers.setupUrlStateSync();
 
-    this.state.countryBriefPage?.onStateChange?.(() => {
-      this.eventHandlers.syncUrlState();
-    });
-
     // Start deep link handling early — its retry loop polls hasSufficientData()
     // independently, so it must not be gated behind loadAllData() which can hang.
     this.handleDeepLinks();
@@ -908,13 +848,6 @@ export class App {
     markBootstrapAsLive();
     this.bootstrapHydrationState = getBootstrapHydrationState();
     this.updateConnectivityUi();
-
-    // Initial correlation engine run
-    if (this.state.correlationEngine) {
-      void this.state.correlationEngine.run(this.state).then(() => {
-        // Correlation panels archived for hackathon
-      });
-    }
 
     startLearning();
 
@@ -1074,36 +1007,6 @@ export class App {
           intervalMs: REFRESH_INTERVALS.markets,
           condition: () => this.isAnyPanelNearViewport(['markets', 'heatmap', 'commodities', 'crypto', 'crypto-heatmap', 'defi-tokens', 'ai-tokens', 'other-tokens']),
         },
-        {
-          name: 'predictions',
-          fn: () => this.dataLoader.loadPredictions(),
-          intervalMs: REFRESH_INTERVALS.predictions,
-          condition: () => this.isPanelNearViewport('polymarket'),
-        },
-        {
-          name: 'forecasts',
-          fn: () => this.dataLoader.loadForecasts(),
-          intervalMs: REFRESH_INTERVALS.forecasts,
-          condition: () => this.isPanelNearViewport('forecast'),
-        },
-        { name: 'pizzint', fn: () => this.dataLoader.loadPizzInt(), intervalMs: REFRESH_INTERVALS.pizzint, condition: () => SITE_VARIANT === 'full' },
-        { name: 'natural', fn: () => this.dataLoader.loadNatural(), intervalMs: REFRESH_INTERVALS.natural, condition: () => this.state.mapLayers.natural },
-        { name: 'weather', fn: () => this.dataLoader.loadWeatherAlerts(), intervalMs: REFRESH_INTERVALS.weather, condition: () => this.state.mapLayers.weather },
-        { name: 'fred', fn: () => this.dataLoader.loadFredData(), intervalMs: REFRESH_INTERVALS.fred, condition: () => this.isPanelNearViewport('economic') },
-        { name: 'spending', fn: () => this.dataLoader.loadGovernmentSpending(), intervalMs: REFRESH_INTERVALS.spending, condition: () => this.isPanelNearViewport('economic') },
-        { name: 'bis', fn: () => this.dataLoader.loadBisData(), intervalMs: REFRESH_INTERVALS.bis, condition: () => this.isPanelNearViewport('economic') },
-        { name: 'oil', fn: () => this.dataLoader.loadOilAnalytics(), intervalMs: REFRESH_INTERVALS.oil, condition: () => this.isPanelNearViewport('energy-complex') },
-        { name: 'firms', fn: () => this.dataLoader.loadFirmsData(), intervalMs: REFRESH_INTERVALS.firms, condition: () => this.shouldRefreshFirms() },
-        { name: 'ais', fn: () => this.dataLoader.loadAisSignals(), intervalMs: REFRESH_INTERVALS.ais, condition: () => this.state.mapLayers.ais },
-        { name: 'cables', fn: () => this.dataLoader.loadCableActivity(), intervalMs: REFRESH_INTERVALS.cables, condition: () => this.state.mapLayers.cables },
-        { name: 'cableHealth', fn: () => this.dataLoader.loadCableHealth(), intervalMs: REFRESH_INTERVALS.cableHealth, condition: () => this.state.mapLayers.cables },
-        { name: 'flights', fn: () => this.dataLoader.loadFlightDelays(), intervalMs: REFRESH_INTERVALS.flights, condition: () => this.state.mapLayers.flights },
-        {
-          name: 'cyberThreats', fn: () => {
-            this.state.cyberThreatsCache = null;
-            return this.dataLoader.loadCyberThreats();
-          }, intervalMs: REFRESH_INTERVALS.cyberThreats, condition: () => CYBER_LAYER_ENABLED && this.state.mapLayers.cyberThreats
-        },
       ]);
     }
 
@@ -1115,52 +1018,15 @@ export class App {
         () => hasPremiumAccess() && this.isPanelNearViewport('stock-analysis'),
       );
       this.refreshScheduler.scheduleRefresh(
-        'daily-market-brief',
-        () => this.dataLoader.loadDailyMarketBrief(),
-        REFRESH_INTERVALS.dailyMarketBrief,
-        () => hasPremiumAccess() && this.isPanelNearViewport('daily-market-brief'),
-      );
-      this.refreshScheduler.scheduleRefresh(
         'stock-backtest',
         () => this.dataLoader.loadStockBacktest(),
         REFRESH_INTERVALS.stockBacktest,
         () => hasPremiumAccess() && this.isPanelNearViewport('stock-backtest'),
       );
-      this.refreshScheduler.scheduleRefresh(
-        'market-implications',
-        () => this.dataLoader.loadMarketImplications(),
-        REFRESH_INTERVALS.marketImplications,
-        () => hasPremiumAccess() && this.isPanelNearViewport('market-implications'),
-      );
     }
 
-    // Server-side temporal anomalies (news + satellite_fires)
-    if (SITE_VARIANT !== 'happy') {
-      this.refreshScheduler.scheduleRefresh('temporalBaseline', () => this.dataLoader.refreshTemporalBaseline(), REFRESH_INTERVALS.temporalBaseline, () => this.shouldRefreshIntelligence());
-    }
-
-    // WTO trade policy data — annual data, poll every 10 min to avoid hammering upstream
     if (SITE_VARIANT === 'full' || SITE_VARIANT === 'finance' || SITE_VARIANT === 'commodity') {
-      this.refreshScheduler.scheduleRefresh('tradePolicy', () => this.dataLoader.loadTradePolicy(), REFRESH_INTERVALS.tradePolicy, () => this.isPanelNearViewport('trade-policy'));
       this.refreshScheduler.scheduleRefresh('supplyChain', () => this.dataLoader.loadSupplyChain(), REFRESH_INTERVALS.supplyChain, () => this.isPanelNearViewport('supply-chain'));
-    }
-
-    this.refreshScheduler.scheduleRefresh(
-      'cross-source-signals',
-      () => this.dataLoader.loadCrossSourceSignals(),
-      REFRESH_INTERVALS.crossSourceSignals,
-      () => this.isPanelNearViewport('cross-source-signals'),
-    );
-
-    // Refresh intelligence signals for CII (geopolitical variant only)
-    if (SITE_VARIANT === 'full') {
-      this.refreshScheduler.scheduleRefresh('intelligence', () => {
-        const { military, iranEvents } = this.state.intelligenceCache;
-        this.state.intelligenceCache = {};
-        if (military) this.state.intelligenceCache.military = military;
-        if (iranEvents) this.state.intelligenceCache.iranEvents = iranEvents;
-        return this.dataLoader.loadIntelligenceSignals();
-      }, REFRESH_INTERVALS.intelligence, () => this.shouldRefreshIntelligence());
     }
   }
 }
