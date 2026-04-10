@@ -1,0 +1,1 @@
+export const createClimateServiceRoutes = (handler: any, options: any) => [];

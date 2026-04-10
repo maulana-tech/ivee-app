@@ -1,0 +1,1 @@
+export const createSupplyChainServiceRoutes = (handler: any, options: any) => [];

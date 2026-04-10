@@ -1,0 +1,1 @@
+export const createConflictServiceRoutes = (handler: any, options: any) => [];

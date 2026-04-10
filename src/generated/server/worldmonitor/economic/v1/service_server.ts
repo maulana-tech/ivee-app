@@ -1,0 +1,1 @@
+export const createEconomicServiceRoutes = (handler: any, options: any) => [];

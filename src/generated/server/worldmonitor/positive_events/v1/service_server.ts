@@ -1,0 +1,1 @@
+export const createPositiveEventsServiceRoutes = (handler: any, options: any) => [];
