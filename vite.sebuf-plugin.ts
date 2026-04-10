@@ -8,52 +8,52 @@ export function createSebufApiPlugin(): Plugin {
     const routerMod = await import('./server/router');
     const corsMod = await import('./server/cors');
     const errorMod = await import('./server/error-mapper');
-    const seismologyServerMod = await import('./src/generated/server/ivee/seismology/v1/service_server');
-    const seismologyHandlerMod = await import('./server/ivee/seismology/v1/handler');
-    const wildfireServerMod = await import('./src/generated/server/ivee/wildfire/v1/service_server');
-    const wildfireHandlerMod = await import('./server/ivee/wildfire/v1/handler');
-    const climateServerMod = await import('./src/generated/server/ivee/climate/v1/service_server');
-    const climateHandlerMod = await import('./server/ivee/climate/v1/handler');
-    const predictionServerMod = await import('./src/generated/server/ivee/prediction/v1/service_server');
-    const predictionHandlerMod = await import('./server/ivee/prediction/v1/handler');
-    const displacementServerMod = await import('./src/generated/server/ivee/displacement/v1/service_server');
-    const displacementHandlerMod = await import('./server/ivee/displacement/v1/handler');
-    const aviationServerMod = await import('./src/generated/server/ivee/aviation/v1/service_server');
-    const aviationHandlerMod = await import('./server/ivee/aviation/v1/handler');
-    const researchServerMod = await import('./src/generated/server/ivee/research/v1/service_server');
-    const researchHandlerMod = await import('./server/ivee/research/v1/handler');
-    const unrestServerMod = await import('./src/generated/server/ivee/unrest/v1/service_server');
-    const unrestHandlerMod = await import('./server/ivee/unrest/v1/handler');
-    const conflictServerMod = await import('./src/generated/server/ivee/conflict/v1/service_server');
-    const conflictHandlerMod = await import('./server/ivee/conflict/v1/handler');
-    const maritimeServerMod = await import('./src/generated/server/ivee/maritime/v1/service_server');
-    const maritimeHandlerMod = await import('./server/ivee/maritime/v1/handler');
-    const cyberServerMod = await import('./src/generated/server/ivee/cyber/v1/service_server');
-    const cyberHandlerMod = await import('./server/ivee/cyber/v1/handler');
-    const economicServerMod = await import('./src/generated/server/ivee/economic/v1/service_server');
-    const economicHandlerMod = await import('./server/ivee/economic/v1/handler');
-    const infrastructureServerMod = await import('./src/generated/server/ivee/infrastructure/v1/service_server');
-    const infrastructureHandlerMod = await import('./server/ivee/infrastructure/v1/handler');
-    const marketServerMod = await import('./src/generated/server/ivee/market/v1/service_server');
-    const marketHandlerMod = await import('./server/ivee/market/v1/handler');
-    const newsServerMod = await import('./src/generated/server/ivee/news/v1/service_server');
-    const newsHandlerMod = await import('./server/ivee/news/v1/handler');
-    const intelligenceServerMod = await import('./src/generated/server/ivee/intelligence/v1/service_server');
-    const intelligenceHandlerMod = await import('./server/ivee/intelligence/v1/handler');
-    const militaryServerMod = await import('./src/generated/server/ivee/military/v1/service_server');
-    const militaryHandlerMod = await import('./server/ivee/military/v1/handler');
-    const positiveEventsServerMod = await import('./src/generated/server/ivee/positive_events/v1/service_server');
-    const positiveEventsHandlerMod = await import('./server/ivee/positive-events/v1/handler');
-    const givingServerMod = await import('./src/generated/server/ivee/giving/v1/service_server');
-    const givingHandlerMod = await import('./server/ivee/giving/v1/handler');
-    const tradeServerMod = await import('./src/generated/server/ivee/trade/v1/service_server');
-    const tradeHandlerMod = await import('./server/ivee/trade/v1/handler');
-    const supplyChainServerMod = await import('./src/generated/server/ivee/supply_chain/v1/service_server');
-    const supplyChainHandlerMod = await import('./server/ivee/supply-chain/v1/handler');
-    const naturalServerMod = await import('./src/generated/server/ivee/natural/v1/service_server');
-    const naturalHandlerMod = await import('./server/ivee/natural/v1/handler');
-    const resilienceServerMod = await import('./src/generated/server/ivee/resilience/v1/service_server');
-    const resilienceHandlerMod = await import('./server/ivee/resilience/v1/handler');
+    const seismologyServerMod = await import('./src/generated/server/worldmonitor/seismology/v1/service_server');
+    const seismologyHandlerMod = await import('./server/worldmonitor/seismology/v1/handler');
+    const wildfireServerMod = await import('./src/generated/server/worldmonitor/wildfire/v1/service_server');
+    const wildfireHandlerMod = await import('./server/worldmonitor/wildfire/v1/handler');
+    const climateServerMod = await import('./src/generated/server/worldmonitor/climate/v1/service_server');
+    const climateHandlerMod = await import('./server/worldmonitor/climate/v1/handler');
+    const predictionServerMod = await import('./src/generated/server/worldmonitor/prediction/v1/service_server');
+    const predictionHandlerMod = await import('./server/worldmonitor/prediction/v1/handler');
+    const displacementServerMod = await import('./src/generated/server/worldmonitor/displacement/v1/service_server');
+    const displacementHandlerMod = await import('./server/worldmonitor/displacement/v1/handler');
+    const aviationServerMod = await import('./src/generated/server/worldmonitor/aviation/v1/service_server');
+    const aviationHandlerMod = await import('./server/worldmonitor/aviation/v1/handler');
+    const researchServerMod = await import('./src/generated/server/worldmonitor/research/v1/service_server');
+    const researchHandlerMod = await import('./server/worldmonitor/research/v1/handler');
+    const unrestServerMod = await import('./src/generated/server/worldmonitor/unrest/v1/service_server');
+    const unrestHandlerMod = await import('./server/worldmonitor/unrest/v1/handler');
+    const conflictServerMod = await import('./src/generated/server/worldmonitor/conflict/v1/service_server');
+    const conflictHandlerMod = await import('./server/worldmonitor/conflict/v1/handler');
+    const maritimeServerMod = await import('./src/generated/server/worldmonitor/maritime/v1/service_server');
+    const maritimeHandlerMod = await import('./server/worldmonitor/maritime/v1/handler');
+    const cyberServerMod = await import('./src/generated/server/worldmonitor/cyber/v1/service_server');
+    const cyberHandlerMod = await import('./server/worldmonitor/cyber/v1/handler');
+    const economicServerMod = await import('./src/generated/server/worldmonitor/economic/v1/service_server');
+    const economicHandlerMod = await import('./server/worldmonitor/economic/v1/handler');
+    const infrastructureServerMod = await import('./src/generated/server/worldmonitor/infrastructure/v1/service_server');
+    const infrastructureHandlerMod = await import('./server/worldmonitor/infrastructure/v1/handler');
+    const marketServerMod = await import('./src/generated/server/worldmonitor/market/v1/service_server');
+    const marketHandlerMod = await import('./server/worldmonitor/market/v1/handler');
+    const newsServerMod = await import('./src/generated/server/worldmonitor/news/v1/service_server');
+    const newsHandlerMod = await import('./server/worldmonitor/news/v1/handler');
+    const intelligenceServerMod = await import('./src/generated/server/worldmonitor/intelligence/v1/service_server');
+    const intelligenceHandlerMod = await import('./server/worldmonitor/intelligence/v1/handler');
+    const militaryServerMod = await import('./src/generated/server/worldmonitor/military/v1/service_server');
+    const militaryHandlerMod = await import('./server/worldmonitor/military/v1/handler');
+    const positiveEventsServerMod = await import('./src/generated/server/worldmonitor/positive_events/v1/service_server');
+    const positiveEventsHandlerMod = await import('./server/worldmonitor/positive_events/v1/handler');
+    const givingServerMod = await import('./src/generated/server/worldmonitor/giving/v1/service_server');
+    const givingHandlerMod = await import('./server/worldmonitor/giving/v1/handler');
+    const tradeServerMod = await import('./src/generated/server/worldmonitor/trade/v1/service_server');
+    const tradeHandlerMod = await import('./server/worldmonitor/trade/v1/handler');
+    const supplyChainServerMod = await import('./src/generated/server/worldmonitor/supply_chain/v1/service_server');
+    const supplyChainHandlerMod = await import('./server/worldmonitor/supply_chain/v1/handler');
+    const naturalServerMod = await import('./src/generated/server/worldmonitor/natural/v1/service_server');
+    const naturalHandlerMod = await import('./server/worldmonitor/natural/v1/handler');
+    const resilienceServerMod = await import('./src/generated/server/worldmonitor/resilience/v1/service_server');
+    const resilienceHandlerMod = await import('./server/worldmonitor/resilience/v1/handler');
 
     const serverOptions = { onError: errorMod.mapErrorToResponse };
     const allRoutes = [
@@ -138,7 +138,7 @@ export function createSebufApiPlugin(): Plugin {
           if (req.method === 'OPTIONS') {
             res.statusCode = 204;
             for (const [key, value] of Object.entries(corsHeaders)) {
-              res.setHeader(key, value);
+              res.setHeader(key, String(value));
             }
             res.end();
             return;
@@ -148,7 +148,7 @@ export function createSebufApiPlugin(): Plugin {
             res.statusCode = 403;
             res.setHeader('Content-Type', 'application/json');
             for (const [key, value] of Object.entries(corsHeaders)) {
-              res.setHeader(key, value);
+              res.setHeader(key, String(value));
             }
             res.end(JSON.stringify({ error: 'Origin not allowed' }));
             return;
@@ -166,7 +166,7 @@ export function createSebufApiPlugin(): Plugin {
               res.setHeader('Content-Type', 'application/json');
             }
             for (const [key, value] of Object.entries(corsHeaders)) {
-              res.setHeader(key, value);
+              res.setHeader(key, String(value));
             }
             res.end(JSON.stringify({ error: res.statusCode === 405 ? 'Method not allowed' : 'Not found' }));
             return;
@@ -179,7 +179,7 @@ export function createSebufApiPlugin(): Plugin {
             res.setHeader(key, value);
           });
           for (const [key, value] of Object.entries(corsHeaders)) {
-            res.setHeader(key, value);
+            res.setHeader(key, String(value));
           }
           res.end(await response.text());
         } catch (err) {
