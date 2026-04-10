@@ -552,7 +552,6 @@ export default defineConfig(({ mode }) => {
         input: {
           main: resolve(__dirname, 'index.html'),
           settings: resolve(__dirname, 'settings.html'),
-          liveChannels: resolve(__dirname, 'live-channels.html'),
         },
         output: {
           manualChunks(id) {
