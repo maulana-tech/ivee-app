@@ -1,1 +1,0 @@
-export const createWildfireServiceRoutes = (handler: any, options: any) => [];
