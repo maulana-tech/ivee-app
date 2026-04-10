@@ -1,0 +1,1 @@
+export const maritimeHandler = async () => new Response('Not implemented', { status: 501 });
