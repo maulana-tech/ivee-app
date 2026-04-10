@@ -1,1 +1,0 @@
-export const createUnrestServiceRoutes = (handler: any, options: any) => [];
