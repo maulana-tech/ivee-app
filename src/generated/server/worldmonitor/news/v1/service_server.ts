@@ -1,1 +1,0 @@
-export const createNewsServiceRoutes = (handler: any, options: any) => [];
