@@ -512,20 +512,6 @@ if (urlParams.get('settings') === '1') {
   count: getCellCount,
 };
 
-// Beta mode toggle: type `beta=true` / `beta=false` in console
-Object.defineProperty(window, 'beta', {
-  get() {
-    const on = localStorage.getItem('ivee-beta-mode') === 'true';
-    console.log(`[Beta] ${on ? 'ON' : 'OFF'}`);
-    return on;
-  },
-  set(v: boolean) {
-    if (v) localStorage.setItem('ivee-beta-mode', 'true');
-    else localStorage.removeItem('ivee-beta-mode');
-    location.reload();
-  },
-});
-
 // Suppress native WKWebView context menu in Tauri — allows custom JS context menus
 if ('__TAURI_INTERNALS__' in window || '__TAURI__' in window) {
   document.addEventListener('contextmenu', (e) => {
@@ -614,21 +600,4 @@ if (!('__TAURI_INTERNALS__' in window) && !('__TAURI__' in window) && 'serviceWo
     });
 }
 
-// --- SW/Cache Nuke Template ---
-// If stale service workers or caches cause issues after a major deploy, re-enable this block.
-// It runs once per user (guarded by a localStorage key), nukes all SWs and caches, then reloads.
-// IMPORTANT: This causes a visible double-load for every new/unkeyed user. Remove once rollout is complete.
-//
-// const nukeKey = 'wm-sw-nuked-v3';
-// let alreadyNuked = false;
-// try { alreadyNuked = !!localStorage.getItem(nukeKey); } catch {}
-// if (!alreadyNuked) {
-//   try { localStorage.setItem(nukeKey, '1'); } catch {}
-//   navigator.serviceWorker.getRegistrations().then(async (regs) => {
-//     await Promise.all(regs.map(r => r.unregister()));
-//     const keys = await caches.keys();
-//     await Promise.all(keys.map(k => caches.delete(k)));
-//     console.log('[PWA] Nuked stale service workers and caches');
-//     window.location.reload();
-//   });
-// }
+
