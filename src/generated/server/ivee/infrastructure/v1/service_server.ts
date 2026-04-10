@@ -1,0 +1,1 @@
+export const createInfrastructureServiceRoutes = (handler: any, options: any) => [];
