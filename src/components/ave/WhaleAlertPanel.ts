@@ -6,6 +6,7 @@ export class WhaleAlertPanel extends Panel {
   private alerts: WhaleAlert[] = [];
   private selectedPair: string = 'WETH-USDC';
   private chain: string = 'base';
+  private loaded: boolean = false;
 
   constructor(options: { id: string; title: string }) {
     super(options);
@@ -14,10 +15,22 @@ export class WhaleAlertPanel extends Panel {
   }
 
   protected renderContent(): void {
-    if (!isEnabled()) {
-      this.showAveSetup();
+    if (this.loaded) {
+      this.renderAlerts();
       return;
     }
+    this.showLoading('Connecting to AVE...');
+    setTimeout(() => this.checkAndLoad(), 100);
+  }
+
+  private async checkAndLoad(): Promise<void> {
+    const enabled = isEnabled();
+    if (!enabled) {
+      this.showAveSetup();
+      this.loaded = true;
+      return;
+    }
+    this.loaded = true;
     this.renderAlerts();
   }
 
