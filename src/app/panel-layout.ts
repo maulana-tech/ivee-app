@@ -32,7 +32,7 @@ import {
   MonitorPanel,
 } from '@/components';
 import { HeatmapPanel } from '@/components/HeatmapPanel';
-import { WhaleAlertPanel, SignalsPanel, PortfolioPanel, RiskScannerPanel, TrendingPanel } from '@/components/ave';
+import { WhaleAlertPanel, SignalsPanel, PortfolioPanel, RiskScannerPanel, TrendingPanel, TradingPanel, BacktestPanel, PriceAlertPanel } from '@/components/ave';
 import { InsightsPanel } from '@/components/InsightsPanel';
 import { LiveNewsPanel } from '@/components/LiveNewsPanel';
 import { RuntimeConfigPanel } from '@/components/RuntimeConfigPanel';
@@ -533,6 +533,9 @@ export class PanelLayoutManager implements AppModule {
     this.createPanel('portfolio', () => new PortfolioPanel({ id: 'portfolio', title: 'Portfolio' }));
     this.createPanel('risk-scanner', () => new RiskScannerPanel({ id: 'risk-scanner', title: 'Risk Scanner' }));
     this.createPanel('trending', () => new TrendingPanel({ id: 'trending', title: 'Trending Tokens' }));
+    this.createPanel('trading', () => new TradingPanel({ id: 'trading', title: 'Trade Execution' }));
+    this.createPanel('backtest', () => new BacktestPanel({ id: 'backtest', title: 'Strategy Backtest' }));
+    this.createPanel('price-alerts', () => new PriceAlertPanel());
 
     for (const key of Object.keys(FEEDS)) {
       if (this.ctx.newsPanels[key]) continue;
