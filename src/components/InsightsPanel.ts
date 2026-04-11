@@ -3,4 +3,5 @@ export class InsightsPanel extends Panel {
   constructor() {
     super({ id: 'insights', title: 'Insights' });
   }
+  updateInsights(_clusters: unknown[]): void {}
 }
