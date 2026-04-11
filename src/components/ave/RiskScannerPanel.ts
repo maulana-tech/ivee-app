@@ -1,13 +1,15 @@
 import { Panel } from '../Panel';
-import { isEnabled, getRiskReport, searchTokens, RiskReport } from '@/services/ave/client';
+import { isEnabled, getTokensByRank } from '@/services/ave/client';
+import { scanRisk, type RiskWarning } from '@/services/ave/monitoring';
 
 export class RiskScannerPanel extends Panel {
-  private scanResult: RiskReport | null = null;
-  private scannedToken: string = '';
+  private riskWarnings: RiskWarning[] = [];
+  private chainFilter: string = 'all';
+  private loading = false;
 
   constructor(options: { id: string; title: string }) {
     super(options);
-    this.element.classList.add('risk-scanner-panel');
+    this.element.classList.add('risk-scanner-panel', 'panel-wide');
   }
 
   protected renderContent(): void {
@@ -15,7 +17,7 @@ export class RiskScannerPanel extends Panel {
       this.showSetupRequired();
       return;
     }
-    this.renderScanner();
+    this.loadRiskScan();
   }
 
   private showSetupRequired(): void {
@@ -35,123 +37,107 @@ export class RiskScannerPanel extends Panel {
     `);
   }
 
-  private renderScanner(): void {
+  private async loadRiskScan(): Promise<void> {
+    if (this.loading) return;
+    this.loading = true;
+    this.showLoading('Scanning trending tokens for risk...');
+
+    try {
+      const chain = this.chainFilter === 'all' ? undefined : this.chainFilter;
+      const topics = ['hot', 'gainer'] as const;
+      const tokenIds: string[] = [];
+      const seen = new Set<string>();
+
+      for (const topic of topics) {
+        try {
+          const tokens = await getTokensByRank(topic, 15);
+          for (const t of tokens) {
+            if (seen.has(t.token)) continue;
+            seen.add(t.token);
+            if (chain && t.chain !== chain) continue;
+            tokenIds.push(t.token);
+          }
+        } catch {}
+      }
+
+      if (tokenIds.length === 0) {
+        this.riskWarnings = [];
+        this.renderTable();
+        return;
+      }
+
+      this.riskWarnings = await scanRisk(tokenIds.slice(0, 10));
+      this.renderTable();
+    } catch {
+      this.showError('Failed to scan tokens for risk');
+    } finally {
+      this.loading = false;
+    }
+  }
+
+  private renderTable(): void {
     const html = `
-      <div class="scanner-form">
-        <input type="text" class="token-input" placeholder="Enter token address or symbol...">
-        <select class="chain-select">
-          <option value="base">Base</option>
-          <option value="ethereum">Ethereum</option>
-          <option value="bsc">BSC</option>
-          <option value="solana">Solana</option>
+      <div class="risk-scanner-controls">
+        <select class="chain-filter">
+          <option value="all" ${this.chainFilter === 'all' ? 'selected' : ''}>All Chains</option>
+          <option value="base" ${this.chainFilter === 'base' ? 'selected' : ''}>Base</option>
+          <option value="ethereum" ${this.chainFilter === 'ethereum' ? 'selected' : ''}>Ethereum</option>
+          <option value="solana" ${this.chainFilter === 'solana' ? 'selected' : ''}>Solana</option>
+          <option value="bsc" ${this.chainFilter === 'bsc' ? 'selected' : ''}>BSC</option>
         </select>
-        <button class="scan-btn">Scan</button>
+        <button class="scan-btn" title="Rescan">↻ Scan</button>
       </div>
-      <div class="scan-result">
-        ${this.scanResult ? this.renderResult() : '<div class="empty-state">Enter a token address to scan for risks</div>'}
-      </div>
+      ${this.riskWarnings.length === 0
+        ? '<div class="empty-state">No risk data available. Click "Scan" to analyze trending tokens.</div>'
+        : `
+      <div class="risk-table">
+        <div class="risk-table-header">
+          <span class="col-symbol">Token</span>
+          <span class="col-chain">Chain</span>
+          <span class="col-score">Risk Score</span>
+          <span class="col-warnings">Warnings</span>
+        </div>
+        ${this.riskWarnings.map(w => this.renderRow(w)).join('')}
+      </div>`}
     `;
 
     this.setContent(html);
     this.attachEventListeners();
   }
 
-  private renderResult(): string {
-    if (!this.scanResult) return '';
-
-    const r = this.scanResult;
-    const isRisky = r.is_honeypot || r.buy_tax > 10 || r.sell_tax > 10;
-    const riskLevel = isRisky ? 'HIGH' : r.owner_renounced && r.liquidity_locked ? 'LOW' : 'MEDIUM';
-    const riskColor = riskLevel === 'HIGH' ? '#ff4444' : riskLevel === 'MEDIUM' ? '#ffaa00' : '#00ff00';
-    const riskIcon = riskLevel === 'HIGH' ? '⚠️' : riskLevel === 'MEDIUM' ? '⚡' : '✅';
+  private renderRow(w: RiskWarning): string {
+    const scoreColor = w.riskScore > 70 ? '#ff4444' : w.riskScore > 40 ? '#ffaa00' : '#00cc66';
+    const scoreLabel = w.riskScore > 70 ? 'HIGH' : w.riskScore > 40 ? 'MEDIUM' : 'LOW';
 
     return `
-      <div class="risk-result ${riskLevel.toLowerCase()}">
-        <div class="risk-header">
-          <span class="risk-badge" style="background: ${riskColor}">
-            ${riskIcon} ${riskLevel} RISK
-          </span>
-          <span class="scanned-token">${this.scannedToken}</span>
-        </div>
-        <div class="risk-details">
-          <div class="risk-item ${r.is_honeypot ? 'danger' : ''}">
-            <span class="label">Honeypot</span>
-            <span class="value">${r.is_honeypot ? 'YES ⚠️' : 'No'}</span>
-          </div>
-          <div class="risk-item ${r.buy_tax > 5 ? 'warning' : ''}">
-            <span class="label">Buy Tax</span>
-            <span class="value">${r.buy_tax.toFixed(1)}%</span>
-          </div>
-          <div class="risk-item ${r.sell_tax > 5 ? 'warning' : ''}">
-            <span class="label">Sell Tax</span>
-            <span class="value">${r.sell_tax.toFixed(1)}%</span>
-          </div>
-          <div class="risk-item">
-            <span class="label">Owner Renounced</span>
-            <span class="value">${r.owner_renounced ? 'Yes ✅' : 'No ⚠️'}</span>
-          </div>
-          <div class="risk-item">
-            <span class="label">Liquidity Locked</span>
-            <span class="value">${r.liquidity_locked ? 'Yes ✅' : 'No ⚠️'}</span>
-          </div>
-          <div class="risk-item">
-            <span class="label">Holders</span>
-            <span class="value">${r.holders.toLocaleString()}</span>
-          </div>
-        </div>
+      <div class="risk-table-row" data-token="${w.tokenId}">
+        <span class="col-symbol">${w.symbol || w.tokenId.slice(0, 8) + '…'}</span>
+        <span class="col-chain">${w.chain}</span>
+        <span class="col-score">
+          <span class="risk-score-badge" style="background: ${scoreColor}">${w.riskScore.toFixed(0)}</span>
+          <span class="risk-level-label" style="color: ${scoreColor}">${scoreLabel}</span>
+        </span>
+        <span class="col-warnings">
+          <ul class="warning-list">
+            ${w.warnings.map(warn => `<li>${warn}</li>`).join('')}
+          </ul>
+        </span>
       </div>
     `;
   }
 
   private attachEventListeners(): void {
-    const scanBtn = this.element.querySelector('.scan-btn') as HTMLButtonElement;
-    const tokenInput = this.element.querySelector('.token-input') as HTMLInputElement;
-
-    scanBtn?.addEventListener('click', () => this.performScan());
-    tokenInput?.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') this.performScan();
+    const chainFilter = this.element.querySelector('.chain-filter') as HTMLSelectElement;
+    chainFilter?.addEventListener('change', (e) => {
+      this.chainFilter = (e.target as HTMLSelectElement).value;
+      this.loadRiskScan();
     });
-  }
 
-  private async performScan(): Promise<void> {
-    const tokenInput = this.element.querySelector('.token-input') as HTMLInputElement;
-    const resultDiv = this.element.querySelector('.scan-result') as HTMLElement;
-
-    const input = tokenInput?.value?.trim();
-    const chain = (this.element.querySelector('.chain-select') as HTMLSelectElement)?.value || 'base';
-
-    if (!input) return;
-
-    this.scannedToken = input;
-    resultDiv.innerHTML = '<div class="loading">Scanning...</div>';
-
-    try {
-      // First try to search for the token
-      let address = input;
-      
-      if (!address.startsWith('0x')) {
-        const results = await searchTokens(input, chain);
-        if (results.length > 0) {
-          const firstResult = results[0]!;
-          const parts = firstResult.id.split('-');
-          address = parts[0] || firstResult.id;
-          this.scannedToken = firstResult.symbol;
-        } else {
-          resultDiv.innerHTML = '<div class="error">Token not found</div>';
-          return;
-        }
-      }
-
-      this.scanResult = await getRiskReport(address, chain);
-      this.renderScanner();
-    } catch {
-      resultDiv.innerHTML = '<div class="error">Scan failed. Please try again.</div>';
-    }
+    const scanBtn = this.element.querySelector('.scan-btn');
+    scanBtn?.addEventListener('click', () => this.loadRiskScan());
   }
 
   public async refresh(): Promise<void> {
-    if (this.scannedToken) {
-      await this.performScan();
-    }
+    await this.loadRiskScan();
   }
 }
