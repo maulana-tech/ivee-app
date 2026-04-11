@@ -10,7 +10,7 @@ export class CyberServiceClient {
   }
 
   private async get<T>(path: string, params?: Record<string, string | string[] | number | boolean>): Promise<T> {
-    const url = new URL(path, this.baseURL);
+    const url = new URL(path, this.baseURL || (typeof window !== "undefined" ? window.location.origin : "http://localhost:3000"));
     if (params) {
       for (const [key, value] of Object.entries(params)) {
         if (value === undefined || value === null) continue;
