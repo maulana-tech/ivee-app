@@ -387,6 +387,7 @@ export default defineConfig(({ mode }) => {
       rssProxyPlugin(),
       youtubeLivePlugin(),
       gpsjamDevPlugin(),
+      marketApiDevPlugin(),
       brotliPrecompressPlugin(),
       VitePWA({
         registerType: 'autoUpdate',
@@ -987,3 +988,127 @@ export default defineConfig(({ mode }) => {
     },
   };
 });
+
+function marketApiDevPlugin(): Plugin {
+  return {
+    name: 'market-api-dev',
+    apply: 'serve',
+    async configureServer(server) {
+      let routes: Array<{ method: string; path: string; handler: (req: Request) => Promise<Response> }>;
+      let devOverrides: Record<string, (req: Request) => Promise<Response>> | null = null;
+      server.middlewares.use(async (req, res, next) => {
+        if (!req.url?.startsWith('/api/market/v1/')) return next();
+        try {
+          if (!devOverrides) {
+            devOverrides = await createDevMarketHandlers();
+            const { createMarketServiceRoutes } = await import('./src/generated/server/ivee/market/v1/service_server');
+            const { marketHandler } = await import('./server/ivee/market/v1/handler');
+            const { mapErrorToResponse } = await import('./server/error-mapper');
+            routes = createMarketServiceRoutes(marketHandler, { onError: mapErrorToResponse });
+          }
+          const urlPath = req.url.split('?')[0];
+          if (devOverrides[urlPath]) {
+            const origin = `http://localhost:${server.config.server.port || 3000}`;
+            const webReq = new Request(origin + req.url, { method: req.method || 'GET' });
+            const webRes = await devOverrides[urlPath](webReq);
+            res.statusCode = webRes.status;
+            webRes.headers.forEach((v, k) => res.setHeader(k, v));
+            res.end(await webRes.text());
+            return;
+          }
+          const route = routes!.find(r => r.path === urlPath);
+          if (!route) return next();
+          const origin = `http://localhost:${server.config.server.port || 3000}`;
+          const webReq = new Request(origin + req.url, { method: req.method || 'GET' });
+          const webRes = await route.handler(webReq);
+          res.statusCode = webRes.status;
+          webRes.headers.forEach((v, k) => res.setHeader(k, v));
+          res.end(await webRes.text());
+        } catch (err) {
+          console.error('[market-api-dev]', err);
+          res.statusCode = 500;
+          res.setHeader('content-type', 'application/json');
+          res.end(JSON.stringify({ error: String(err) }));
+        }
+      });
+    },
+  };
+}
+
+async function createDevMarketHandlers() {
+  const { fetchCryptoMarkets, CRYPTO_META } = await import('./server/ivee/market/v1/_shared');
+  const cryptoConfig = (await import('./shared/crypto.json')).default;
+  const allIds = Object.keys(cryptoConfig.meta);
+  let cache: { quotes: any[]; ts: number } | null = null;
+  const TTL = 60_000;
+
+  const json = (data: any, status = 200) => new Response(JSON.stringify(data), {
+    status,
+    headers: { 'content-type': 'application/json', 'access-control-allow-origin': '*' },
+  });
+
+  return {
+    '/api/market/v1/list-crypto-quotes': async (_req: Request) => {
+      try {
+        if (!cache || Date.now() - cache.ts > TTL) {
+          const items = await fetchCryptoMarkets(allIds);
+          const quotes = items.map(m => ({
+            name: m.name || m.id,
+            symbol: (m.symbol || m.id).toUpperCase(),
+            price: m.current_price || 0,
+            change: m.price_change_percentage_24h || 0,
+            change7d: m.price_change_percentage_7d_in_currency || 0,
+            sparkline: m.sparkline_in_7d?.price?.slice(-24) || [],
+            marketCap: m.market_cap || 0,
+            volume: m.total_volume || 0,
+          }));
+          cache = { quotes, ts: Date.now() };
+          console.log(`[dev-market] Fetched ${quotes.length} crypto quotes from CoinGecko`);
+        }
+        return json({ quotes: cache.quotes });
+      } catch (err) {
+        console.error('[dev-market] crypto quotes error:', err);
+        return json({ quotes: cache?.quotes || [] });
+      }
+    },
+    '/api/market/v1/list-crypto-sectors': async (_req: Request) => {
+      const sectors = [
+        { id: 'layer1', name: 'Layer 1', change: 0 },
+        { id: 'defi', name: 'DeFi', change: 0 },
+        { id: 'ai', name: 'AI & ML', change: 0 },
+        { id: 'meme', name: 'Meme', change: 0 },
+        { id: 'gaming', name: 'Gaming', change: 0 },
+        { id: 'rwa', name: 'RWA', change: 0 },
+        { id: 'infrastructure', name: 'Infrastructure', change: 0 },
+        { id: 'privacy', name: 'Privacy', change: 0 },
+      ];
+      if (cache?.quotes?.length) {
+        const byChange = (sym: string) => cache!.quotes.find(q => q.symbol === sym)?.change || 0;
+        sectors[0]!.change = ((byChange('ETH') + byChange('SOL') + byChange('ADA')) / 3);
+        sectors[1]!.change = ((byChange('UNI') + byChange('AAVE') + byChange('LINK')) / 3);
+        sectors[2]!.change = ((byChange('FET') + byChange('RENDER') + byChange('AKT')) / 3);
+        sectors[3]!.change = ((byChange('DOGE') + byChange('SHIB') + byChange('PEPE')) / 3);
+      }
+      return json({ sectors });
+    },
+    '/api/market/v1/list-defi-tokens': async (_req: Request) => {
+      if (!cache?.quotes) return json({ tokens: [] });
+      const defiSyms = new Set(['UNI', 'AAVE', 'LINK', 'MKR', 'COMP', 'CRV', 'SNX', 'SUSHI', 'DYDX', 'LDO', 'RPL', 'PENDLE', 'JUP']);
+      const tokens = cache.quotes.filter(q => defiSyms.has(q.symbol));
+      return json({ tokens });
+    },
+    '/api/market/v1/list-ai-tokens': async (_req: Request) => {
+      if (!cache?.quotes) return json({ tokens: [] });
+      const aiSyms = new Set(['FET', 'RENDER', 'AKT', 'TAO', 'WLD', 'AERO', 'VIRTUAL', 'IO', 'GRASS']);
+      const tokens = cache.quotes.filter(q => aiSyms.has(q.symbol));
+      return json({ tokens });
+    },
+    '/api/market/v1/list-other-tokens': async (_req: Request) => {
+      if (!cache?.quotes) return json({ tokens: [] });
+      const exclude = new Set(['UNI', 'AAVE', 'LINK', 'MKR', 'COMP', 'CRV', 'SNX', 'SUSHI', 'DYDX', 'LDO', 'RPL', 'PENDLE', 'JUP', 'FET', 'RENDER', 'AKT', 'TAO', 'WLD', 'AERO', 'VIRTUAL', 'IO', 'GRASS']);
+      const topSyms = new Set(['BTC', 'ETH', 'USDT', 'USDC', 'BNB', 'XRP', 'SOL', 'ADA', 'DOGE', 'AVAX', 'DOT', 'MATIC', 'SHIB', 'LTC', 'TRX', 'PEPE']);
+      const tokens = cache.quotes.filter(q => !exclude.has(q.symbol) && !topSyms.has(q.symbol));
+      return json({ tokens: tokens.slice(0, 30) });
+    },
+  };
+}
