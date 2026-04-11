@@ -1,5 +1,4 @@
 import { Panel } from '../Panel';
-import { isEnabled, getTokensByRank } from '@/services/ave/client';
 import { scanRisk, type RiskWarning } from '@/services/ave/monitoring';
 
 export class RiskScannerPanel extends Panel {
@@ -10,17 +9,14 @@ export class RiskScannerPanel extends Panel {
   constructor(options: { id: string; title: string }) {
     super(options);
     this.element.classList.add('risk-scanner-panel', 'panel-wide');
-  }
-
-  protected renderContent(): void {
-    if (!isEnabled()) {
-      this.showSetupRequired();
-      return;
-    }
     this.loadRiskScan();
   }
 
-  private showSetupRequired(): void {
+  protected renderContent(): void {
+    this.loadRiskScan();
+  }
+
+  private showDemoWarning(): void {
     this.setContent(`
       <div class="ave-setup-required">
         <div class="ave-icon">🔍</div>
