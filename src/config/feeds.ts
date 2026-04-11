@@ -883,13 +883,14 @@ const COMMODITY_FEEDS: Record<string, Feed[]> = {
 };
 
 // Variant-aware exports
-export const FEEDS = SITE_VARIANT === 'tech'
+const variant = SITE_VARIANT as string;
+export const FEEDS = variant === 'tech'
   ? TECH_FEEDS
-  : SITE_VARIANT === 'finance'
+  : variant === 'finance' || variant === 'crypto'
     ? FINANCE_FEEDS
-    : SITE_VARIANT === 'happy'
+    : variant === 'happy'
       ? HAPPY_FEEDS
-      : SITE_VARIANT === 'commodity'
+      : variant === 'commodity'
         ? COMMODITY_FEEDS
         : FULL_FEEDS;
 
