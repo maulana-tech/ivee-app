@@ -380,6 +380,10 @@ export default defineConfig(({ mode }) => {
   return {
     define: {
       __APP_VERSION__: JSON.stringify(pkg.version),
+      'import.meta.env.VITE_AVE_ENABLED': JSON.stringify(process.env.VITE_AVE_ENABLED || 'false'),
+      'import.meta.env.VITE_AVE_API_KEY': JSON.stringify(process.env.VITE_AVE_API_KEY || ''),
+      'import.meta.env.VITE_AVE_API_PLAN': JSON.stringify(process.env.VITE_AVE_API_PLAN || 'free'),
+      'import.meta.env.VITE_VARIANT': JSON.stringify(process.env.VITE_VARIANT || 'crypto'),
     },
     plugins: [
       htmlVariantPlugin(activeMeta, activeVariant, isDesktopBuild),
