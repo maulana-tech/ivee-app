@@ -1158,7 +1158,21 @@ async function createDevMarketHandlers() {
       return json({ etfs });
     },
     '/api/market/v1/get-fear-greed-index': async (_req: Request) => {
-      return json({ value: 65, classification: 'Greed', timestamp: Date.now() });
+      return json({
+        compositeScore: 65,
+        compositeLabel: 'Greed',
+        previousScore: 62,
+        vix: 14.2,
+        hySpread: 280,
+        yield10y: 4.35,
+        putCallRatio: 0.85,
+        pctAbove200d: 55,
+        cnnFearGreed: 62,
+        cnnLabel: 'Greed',
+        aaiiBull: 45,
+        aaiiBear: 30,
+        fedRate: '4.50%',
+      });
     },
   };
 }
