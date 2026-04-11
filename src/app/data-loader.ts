@@ -435,7 +435,7 @@ export class DataLoaderManager implements AppModule {
     if (shouldLoadAny(['markets', 'heatmap', 'commodities', 'crypto', 'energy-complex', 'crypto-heatmap', 'defi-tokens', 'ai-tokens', 'other-tokens'])) {
       tasks.push({ name: 'markets', task: runGuarded('markets', () => this.loadMarkets()) });
     }
-    if (shouldLoad('economic')) {
+    if (shouldLoad('economic') && SITE_VARIANT !== 'crypto') {
       tasks.push({ name: 'fred', task: runGuarded('fred', () => this.loadFredData()) });
       tasks.push({ name: 'bls', task: runGuarded('bls', () => this.loadBlsData()) });
     }
