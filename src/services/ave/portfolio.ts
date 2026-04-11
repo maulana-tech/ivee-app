@@ -29,6 +29,16 @@ const portfolioBreaker = createCircuitBreaker<PortfolioSummary>({
 });
 
 const STORAGE_KEY = 'ivee-crypto-portfolio';
+const SEEDED_KEY = 'ivee-crypto-portfolio-seeded-v2';
+
+const DEMO_POSITIONS: PortfolioPosition[] = [
+  { token: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', symbol: 'USDC', chain: 'base', balance: 5000, avgBuyPrice: 1 },
+  { token: '0x4200000000000000000000000000000000000042', symbol: 'OP', chain: 'base', balance: 3200, avgBuyPrice: 1.85 },
+  { token: '0x2Ae3F1Ec7F1F5012CFEab0185bfc7aa3cf0DEc22', symbol: 'cbETH', chain: 'base', balance: 1.5, avgBuyPrice: 2650 },
+  { token: '0xd4d42F0b6DEF4CE0383636770eF773790D1A0f17', symbol: 'AERO', chain: 'base', balance: 15000, avgBuyPrice: 0.85 },
+  { token: '0x8453cR7A5f7a35f729CD1D49aB038aD8a9CD0a43', symbol: 'WEWE', chain: 'base', balance: 500000, avgBuyPrice: 0.00018 },
+  { token: '0xEd148Bdc71AC45E4E6CdBaFfBfAfeB3E265CD0CA', symbol: 'MORPHO', chain: 'base', balance: 200, avgBuyPrice: 2.10 },
+];
 
 export interface PortfolioPosition {
   token: string;
@@ -40,6 +50,10 @@ export interface PortfolioPosition {
 
 export function getSavedPositions(): PortfolioPosition[] {
   try {
+    if (!localStorage.getItem(SEEDED_KEY)) {
+      savePositions(DEMO_POSITIONS);
+      localStorage.setItem(SEEDED_KEY, '1');
+    }
     const saved = localStorage.getItem(STORAGE_KEY);
     return saved ? JSON.parse(saved) : [];
   } catch {
