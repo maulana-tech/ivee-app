@@ -619,6 +619,17 @@ export default defineConfig(({ mode }) => {
         ],
       },
       proxy: {
+        // AVE API proxy to bypass CORS in dev
+        '/api/ave': {
+          target: 'https://prod.ave-api.com',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/api\/ave/, '/v2'),
+          configure: (proxy) => {
+            proxy.on('proxyReq', (proxyReq) => {
+              proxyReq.setHeader('X-API-KEY', '4jFc0Luq30MboTRHof15K7frDMkPZ8xW6Y9JGmEUlXK4dKoVcqrHMzRjF8FTfEAM');
+            });
+          },
+        },
         // Widget agent — forward to Railway relay for SSE streaming
         '/widget-agent': {
           target: 'https://proxy.ivee.app',
@@ -1113,6 +1124,41 @@ async function createDevMarketHandlers() {
       const topSyms = new Set(['BTC', 'ETH', 'USDT', 'USDC', 'BNB', 'XRP', 'SOL', 'ADA', 'DOGE', 'AVAX', 'DOT', 'MATIC', 'SHIB', 'LTC', 'TRX', 'PEPE']);
       const tokens = cache.quotes.filter(q => !exclude.has(q.symbol) && !topSyms.has(q.symbol));
       return json({ tokens: tokens.slice(0, 30) });
+    },
+    '/api/market/v1/list-market-quotes': async (_req: Request) => {
+      // Return crypto as "stocks" for demo - in prod would use Finnhub
+      if (!cache?.quotes) return json({ quotes: [], finnhubSkipped: false, skipReason: '', rateLimited: false });
+      const quotes = cache.quotes.slice(0, 20).map(q => ({
+        symbol: q.symbol,
+        name: q.name,
+        display: q.symbol,
+        price: q.price,
+        change: q.change,
+        sparkline: q.sparkline || [],
+      }));
+      return json({ quotes, finnhubSkipped: false, skipReason: '', rateLimited: false });
+    },
+    '/api/market/v1/list-stablecoin-markets': async (_req: Request) => {
+      const stables = [
+        { symbol: 'USDT', name: 'Tether', price: 1.0, change: 0.01, volume: 50000000000 },
+        { symbol: 'USDC', name: 'USD Coin', price: 1.0, change: -0.01, volume: 30000000000 },
+        { symbol: 'DAI', name: 'Dai', price: 1.0, change: 0.02, volume: 5000000000 },
+        { symbol: 'FRAX', name: 'Frax', price: 1.0, change: 0.0, volume: 2000000000 },
+        { symbol: 'USDD', name: 'USDD', price: 1.0, change: -0.02, volume: 1000000000 },
+      ];
+      return json({ quotes: stables });
+    },
+    '/api/market/v1/list-etf-flows': async (_req: Request) => {
+      const etfs = [
+        { symbol: 'IBIT', name: 'iShares Bitcoin Trust', flow: 150000000, change: 2.3 },
+        { symbol: 'FBTC', name: 'Fidelity Bitcoin ETF', flow: 120000000, change: 1.8 },
+        { symbol: 'GBTC', name: 'Grayscale Bitcoin Trust', flow: -50000000, change: -3.2 },
+        { symbol: 'ARKB', name: 'ARK 21Shares Bitcoin ETF', flow: 80000000, change: 1.2 },
+      ];
+      return json({ etfs });
+    },
+    '/api/market/v1/get-fear-greed-index': async (_req: Request) => {
+      return json({ value: 65, classification: 'Greed', timestamp: Date.now() });
     },
   };
 }
