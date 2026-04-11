@@ -1,5 +1,5 @@
 import { Panel } from '../Panel';
-import { isEnabled, getTrendingTokens, TrendingToken } from '@/services/ave/client';
+import { getTrendingTokens, TrendingToken } from '@/services/ave/client';
 
 export class TrendingPanel extends Panel {
   private trending: TrendingToken[] = [];
@@ -9,13 +9,10 @@ export class TrendingPanel extends Panel {
   constructor(options: { id: string; title: string }) {
     super(options);
     this.element.classList.add('trending-panel');
+    this.loadTrending();
   }
 
   protected renderContent(): void {
-    if (!isEnabled()) {
-      this.showSetupRequired();
-      return;
-    }
     this.renderTrending();
   }
 
