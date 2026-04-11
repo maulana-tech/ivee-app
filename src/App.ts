@@ -238,19 +238,16 @@ export class App {
       mapLayers = normalizeExclusiveChoropleths(
         sanitizeLayersForVariant({ ...defaultLayers }, currentVariant as MapVariant), null,
       );
-      panelSettings = loadFromStorage<Record<string, PanelConfig>>(STORAGE_KEYS.panels, {});
-      const newVariantKeys = new Set(VARIANT_DEFAULTS[currentVariant] ?? []);
-      for (const key of Object.keys(panelSettings)) {
-        if (!newVariantKeys.has(key) && !isDynamicPanel(key) && panelSettings[key]) {
-          panelSettings[key] = { ...panelSettings[key]!, enabled: false };
-        }
-      }
-      for (const key of newVariantKeys) {
-        if (!(key in panelSettings)) {
-          panelSettings[key] = { ...getEffectivePanelConfig(key, currentVariant) };
-        }
+      panelSettings = {};
+      const cryptoKeys = VARIANT_DEFAULTS[currentVariant] ?? [];
+      for (const key of cryptoKeys) {
+        panelSettings[key] = { ...getEffectivePanelConfig(key, currentVariant), enabled: true };
       }
       saveToStorage(STORAGE_KEYS.panels, panelSettings);
+      localStorage.removeItem('panel-order');
+      localStorage.removeItem('panel-order-bottom');
+      localStorage.removeItem('panel-order-bottom-set');
+      localStorage.removeItem('panel-spans');
     }
 
     // Desktop key management panel must always remain accessible in Tauri.
@@ -581,7 +578,9 @@ export class App {
 
     // Phase 6: Data loading
     this.dataLoader.syncDataFreshnessWithLayers();
-    await preloadCountryGeometry();
+    if (SITE_VARIANT !== 'crypto') {
+      await preloadCountryGeometry();
+    }
     // Prime panel-specific data concurrently with bulk loading.
     // primeVisiblePanelData owns ETF, Stablecoins, Gulf Economies, etc. that
     // are NOT part of loadAllData. Running them in parallel prevents those
