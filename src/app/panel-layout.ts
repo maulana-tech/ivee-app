@@ -8,6 +8,11 @@ import {
   MapContainer,
   NewsPanel,
   MarketPanel,
+  CryptoPanel,
+  CryptoHeatmapPanel,
+  DefiTokensPanel,
+  AiTokensPanel,
+  OtherTokensPanel,
   EconomicCalendarPanel,
   YieldCurvePanel,
   EarningsCalendarPanel,
@@ -27,16 +32,7 @@ import {
   MonitorPanel,
 } from '@/components';
 import { HeatmapPanel } from '@/components/HeatmapPanel';
-import { CryptoPanel } from '@/components/CryptoPanel';
-import { CryptoHeatmapPanel } from '@/components/CryptoHeatmapPanel';
-import { DefiTokensPanel } from '@/components/DefiTokensPanel';
-import { AiTokensPanel } from '@/components/AiTokensPanel';
-import { OtherTokensPanel } from '@/components/OtherTokensPanel';
-import { SignalsPanel } from '@/components/SignalsPanel';
-import { WhaleAlertPanel } from '@/components/WhaleAlertPanel';
-import { PortfolioPanel } from '@/components/PortfolioPanel';
-import { RiskScannerPanel } from '@/components/RiskScannerPanel';
-import { TrendingPanel } from '@/components/TrendingPanel';
+import { WhaleAlertPanel, SignalsPanel, PortfolioPanel, RiskScannerPanel, TrendingPanel } from '@/components/ave';
 import { InsightsPanel } from '@/components/InsightsPanel';
 import { LiveNewsPanel } from '@/components/LiveNewsPanel';
 import { RuntimeConfigPanel } from '@/components/RuntimeConfigPanel';
