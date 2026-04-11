@@ -10,6 +10,7 @@ export class SignalsPanel extends Panel {
     super(options);
     this.element.classList.add('signals-panel');
     this.element.classList.add('panel-wide');
+    this.loadSignals();
   }
 
   protected renderContent(): void {
