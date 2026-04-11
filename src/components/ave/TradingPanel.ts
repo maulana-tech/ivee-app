@@ -1,258 +1,244 @@
 import { Panel } from '../Panel';
-import { executeTrade, getWalletStatus, type TradeRequest, type TradeResult } from '@/services/ave/trading';
+import { isEnabled } from '@/services/ave/client';
+import { generateTradeSignals, type TradeSignal, type StrategyType } from '@/services/ave/trading-skill';
+import { connectWallet, getWalletStatus, executeTrade, switchToBaseNetwork, type WalletStatus } from '@/services/ave/trading';
+
+const STRATEGIES: Array<{ value: StrategyType | 'all'; label: string }> = [
+  { value: 'all', label: 'All Strategies' },
+  { value: 'momentum', label: 'Momentum' },
+  { value: 'mean_reversion', label: 'Mean Reversion' },
+  { value: 'breakout', label: 'Breakout' },
+  { value: 'volume_profile', label: 'Volume Profile' },
+  { value: 'whale_following', label: 'Whale Following' },
+];
+
+const CHAINS = [
+  { value: 'base', label: 'Base' },
+  { value: 'ethereum', label: 'Ethereum' },
+  { value: 'solana', label: 'Solana' },
+  { value: 'bsc', label: 'BSC' },
+];
+
+function formatPrice(price: number): string {
+  if (price === 0) return '$0.00';
+  if (price < 0.0001) return `$${price.toExponential(2)}`;
+  if (price < 1) return `$${price.toFixed(6)}`;
+  return `$${price.toFixed(2)}`;
+}
+
+function formatUSD(amount: number): string {
+  if (amount >= 1_000_000) return `$${(amount / 1_000_000).toFixed(2)}M`;
+  if (amount >= 1_000) return `$${(amount / 1_000).toFixed(2)}K`;
+  return `$${amount.toFixed(2)}`;
+}
+
+function shortenAddress(address: string): string {
+  return `${address.slice(0, 6)}...${address.slice(-4)}`;
+}
 
 export class TradingPanel extends Panel {
-  private walletAddress: string | null = null;
-  private isConnected: boolean = false;
-  private selectedToken: string = '';
-  private tradeType: 'buy' | 'sell' = 'buy';
-  private amount: string = '';
+  private signals: TradeSignal[] = [];
+  private walletStatus: WalletStatus = { connected: false };
+  private selectedStrategy: StrategyType | 'all' = 'all';
+  private selectedChain: string = 'base';
+  private executingIds = new Set<string>();
 
-  constructor(options: { id: string; title: string }) {
-    super(options);
-    this.element.classList.add('trading-panel');
+  constructor() {
+    super({ id: 'trading', title: 'Trade Execution' });
+    this.element.classList.add('trading-panel', 'panel-wide');
   }
 
   protected renderContent(): void {
-    this.renderTradingInterface();
-  }
-
-  private renderTradingInterface(): void {
-    const html = `
-      <div class="trading-container">
-        <div class="wallet-section">
-          ${this.isConnected ? this.renderConnectedWallet() : this.renderConnectWallet()}
-        </div>
-        
-        ${this.isConnected ? `
-          <div class="trade-form">
-            <div class="trade-type-selector">
-              <button class="trade-type-btn ${this.tradeType === 'buy' ? 'active' : ''}" data-type="buy">Buy</button>
-              <button class="trade-type-btn ${this.tradeType === 'sell' ? 'active' : ''}" data-type="sell">Sell</button>
-            </div>
-            
-            <div class="form-group">
-              <label>Token</label>
-              <div class="token-input-wrapper">
-                <input type="text" class="token-input" placeholder="0x..." value="${this.selectedToken}">
-                <div class="token-suggestions">
-                  <button class="token-suggestion" data-token="0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913">USDC</button>
-                  <button class="token-suggestion" data-token="0x4200000000000000000000000000000000000006">WETH</button>
-                  <button class="token-suggestion" data-token="0x532f7910193E54082937F0446F70f8fF5D8f21c1">CBTC</button>
-                </div>
-              </div>
-            </div>
-            
-            <div class="form-group">
-              <label>Amount</label>
-              <input type="number" class="amount-input" placeholder="0.00" value="${this.amount}">
-              <div class="quick-amounts">
-                <button class="quick-amount" data-amount="10">10</button>
-                <button class="quick-amount" data-amount="50">50</button>
-                <button class="quick-amount" data-amount="100">100</button>
-                <button class="quick-amount" data-amount="all">ALL</button>
-              </div>
-            </div>
-            
-            <div class="trade-summary">
-              <div class="summary-row">
-                <span>Price</span>
-                <span class="price-value">$1.00</span>
-              </div>
-              <div class="summary-row">
-                <span>Fee</span>
-                <span class="fee-value">~$0.50</span>
-              </div>
-              <div class="summary-row total">
-                <span>Total</span>
-                <span class="total-value">$0.00</span>
-              </div>
-            </div>
-            
-            <button class="execute-trade-btn ${this.tradeType}">
-              ${this.tradeType === 'buy' ? 'Buy' : 'Sell'} Token
-            </button>
-            
-            <div class="trade-status"></div>
-          </div>
-          
-          <div class="recent-trades">
-            <h4>Recent Trades</h4>
-            <div class="trades-list">
-              <p class="no-trades">No trades yet</p>
-            </div>
-          </div>
-        ` : ''}
-      </div>
-    `;
-
-    this.setContent(html);
-    this.attachEventListeners();
-  }
-
-  private renderConnectWallet(): string {
-    return `
-      <div class="wallet-connect">
-        <div class="wallet-icon">👛</div>
-        <h3>Connect Wallet</h3>
-        <p>Connect your wallet to start trading on Base chain</p>
-        <button class="connect-wallet-btn">Connect Wallet</button>
-        <p class="wallet-note">Supported: MetaMask, WalletConnect, Coinbase Wallet</p>
-      </div>
-    `;
-  }
-
-  private renderConnectedWallet(): string {
-    return `
-      <div class="wallet-info">
-        <div class="wallet-status connected">
-          <span class="status-dot"></span>
-          <span class="status-text">Connected</span>
-        </div>
-        <div class="wallet-address">
-          ${this.walletAddress?.slice(0, 6)}...${this.walletAddress?.slice(-4)}
-        </div>
-        <button class="disconnect-btn">Disconnect</button>
-      </div>
-    `;
-  }
-
-  private attachEventListeners(): void {
-    const connectBtn = this.element.querySelector('.connect-wallet-btn');
-    if (connectBtn) {
-      connectBtn.addEventListener('click', () => this.connectWallet());
-    }
-
-    const tradeTypeBtns = this.element.querySelectorAll('.trade-type-btn');
-    tradeTypeBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        this.tradeType = (btn as HTMLElement).dataset.type as 'buy' | 'sell';
-        this.renderTradingInterface();
-      });
-    });
-
-    const tokenSuggestions = this.element.querySelectorAll('.token-suggestion');
-    tokenSuggestions.forEach(btn => {
-      btn.addEventListener('click', () => {
-        this.selectedToken = (btn as HTMLElement).dataset.token || '';
-        this.renderTradingInterface();
-      });
-    });
-
-    const quickAmounts = this.element.querySelectorAll('.quick-amount');
-    quickAmounts.forEach(btn => {
-      btn.addEventListener('click', () => {
-        const amount = (btn as HTMLElement).dataset.amount;
-        const amountInput = this.element.querySelector('.amount-input') as HTMLInputElement;
-        if (amountInput) {
-          amountInput.value = amount === 'all' ? '1000' : amount || '';
-          this.amount = amountInput.value;
-        }
-      });
-    });
-
-    const amountInput = this.element.querySelector('.amount-input');
-    if (amountInput) {
-      amountInput.addEventListener('input', (e) => {
-        this.amount = (e.target as HTMLInputElement).value;
-        this.updateTradeSummary();
-      });
-    }
-
-    const executeBtn = this.element.querySelector('.execute-trade-btn');
-    if (executeBtn) {
-      executeBtn.addEventListener('click', () => this.executeTrade());
-    }
-
-    const disconnectBtn = this.element.querySelector('.disconnect-btn');
-    if (disconnectBtn) {
-      disconnectBtn.addEventListener('click', () => this.disconnectWallet());
-    }
-  }
-
-  private async connectWallet(): Promise<void> {
-    try {
-      const status = await getWalletStatus();
-      if (status.connected) {
-        this.isConnected = true;
-        this.walletAddress = status.address || null;
-        this.renderTradingInterface();
-      } else {
-        this.showStatus('Please install a Web3 wallet extension', 'warning');
-      }
-    } catch {
-      this.showStatus('Failed to connect wallet', 'error');
-    }
-  }
-
-  private disconnectWallet(): void {
-    this.isConnected = false;
-    this.walletAddress = null;
-    this.renderTradingInterface();
-  }
-
-  private async executeTrade(): Promise<void> {
-    if (!this.selectedToken || !this.amount) {
-      this.showStatus('Please fill in all fields', 'warning');
+    if (!isEnabled()) {
+      this.showSetupRequired();
       return;
     }
+    this.renderPanel();
+  }
 
-    const executeBtn = this.element.querySelector('.execute-trade-btn') as HTMLButtonElement;
-    if (executeBtn) {
-      executeBtn.disabled = true;
-      executeBtn.textContent = 'Processing...';
+  private showSetupRequired(): void {
+    this.setContent(`
+      <div class="ave-setup-required">
+        <div class="ave-icon">📊</div>
+        <h3>Trading Skill Setup Required</h3>
+        <p>Configure AVE Cloud API to enable trade execution:</p>
+        <ol>
+          <li>Register at <a href="https://cloud.ave.ai/register" target="_blank">cloud.ave.ai</a></li>
+          <li>Get your free API key</li>
+          <li>Add to .env.local:
+            <code>VITE_AVE_API_KEY=your_key<br>VITE_AVE_ENABLED=true</code>
+          </li>
+          <li>Restart dev server</li>
+        </ol>
+      </div>
+    `);
+  }
+
+  private renderPanel(): void {
+    const walletBar = this.walletStatus.connected
+      ? `<div class="wallet-bar connected">
+           <span class="wallet-status-dot"></span>
+           <span class="wallet-addr">${shortenAddress(this.walletStatus.address!)}</span>
+         </div>`
+      : `<div class="wallet-bar disconnected">
+           <button class="connect-wallet-btn" data-action="connect">Connect Wallet</button>
+         </div>`;
+
+    const strategyOptions = STRATEGIES.map(s =>
+      `<option value="${s.value}" ${this.selectedStrategy === s.value ? 'selected' : ''}>${s.label}</option>`
+    ).join('');
+
+    const chainOptions = CHAINS.map(c =>
+      `<option value="${c.value}" ${this.selectedChain === c.value ? 'selected' : ''}>${c.label}</option>`
+    ).join('');
+
+    const signalList = this.signals.length > 0
+      ? this.signals.map(s => this.renderSignal(s)).join('')
+      : '<div class="no-signals">No signals found. Try adjusting filters.</div>';
+
+    this.setContent(`
+      <div class="trading-panel-inner">
+        ${walletBar}
+        <div class="trading-controls">
+          <select class="strategy-select" data-action="strategy">${strategyOptions}</select>
+          <select class="chain-select" data-action="chain">${chainOptions}</select>
+          <button class="refresh-btn" data-action="refresh" title="Refresh signals">↻</button>
+        </div>
+        <div class="signal-list">
+          ${signalList}
+        </div>
+      </div>
+    `);
+
+    this.attachListeners();
+  }
+
+  private renderSignal(signal: TradeSignal): string {
+    const isBuy = signal.action === 'BUY';
+    const actionClass = isBuy ? 'action-buy' : 'action-sell';
+    const actionLabel = isBuy ? 'BUY' : 'SELL';
+    const confidenceColor = signal.confidence >= 70 ? '#22c55e' : signal.confidence >= 40 ? '#eab308' : '#ef4444';
+    const isExecuting = this.executingIds.has(signal.id);
+    const disabled = !this.walletStatus.connected || isExecuting;
+
+    return `
+      <div class="signal-card" data-signal-id="${signal.id}">
+        <div class="signal-header">
+          <span class="signal-symbol">${signal.symbol}</span>
+          <span class="signal-chain">${signal.chain}</span>
+          <span class="signal-action ${actionClass}">${actionLabel}</span>
+        </div>
+        <div class="signal-confidence">
+          <div class="confidence-bar-track">
+            <div class="confidence-bar-fill" style="width:${signal.confidence}%;background:${confidenceColor}"></div>
+          </div>
+          <span class="confidence-value">${signal.confidence}%</span>
+        </div>
+        <div class="signal-prices">
+          <div class="price-item"><span class="price-label">Entry</span><span class="price-value">${formatPrice(signal.entryPrice)}</span></div>
+          <div class="price-item"><span class="price-label">Target</span><span class="price-value">${formatPrice(signal.targetPrice)}</span></div>
+          <div class="price-item"><span class="price-label">Stop</span><span class="price-value">${formatPrice(signal.stopLoss)}</span></div>
+        </div>
+        <div class="signal-reason">${signal.reason}</div>
+        <div class="signal-footer">
+          <span class="signal-strategy">${signal.strategy.replace('_', ' ')}</span>
+          <button class="execute-btn ${actionClass}" data-action="execute" data-signal-id="${signal.id}" ${disabled ? 'disabled' : ''}>
+            ${isExecuting ? 'Executing...' : 'Execute'}
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  private attachListeners(): void {
+    const content = this.content;
+
+    content.querySelector('[data-action="connect"]')?.addEventListener('click', () => this.handleConnectWallet());
+    content.querySelector('[data-action="refresh"]')?.addEventListener('click', () => this.loadSignals());
+
+    const strategySelect = content.querySelector('[data-action="strategy"]') as HTMLSelectElement | null;
+    strategySelect?.addEventListener('change', () => {
+      this.selectedStrategy = strategySelect.value as StrategyType | 'all';
+      this.loadSignals();
+    });
+
+    const chainSelect = content.querySelector('[data-action="chain"]') as HTMLSelectElement | null;
+    chainSelect?.addEventListener('change', () => {
+      this.selectedChain = chainSelect.value;
+      this.loadSignals();
+    });
+
+    content.querySelectorAll('[data-action="execute"]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const signalId = (btn as HTMLElement).dataset.signalId;
+        const signal = this.signals.find(s => s.id === signalId);
+        if (signal) this.handleExecute(signal);
+      });
+    });
+  }
+
+  private async handleConnectWallet(): Promise<void> {
+    try {
+      this.walletStatus = await connectWallet();
+      if (!this.walletStatus.connected) {
+        await switchToBaseNetwork();
+        this.walletStatus = await getWalletStatus();
+      }
+      this.renderPanel();
+    } catch {
+      this.showError('Failed to connect wallet');
     }
+  }
+
+  private async handleExecute(signal: TradeSignal): Promise<void> {
+    if (!this.walletStatus.connected || this.executingIds.has(signal.id)) return;
+
+    this.executingIds.add(signal.id);
+    this.renderPanel();
 
     try {
-      const tradeRequest: TradeRequest = {
-        token: this.selectedToken,
-        amount: parseFloat(this.amount),
-        type: this.tradeType,
-        chain: 'base',
+      const result = await executeTrade({
+        token: signal.tokenId,
+        amount: 100,
+        type: signal.action === 'BUY' ? 'buy' : 'sell',
+        chain: signal.chain,
         slippage: 0.5,
-      };
+      });
 
-      const result: TradeResult = await executeTrade(tradeRequest);
-      
       if (result.success) {
-        this.showStatus(`Trade successful! Tx: ${result.txHash?.slice(0, 10)}...`, 'success');
-        this.amount = '';
-        this.renderTradingInterface();
+        this.executingIds.delete(signal.id);
+        this.renderPanel();
       } else {
-        this.showStatus(`Trade failed: ${result.error}`, 'error');
+        this.executingIds.delete(signal.id);
+        this.showError(result.error || 'Trade failed');
       }
     } catch {
-      this.showStatus('Trade execution failed', 'error');
-    } finally {
-      if (executeBtn) {
-        executeBtn.disabled = false;
-        executeBtn.textContent = `${this.tradeType === 'buy' ? 'Buy' : 'Sell'} Token`;
-      }
+      this.executingIds.delete(signal.id);
+      this.showError('Trade execution failed');
     }
   }
 
-  private updateTradeSummary(): void {
-    const priceValue = this.element.querySelector('.price-value');
-    const totalValue = this.element.querySelector('.total-value');
-    
-    if (priceValue && totalValue) {
-      const amount = parseFloat(this.amount) || 0;
-      totalValue.textContent = `$${amount.toFixed(2)}`;
+  private async loadSignals(): Promise<void> {
+    this.showLoading('Generating trade signals...');
+    try {
+      const strategy = this.selectedStrategy === 'all' ? undefined : this.selectedStrategy;
+      const chain = this.selectedChain === 'all' ? undefined : this.selectedChain;
+      this.signals = await generateTradeSignals(chain, strategy);
+      this.renderPanel();
+    } catch {
+      this.showError('Failed to generate trade signals');
     }
   }
 
-  private showStatus(message: string, type: 'success' | 'error' | 'warning'): void {
-    const statusEl = this.element.querySelector('.trade-status');
-    if (statusEl) {
-      (statusEl as HTMLElement).className = `trade-status ${type}`;
-      statusEl.textContent = message;
-      (statusEl as HTMLElement).style.display = 'block';
-      
-      if (type !== 'error') {
-        setTimeout(() => {
-          (statusEl as HTMLElement).style.display = 'none';
-        }, 5000);
-      }
+  public async refresh(): Promise<void> {
+    await this.loadSignals();
+  }
+
+  public load(): void {
+    if (!isEnabled()) {
+      this.showSetupRequired();
+      return;
     }
+    this.loadSignals();
   }
 }
