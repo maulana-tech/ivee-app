@@ -205,6 +205,18 @@ export class App {
       const panel = this.state.panels['economic-calendar'] as EconomicCalendarPanel | undefined;
       if (panel) primeTask('economic-calendar', () => panel.fetchData());
     }
+    if (shouldPrime('fear-greed')) {
+      const panel = this.state.panels['fear-greed'] as unknown as { fetchData: () => Promise<boolean> } | undefined;
+      if (panel?.fetchData) primeTask('fear-greed', () => panel.fetchData());
+    }
+    if (shouldPrime('etf-flows')) {
+      const panel = this.state.panels['etf-flows'] as unknown as { fetchData: () => Promise<boolean> } | undefined;
+      if (panel?.fetchData) primeTask('etf-flows', () => panel.fetchData());
+    }
+    if (shouldPrime('stablecoins')) {
+      const panel = this.state.panels['stablecoins'] as unknown as { fetchData: () => Promise<boolean> } | undefined;
+      if (panel?.fetchData) primeTask('stablecoins', () => panel.fetchData());
+    }
 
     if (tasks.length > 0) {
       await Promise.allSettled(tasks);
