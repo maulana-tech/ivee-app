@@ -737,6 +737,8 @@ const CRYPTO_PANELS: Record<string, PanelConfig> = {
   heatmap: { name: 'Crypto Heatmap', enabled: true, priority: 2 },
   'defi-tokens': { name: 'DeFi Tokens', enabled: true, priority: 2 },
   'ai-tokens': { name: 'AI Tokens', enabled: true, priority: 2 },
+  'other-tokens': { name: 'Altcoins', enabled: true, priority: 2 },
+  'crypto-heatmap': { name: 'Sector Heatmap', enabled: true, priority: 2 },
   stablecoins: { name: 'Stablecoins', enabled: true, priority: 2 },
   'etf-flows': { name: 'BTC ETF Tracker', enabled: true, priority: 2 },
   markets: { name: 'Markets', enabled: true, priority: 2 },
@@ -746,6 +748,9 @@ const CRYPTO_PANELS: Record<string, PanelConfig> = {
   bonds: { name: 'Bonds', enabled: false, priority: 2 },
   'economic-calendar': { name: 'Economic Calendar', enabled: true, priority: 2 },
   monitors: { name: 'My Monitors', enabled: true, priority: 2 },
+  trading: { name: 'Trade Execution', enabled: true, priority: 1 },
+  backtest: { name: 'Strategy Backtest', enabled: true, priority: 1 },
+  'price-alerts': { name: 'Price Alerts', enabled: true, priority: 1 },
 };
 
 const CRYPTO_MAP_LAYERS: MapLayers = {
