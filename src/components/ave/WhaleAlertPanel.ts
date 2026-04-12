@@ -11,7 +11,6 @@ export class WhaleAlertPanel extends Panel {
     super(options);
     this.element.classList.add('whale-alert-panel');
     this.element.classList.add('panel-wide');
-    this.loadAlerts();
   }
 
   protected renderContent(): void {
@@ -19,8 +18,8 @@ export class WhaleAlertPanel extends Panel {
       this.renderAlerts();
       return;
     }
-    this.showLoading('Connecting to AVE...');
-    setTimeout(() => this.checkAndLoad(), 100);
+    this.showLoading('Loading whale alerts...');
+    setTimeout(() => this.loadAlerts(), 200);
   }
 
   private async checkAndLoad(): Promise<void> {
