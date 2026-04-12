@@ -9,11 +9,14 @@ export class TrendingPanel extends Panel {
   constructor(options: { id: string; title: string }) {
     super(options);
     this.element.classList.add('trending-panel');
-    this.loadTrending();
   }
 
   protected renderContent(): void {
-    this.renderTrending();
+    if (this.trending.length === 0) {
+      this.loadTrending();
+    } else {
+      this.renderTrending();
+    }
   }
 
   private showSetupRequired(): void {
