@@ -217,34 +217,6 @@ export class App {
       const panel = this.state.panels['stablecoins'] as unknown as { fetchData: () => Promise<boolean> } | undefined;
       if (panel?.fetchData) primeTask('stablecoins', () => panel.fetchData());
     }
-    if (shouldPrime('live-news')) {
-      const panel = this.state.panels['live-news'] as { renderContent: () => void } | undefined;
-      if (panel?.renderContent) primeTask('live-news', async () => { panel.renderContent(); });
-    }
-    if (shouldPrime('insights')) {
-      const panel = this.state.panels['insights'] as { renderContent: () => void } | undefined;
-      if (panel?.renderContent) primeTask('insights', async () => { panel.renderContent(); });
-    }
-    if (shouldPrime('whale-alerts')) {
-      const panel = this.state.panels['whale-alerts'] as { renderContent: () => void } | undefined;
-      if (panel?.renderContent) primeTask('whale-alerts', async () => { panel.renderContent(); });
-    }
-    if (shouldPrime('portfolio')) {
-      const panel = this.state.panels['portfolio'] as { renderContent: () => void } | undefined;
-      if (panel?.renderContent) primeTask('portfolio', async () => { panel.renderContent(); });
-    }
-    if (shouldPrime('signals')) {
-      const panel = this.state.panels['signals'] as { renderContent: () => void } | undefined;
-      if (panel?.renderContent) primeTask('signals', async () => { panel.renderContent(); });
-    }
-    if (shouldPrime('risk-scanner')) {
-      const panel = this.state.panels['risk-scanner'] as { renderContent: () => void } | undefined;
-      if (panel?.renderContent) primeTask('risk-scanner', async () => { panel.renderContent(); });
-    }
-    if (shouldPrime('trending')) {
-      const panel = this.state.panels['trending'] as { renderContent: () => void } | undefined;
-      if (panel?.renderContent) primeTask('trending', async () => { panel.renderContent(); });
-    }
 
     if (tasks.length > 0) {
       await Promise.allSettled(tasks);
