@@ -9,11 +9,14 @@ export class PortfolioPanel extends Panel {
   constructor(options: { id: string; title: string }) {
     super(options);
     this.element.classList.add('portfolio-panel');
-    this.loadPortfolio();
   }
 
   protected renderContent(): void {
-    this.renderPortfolio();
+    if (this.holdings.length === 0) {
+      this.loadPortfolio();
+    } else {
+      this.renderPortfolio();
+    }
   }
 
   private renderPortfolio(): void {
