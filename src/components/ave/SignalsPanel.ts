@@ -1,5 +1,4 @@
 import { Panel } from '../Panel';
-import { isEnabled } from '@/services/ave/client';
 import { generateSignals, formatSignalBadge, TradingSignal } from '@/services/ave/signals';
 
 export class SignalsPanel extends Panel {
@@ -10,15 +9,14 @@ export class SignalsPanel extends Panel {
     super(options);
     this.element.classList.add('signals-panel');
     this.element.classList.add('panel-wide');
-    this.loadSignals();
   }
 
   protected renderContent(): void {
-    if (!isEnabled()) {
-      this.showSetupRequired();
-      return;
+    if (this.signals.length === 0) {
+      this.loadSignals();
+    } else {
+      this.renderSignals();
     }
-    this.renderSignals();
   }
 
   private showSetupRequired(): void {
