@@ -193,7 +193,9 @@ export class UnifiedSettings {
   }
 
   public close(): void {
-    if (this.hasPendingPanelChanges() && !confirm(t('header.unsavedChanges'))) return;
+    if (this.hasPendingPanelChanges()) {
+      this.savePanelChanges();
+    }
     this.overlay.classList.remove('active');
     this.prefsCleanup?.();
     this.prefsCleanup = null;
