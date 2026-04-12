@@ -34,11 +34,14 @@ export class RiskScannerPanel extends Panel {
   constructor(options: { id: string; title: string }) {
     super(options);
     this.element.classList.add('risk-scanner-panel', 'panel-wide');
-    this.loadRiskScan();
   }
 
   protected renderContent(): void {
-    this.loadRiskScan();
+    if (!this.loading && !this.analysisResult) {
+      this.loadRiskScan();
+    } else if (this.analysisResult) {
+      this.renderAI();
+    }
   }
 
   private async loadRiskScan(): Promise<void> {
