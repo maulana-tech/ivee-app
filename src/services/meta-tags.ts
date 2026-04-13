@@ -44,7 +44,8 @@ export function updateMetaTagsForStory(meta: StoryMeta): void {
 }
 
 export function resetMetaTags(): void {
-  document.title = variantMeta.title;
+  const title = variantMeta.title || 'IVEE - Crypto Trading Dashboard';
+  document.title = title;
 
   setMetaTag('title', variantMeta.title);
   setMetaTag('description', variantMeta.description);
