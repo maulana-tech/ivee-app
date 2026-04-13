@@ -1,3 +1,4 @@
+// AVE Claw Hackathon - Crypto Trading Dashboard
 export interface VariantMeta {
   title: string;
   description: string;
