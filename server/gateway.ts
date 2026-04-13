@@ -279,21 +279,12 @@ export function createDomainGateway(
       }
     }
 
-    // HACKATHON BYPASS: make market & other essential endpoints public for AVE Claw Hackathon
+    // HACKATHON BYPASS: make market endpoints public for AVE Claw Hackathon
     const marketPathnames = [
-      '/api/market/v1/list-crypto-quotes',
-      '/api/market/v1/list-crypto-sectors',
-      '/api/market/v1/list-defi-tokens',
-      '/api/market/v1/list-ai-tokens',
-      '/api/market/v1/list-other-tokens',
-      '/api/market/v1/list-stablecoin-markets',
-      '/api/market/v1/list-etf-flows',
-      '/api/market/v1/get-fear-greed-index',
-      '/api/market/v1/get-sector-summary',
-      '/api/market/v1/list-market-quotes',
-      '/api/market/v1/list-commodity-quotes',
-      '/api/news/v1/list-feed-digest',
-      '/api/economic/v1/get-economic-calendar',
+      '/api/market/v1/',
+      '/api/news/v1/',
+      '/api/economic/v1/',
+      '/api/bootstrap',
     ];
     const isMarketEndpoint = marketPathnames.some(p => pathname.startsWith(p));
 

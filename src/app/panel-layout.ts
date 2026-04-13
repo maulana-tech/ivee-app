@@ -33,6 +33,7 @@ import {
 } from '@/components';
 import { HeatmapPanel } from '@/components/HeatmapPanel';
 import { WhaleAlertPanel, SignalsPanel, PortfolioPanel, RiskScannerPanel, TrendingPanel, TradingPanel, BacktestPanel, PriceAlertPanel } from '@/components/ave';
+import { TradeChartPanel } from '@/components/ave/TradeChartPanel';
 import { InsightsPanel } from '@/components/InsightsPanel';
 import { LiveNewsPanel } from '@/components/LiveNewsPanel';
 import { RuntimeConfigPanel } from '@/components/RuntimeConfigPanel';
@@ -503,23 +504,34 @@ export class PanelLayoutManager implements AppModule {
   private createPanels(): void {
     const panelsGrid = document.getElementById('panelsGrid')!;
 
+    // Replace map with TradeChart for crypto variant
     const mapContainer = document.getElementById('mapContainer') as HTMLElement;
-    const preferGlobe = loadFromStorage<string>(STORAGE_KEYS.mapMode, 'flat') === 'globe';
-    this.ctx.map = new MapContainer(mapContainer, {
-      zoom: this.ctx.isMobile ? 2.5 : 1.0,
-      pan: { x: 0, y: 0 },
-      view: this.ctx.isMobile ? this.ctx.resolvedLocation : 'global',
-      layers: this.ctx.mapLayers,
-      timeRange: '7d',
-    }, preferGlobe);
+    if (mapContainer && SITE_VARIANT === 'crypto') {
+      mapContainer.innerHTML = '';
+      mapContainer.style.height = '360px';
+      mapContainer.style.minHeight = '360px';
+      const chartPanel = new TradeChartPanel();
+      (mapContainer as any).appendChild((chartPanel as any).element);
+      (chartPanel as any).renderContent();
+      this.ctx.panels['trade-chart'] = chartPanel;
+    } else if (mapContainer) {
+      const preferGlobe = loadFromStorage<string>(STORAGE_KEYS.mapMode, 'flat') === 'globe';
+      this.ctx.map = new MapContainer(mapContainer, {
+        zoom: this.ctx.isMobile ? 2.5 : 1.0,
+        pan: { x: 0, y: 0 },
+        view: this.ctx.isMobile ? this.ctx.resolvedLocation : 'global',
+        layers: this.ctx.mapLayers,
+        timeRange: '7d',
+      }, preferGlobe);
 
-    if (this.ctx.mapLayers.resilienceScore && !this.ctx.map.isDeckGLActive?.()) {
-      this.ctx.mapLayers = { ...this.ctx.mapLayers, resilienceScore: false };
-      saveToStorage(STORAGE_KEYS.mapLayers, this.ctx.mapLayers);
+      if (this.ctx.mapLayers.resilienceScore && !this.ctx.map.isDeckGLActive?.()) {
+        this.ctx.mapLayers = { ...this.ctx.mapLayers, resilienceScore: false };
+        saveToStorage(STORAGE_KEYS.mapLayers, this.ctx.mapLayers);
+      }
+
+      this.ctx.map.initEscalationGetters();
+      this.ctx.currentTimeRange = this.ctx.map.getTimeRange();
     }
-
-    this.ctx.map.initEscalationGetters();
-    this.ctx.currentTimeRange = this.ctx.map.getTimeRange();
 
     this.createPanel('heatmap', () => new HeatmapPanel());
     this.createPanel('markets', () => new MarketPanel());

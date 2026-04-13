@@ -724,7 +724,7 @@ const HAPPY_MOBILE_MAP_LAYERS: MapLayers = {
 // CRYPTO VARIANT (Crypto Trading - WhaleScope AI)
 // ============================================
 const CRYPTO_PANELS: Record<string, PanelConfig> = {
-  map: { name: 'Crypto Map', enabled: true, priority: 1 },
+  'trade-chart': { name: 'Trade Chart', enabled: true, priority: 1 },
   'live-news': { name: 'Crypto Headlines', enabled: true, priority: 1 },
   insights: { name: 'AI Market Insights', enabled: true, priority: 1 },
   crypto: { name: 'Live Crypto', enabled: true, priority: 1 },
