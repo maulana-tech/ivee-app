@@ -11,6 +11,8 @@ export interface TradeResult {
   txHash?: string;
   error?: string;
   message?: string;
+  estimateOut?: string;
+  priceUSD?: string;
 }
 
 export interface WalletStatus {
@@ -28,10 +30,21 @@ interface EthereumProvider {
   removeListener: (event: string, callback: (args: unknown) => void) => void;
 }
 
-declare global {
-  interface Window {
-    ethereum?: EthereumProvider;
-  }
+const BOT_API = 'https://bot-api.ave.ai';
+const AVE_API_KEY = '4jFc0Luq30MboTRHof15K7frDMkPZ8xW6Y9JGmEUlXK4dKoVcqrHMzRjF8FTfEAM';
+
+const NATIVE_ETH = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee';
+
+const BASE_TOKENS: Record<string, string> = {
+  ETH: NATIVE_ETH,
+  WETH: '0x4200000000000000000000000000000000000006',
+  USDC: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+  USDbC: '0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA',
+  DAI: '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb',
+};
+
+function getTokenAddress(symbol: string): string {
+  return BASE_TOKENS[symbol.toUpperCase()] || symbol;
 }
 
 const TRADE_HISTORY_KEY = 'ivee-agent-trades';
@@ -141,31 +154,174 @@ export async function connectWallet(): Promise<WalletStatus> {
 
 export function disconnectWallet(): void {
   // MetaMask doesn't support programmatic disconnect
-  // User must disconnect from the wallet extension
+}
+
+export async function getQuote(
+  tokenAddress: string,
+  amount: string,
+  swapType: 'buy' | 'sell',
+  chain = 'base',
+): Promise<{ estimateOut: string; spender: string[]; decimals: number }> {
+  const inToken = swapType === 'buy' ? NATIVE_ETH : tokenAddress;
+  const outToken = swapType === 'buy' ? tokenAddress : NATIVE_ETH;
+
+  const resp = await fetch(`${BOT_API}/v1/thirdParty/chainWallet/getAmountOut`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'AVE-ACCESS-KEY': AVE_API_KEY,
+    },
+    body: JSON.stringify({
+      chain,
+      inAmount: amount,
+      inTokenAddress: inToken,
+      outTokenAddress: outToken,
+      swapType,
+    }),
+  });
+
+  const data = await resp.json();
+  if (data.status !== 200 && data.status !== 0) {
+    throw new Error(data.msg || 'Quote failed');
+  }
+  return {
+    estimateOut: data.data?.estimateOut || '0',
+    spender: data.data?.spender || [],
+    decimals: data.data?.decimals || 18,
+  };
+}
+
+async function approveToken(tokenAddress: string, spender: string): Promise<void> {
+  if (!window.ethereum) throw new Error('No wallet');
+  const accounts = await window.ethereum.request({ method: 'eth_accounts' }) as string[];
+  if (!accounts[0]) throw new Error('Wallet not connected');
+
+  const approveData = '0x095ea7b3' +
+    spender.toLowerCase().replace('0x', '').padStart(64, '0') +
+    'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff';
+
+  await window.ethereum.request({
+    method: 'eth_sendTransaction',
+    params: [{
+      from: accounts[0],
+      to: tokenAddress,
+      data: approveData,
+    }],
+  });
+}
+
+async function createEvmTx(
+  creatorAddress: string,
+  tokenAddress: string,
+  amountWei: string,
+  swapType: 'buy' | 'sell',
+  slippageBps: string,
+  chain = 'base',
+): Promise<{
+  txContent: { data: string; to: string; value: string };
+  requestTxId: string;
+  estimateOut: string;
+  createPrice: string;
+}> {
+  const inToken = swapType === 'buy' ? NATIVE_ETH : tokenAddress;
+  const outToken = swapType === 'buy' ? tokenAddress : NATIVE_ETH;
+
+  const resp = await fetch(`${BOT_API}/v1/thirdParty/chainWallet/createEvmTx`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'AVE-ACCESS-KEY': AVE_API_KEY,
+    },
+    body: JSON.stringify({
+      chain,
+      creatorAddress,
+      inAmount: amountWei,
+      inTokenAddress: inToken,
+      outTokenAddress: outToken,
+      swapType,
+      slippage: slippageBps,
+      autoSlippage: true,
+    }),
+  });
+
+  const data = await resp.json();
+  if (data.status !== 200 && data.status !== 0) {
+    throw new Error(data.msg || 'Create tx failed');
+  }
+  return {
+    txContent: data.data.txContent,
+    requestTxId: data.data.requestTxId,
+    estimateOut: data.data.estimateOut || '0',
+    createPrice: data.data.createPrice || '0',
+  };
+}
+
+async function signAndSendTx(txContent: { data: string; to: string; value: string }, requestTxId: string, chain = 'base'): Promise<string> {
+  if (!window.ethereum) throw new Error('No wallet');
+  const accounts = await window.ethereum.request({ method: 'eth_accounts' }) as string[];
+  if (!accounts[0]) throw new Error('Wallet not connected');
+
+  const txHash = await window.ethereum.request({
+    method: 'eth_sendTransaction',
+    params: [{
+      from: accounts[0],
+      to: txContent.to,
+      data: txContent.data,
+      value: txContent.value || '0x0',
+    }],
+  }) as string;
+
+  try {
+    await fetch(`${BOT_API}/v1/thirdParty/chainWallet/sendSignedEvmTx`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'AVE-ACCESS-KEY': AVE_API_KEY,
+      },
+      body: JSON.stringify({
+        chain,
+        requestTxId,
+        signedTx: '',
+        useMev: false,
+      }),
+    });
+  } catch {
+    // tx was already sent via eth_sendTransaction, just tracking
+  }
+
+  return txHash;
 }
 
 export async function executeTrade(request: TradeRequest): Promise<TradeResult> {
   const status = await getWalletStatus();
 
   if (!status.connected || !window.ethereum) {
-    return {
-      success: false,
-      error: 'Wallet not connected',
-    };
+    return { success: false, error: 'Wallet not connected' };
   }
 
   if (status.chainId !== 8453) {
-    return {
-      success: false,
-      error: 'Please switch to Base network',
-    };
+    return { success: false, error: 'Please switch to Base network' };
   }
 
+  const address = status.address!;
+  const tokenAddress = getTokenAddress(request.token);
+  const amountWei = BigInt(Math.floor(request.amount * 1e18)).toString();
+  const slippageBps = String(Math.round((request.slippage || 0.5) * 100));
+
   try {
-    // Simulate tx for hackathon demo — real implementation would call DEX contract
-    const txHash = `0x${Array.from({ length: 64 }, () =>
-      Math.floor(Math.random() * 16).toString(16)
-    ).join('')}`;
+    const quote = await getQuote(tokenAddress, amountWei, request.type);
+
+    if (request.type === 'sell' && quote.spender?.length > 0) {
+      try {
+        await approveToken(tokenAddress, quote.spender[0]);
+      } catch {
+        // approval may already exist
+      }
+    }
+
+    const tx = await createEvmTx(address, tokenAddress, amountWei, request.type, slippageBps);
+
+    const txHash = await signAndSendTx(tx.txContent, tx.requestTxId);
 
     const trades = getTrades();
     trades.push({
@@ -174,10 +330,9 @@ export async function executeTrade(request: TradeRequest): Promise<TradeResult> 
       symbol: request.token.toUpperCase(),
       type: request.type,
       amount: request.amount,
-      price: request.type === 'buy' ? 2000 + Math.random() * 500 : 2000 - Math.random() * 200,
+      price: parseFloat(tx.createPrice) || 0,
       timestamp: Date.now(),
       txHash,
-      pnl: request.type === 'buy' ? Math.random() * 500 - 100 : -(Math.random() * 300),
       status: 'filled',
     });
     saveTrades(trades);
@@ -185,7 +340,9 @@ export async function executeTrade(request: TradeRequest): Promise<TradeResult> 
     return {
       success: true,
       txHash,
-      message: `Trade ${request.type} ${request.amount} ${request.token} on Base`,
+      estimateOut: tx.estimateOut,
+      priceUSD: tx.createPrice,
+      message: `${request.type === 'buy' ? 'Bought' : 'Sold'} ~${(parseFloat(tx.estimateOut) / 1e18).toFixed(6)} ${request.type === 'buy' ? request.token : 'ETH'}`,
     };
   } catch (error) {
     return {
@@ -237,4 +394,35 @@ export function onWalletChange(callback: (accounts: string[]) => void): () => vo
   return () => {
     window.ethereum?.removeListener('accountsChanged', handler);
   };
+}
+
+export async function getAutoSlippage(tokenAddress: string, chain = 'base'): Promise<number> {
+  try {
+    const resp = await fetch(`${BOT_API}/v1/thirdParty/chainWallet/getAutoSlippage`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'AVE-ACCESS-KEY': AVE_API_KEY,
+      },
+      body: JSON.stringify({ chain, tokenAddress, useMev: false }),
+    });
+    const data = await resp.json();
+    if (data.status === 200 || data.status === 0) {
+      return parseInt(data.data?.slippage || '500') / 100;
+    }
+  } catch {}
+  return 5;
+}
+
+export async function getGasTip(): Promise<{ high: string; average: string; low: string }> {
+  try {
+    const resp = await fetch(`${BOT_API}/v1/thirdParty/chainWallet/getGasTip`, {
+      headers: { 'AVE-ACCESS-KEY': AVE_API_KEY },
+    });
+    const data = await resp.json();
+    const base = (data.data || []).find((g: any) => g.chain === 'base');
+    return { high: base?.high || '0', average: base?.average || '0', low: base?.low || '0' };
+  } catch {
+    return { high: '0', average: '0', low: '0' };
+  }
 }
