@@ -72,14 +72,14 @@ export async function generateSignals(
         const trending = await getTrendingTokens(chain, topic);
         
         for (const token of trending.slice(0, limit)) {
-          const priceData = await getTokenPrice(token.id);
+          const priceData = await getTokenPrice(token.id, chain);
           if (!priceData) continue;
           
-          const change24h = parseFloat(priceData.change24h || '0');
-          const currentPrice = parseFloat(priceData.price || priceData.priceUsd || '0');
+          const change24h = parseFloat(priceData.price_change_24h || '0');
+          const currentPrice = parseFloat(priceData.current_price_usd || '0');
           
-          // Simulate volume ratio (in real implementation, would fetch actual volume data)
-          const volumeRatio = Math.random() * 2 + 0.5;
+          // Use actual volume data from API
+          const volumeRatio = parseFloat(priceData.tx_volume_u_24h || '0') / 1000000;
           
           const { signal, confidence } = getSignalFromChange(change24h, volumeRatio);
           

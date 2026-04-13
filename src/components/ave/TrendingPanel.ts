@@ -1,8 +1,8 @@
 import { Panel } from '../Panel';
-import { getTrendingTokens, TrendingToken } from '@/services/ave/client';
+import { getTrendingTokens, type AveToken } from '@/services/ave/client';
 
 export class TrendingPanel extends Panel {
-  private trending: TrendingToken[] = [];
+  private trending: AveToken[] = [];
   private chain: string = 'base';
   private topic: string = 'hot';
 
@@ -62,18 +62,18 @@ export class TrendingPanel extends Panel {
     this.attachEventListeners();
   }
 
-  private renderToken(token: TrendingToken, rank: number): string {
-    const change = parseFloat(token.change24h || '0');
+  private renderToken(token: AveToken, rank: number): string {
+    const change = parseFloat(token.price_change_24h || '0');
     const changeColor = change >= 0 ? '#00ff00' : '#ff4444';
     
     return `
-      <div class="trending-item" data-token="${token.id}">
+      <div class="trending-item" data-token="${token.token}">
         <div class="trending-rank">${rank + 1}</div>
         <div class="trending-token">
           <span class="token-symbol">${token.symbol}</span>
           <span class="token-chain">${token.chain}</span>
         </div>
-        <div class="trending-price">$${parseFloat(token.price || '0').toFixed(6)}</div>
+        <div class="trending-price">$${parseFloat(token.current_price_usd || '0').toFixed(6)}</div>
         <div class="trending-change" style="color: ${changeColor}">
           ${change >= 0 ? '+' : ''}${change.toFixed(2)}%
         </div>
