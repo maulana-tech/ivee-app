@@ -98,8 +98,15 @@ export const getSectorSummary = async (): Promise<any> => {
   return { sectors: [] };
 };
 
-export const listMarketQuotes = async () => ({ quotes: [] });
-export const listCommodityQuotes = async () => ({ quotes: [] });
+export const listMarketQuotes = async (): Promise<any> => {
+  const quotes = await listCryptoQuotes();
+  return { quotes: quotes.quotes.slice(0, 20) };
+};
+
+export const listCommodityQuotes = async (): Promise<any> => {
+  return { quotes: [] };
+};
+
 export const getCountryStockIndex = async (_req: any) => ({ indexes: [] });
 export const listGulfQuotes = async () => ({ quotes: [] });
 export const analyzeStock = async (_req: any) => ({ analysis: '' });
@@ -108,6 +115,13 @@ export const backtestStock = async (_req: any) => ({ results: [] });
 export const listStoredStockBacktests = async () => ({ backtests: [] });
 export const listEarningsCalendar = async (_req: any) => ({ earnings: [] });
 export const getCotPositioning = async () => ({ positioning: null });
+
+// Add missing endpoints
+export const getEconomicCalendar = async (_req: any) => ({ events: [] });
+
+export const listFeedDigest = async (_req: any) => ({
+  items: []
+});
 
 // Compose handlers for the RPC router
 export const marketHandler: any = {
