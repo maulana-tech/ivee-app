@@ -1,5 +1,5 @@
 {
-  "ignoreCommand": "git log -m -1 --oneline",
+  "ignoreCommand": "",
   "crons": [],
   "redirects": [
     { "source": "/docs", "destination": "/docs/documentation", "permanent": false }
