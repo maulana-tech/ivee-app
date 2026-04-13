@@ -1,5 +1,5 @@
 {
-  "ignoreCommand": "bash scripts/vercel-ignore.sh",
+  "ignoreCommand": "git log -m -1 --oneline",
   "crons": [],
   "redirects": [
     { "source": "/docs", "destination": "/docs/documentation", "permanent": false }
