@@ -58,7 +58,7 @@ export class TradeChartPanel extends Panel {
   }
 
   private renderShell(): void {
-    this.setContent(`
+    const html = `
       <div class="tc-header" style="display:flex;align-items:center;gap:10px;padding:8px 14px;border-bottom:1px solid rgba(255,255,255,0.06);flex-wrap:wrap">
         <select class="tc-token-sel" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);color:var(--text);padding:4px 8px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer">
           ${TOKENS.map(t => `<option value="${t.symbol}" ${t.symbol === this.selectedToken.symbol ? 'selected' : ''}>${t.symbol}</option>`).join('')}
@@ -82,13 +82,13 @@ export class TradeChartPanel extends Panel {
         <div class="tc-loading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:12px">Loading...</div>
         <svg class="tc-svg" style="width:100%;height:100%;display:block"></svg>
         <div class="tc-tooltip" style="display:none;position:absolute;pointer-events:none;background:rgba(20,20,20,0.95);border:1px solid rgba(255,255,255,0.12);border-radius:4px;padding:6px 10px;font-size:11px;z-index:10;white-space:nowrap"></div>
-        <div class="tc-crosshair" style="display:none;position:absolute;pointer-events:none"></div>
       </div>
       <div class="tc-footer" style="display:flex;justify-content:space-between;padding:4px 14px;font-size:10px;color:var(--text-muted);border-top:1px solid rgba(255,255,255,0.06)">
         <span class="tc-pair">${this.selectedToken.symbol}/USD</span>
         <span class="tc-updated">—</span>
       </div>
-    `);
+    `;
+    (this as any).content.innerHTML = html;
     this.bindEvents();
   }
 
