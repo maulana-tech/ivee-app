@@ -45,7 +45,7 @@ export function updateMetaTagsForStory(meta: StoryMeta): void {
 }
 
 export function resetMetaTags(): void {
-  const title = variantMeta.title || 'IVEE - Crypto Trading Dashboard';
+  const title = SITE_VARIANT === 'crypto' ? 'IVEE - Crypto Trading Dashboard' : variantMeta.title;
   document.title = title;
 
   setMetaTag('title', variantMeta.title);
