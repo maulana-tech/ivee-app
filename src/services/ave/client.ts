@@ -56,6 +56,7 @@ export interface AveToken {
   price_change_1d: string;
   tvl: string;
   tx_volume_u_24h: string;
+  token_tx_volume_usd_24h?: string;
   tx_count_24h: number;
   market_cap: string;
   fdv: string;
@@ -213,18 +214,18 @@ export async function searchTokens(keyword: string, chain = 'base'): Promise<Ave
   return data.data || [];
 }
 
-export async function getTokenPrice(tokenAddress: string, chain = 'base'): Promise<AveToken | null> {
-  const data = await aveFetch<{ status: number; data: AveToken[] }>(
-    `/tokens?keyword=${tokenAddress}&chain=${chain}&limit=1`
+export async function getTokenPrice(tokenId: string): Promise<AveToken | null> {
+  const data = await aveFetch<{ status: number; data: { token: AveToken } }>(
+    `/tokens/${tokenId}`
   );
-  return data.data?.[0] || null;
+  return data.data?.token || null;
 }
 
-export async function getTrendingTokens(chain = 'base', topic = 'hot'): Promise<AveToken[]> {
-  const data = await aveFetch<{ status: number; data: AveToken[] }>(
-    `/ranks?topic=${topic}&chain=${chain}&limit=20`
+export async function getTrendingTokens(chain = 'base', pageSize = 20): Promise<AveToken[]> {
+  const data = await aveFetch<{ status: number; data: { tokens: AveToken[] } }>(
+    `/tokens/trending?chain=${chain}&page_size=${pageSize}`
   );
-  return data.data || [];
+  return data.data?.tokens || [];
 }
 
 export async function getRiskReport(address: string, chain = 'base'): Promise<RiskReport | null> {

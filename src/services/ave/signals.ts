@@ -1,4 +1,4 @@
-import { getTokenPrice, getTrendingTokens } from './client';
+import { getTrendingTokens } from './client';
 import { createCircuitBreaker } from '@/utils/circuit-breaker';
 
 export type SignalType = 'strong_buy' | 'buy' | 'neutral' | 'sell' | 'strong_sell';
@@ -10,7 +10,7 @@ export interface TradingSignal {
   symbol: string;
   chain: string;
   signal: SignalType;
-  confidence: number; // 0-100
+  confidence: number;
   reason: SignalReason;
   entryPrice: number;
   targetPrice?: number;
@@ -22,7 +22,7 @@ export interface TradingSignal {
 
 const signalsBreaker = createCircuitBreaker<TradingSignal[]>({
   name: 'Trading Signals',
-  cacheTtlMs: 5 * 60 * 1000, // 5 minutes
+  cacheTtlMs: 5 * 60 * 1000,
   persistCache: false,
 });
 
@@ -35,7 +35,6 @@ function timeAgo(timestamp: number): string {
 }
 
 function getSignalFromChange(change24h: number, volumeRatio: number): { signal: SignalType; confidence: number } {
-  // Simple signal logic based on 24h change and volume
   let confidence = Math.min(Math.abs(change24h) * 5 + volumeRatio * 30, 100);
   
   if (change24h > 20 && confidence > 60) {
@@ -61,68 +60,57 @@ function getReason(change24h: number, volumeRatio: number): SignalReason {
 
 export async function generateSignals(
   chain = 'base',
-  topics = ['hot', 'gainers'] as ('hot' | 'gainers' | 'losers' | 'new')[],
   limit = 10
 ): Promise<TradingSignal[]> {
-  return signalsBreaker.execute(
-    async () => {
-      const signals: TradingSignal[] = [];
+  return signalsBreaker.execute(async () => {
+    const trending = await getTrendingTokens(chain, limit * 2);
+    const signals: TradingSignal[] = [];
+    
+    for (const token of trending.slice(0, limit)) {
+      const change24h = parseFloat(token.price_change_24h || '0');
+      const currentPrice = parseFloat(token.current_price_usd || '0');
       
-      for (const topic of topics) {
-        const trending = await getTrendingTokens(chain, topic);
+      const volume24h = parseFloat(token.token_tx_volume_usd_24h || token.tx_volume_u_24h || '0');
+      const volumeRatio = volume24h / 1000000;
+      
+      const { signal, confidence } = getSignalFromChange(change24h, volumeRatio);
+      
+      if (signal !== 'neutral') {
+        const reason = getReason(change24h, volumeRatio);
+        const timestamp = Math.floor(Date.now() / 1000);
         
-        for (const token of trending.slice(0, limit)) {
-          const priceData = await getTokenPrice(token.id, chain);
-          if (!priceData) continue;
-          
-          const change24h = parseFloat(priceData.price_change_24h || '0');
-          const currentPrice = parseFloat(priceData.current_price_usd || '0');
-          
-          // Use actual volume data from API
-          const volumeRatio = parseFloat(priceData.tx_volume_u_24h || '0') / 1000000;
-          
-          const { signal, confidence } = getSignalFromChange(change24h, volumeRatio);
-          
-          if (signal !== 'neutral') {
-            const reason = getReason(change24h, volumeRatio);
-            const timestamp = Math.floor(Date.now() / 1000);
-            
-            let entryPrice = currentPrice;
-            let targetPrice: number | undefined;
-            let stopLoss: number | undefined;
-            
-            if (signal.includes('buy')) {
-              targetPrice = currentPrice * (1 + Math.abs(change24h) / 100 * 2);
-              stopLoss = currentPrice * 0.95;
-            } else {
-              targetPrice = currentPrice * (1 - Math.abs(change24h) / 100 * 2);
-              stopLoss = currentPrice * 1.05;
-            }
-            
-            signals.push({
-              id: `${token.id}-${timestamp}`,
-              token: token.id,
-              symbol: token.symbol,
-              chain: token.chain,
-              signal,
-              confidence: Math.round(confidence),
-              reason,
-              entryPrice,
-              targetPrice: Math.round(targetPrice * 1000000) / 1000000,
-              stopLoss: Math.round((stopLoss || 0) * 1000000) / 1000000,
-              timestamp,
-              timeAgo: timeAgo(timestamp),
-              details: `${token.name} showing ${reason.replace('_', ' ')} pattern`,
-            });
-          }
+        let entryPrice = currentPrice;
+        let targetPrice: number | undefined;
+        let stopLoss: number | undefined;
+        
+        if (signal.includes('buy')) {
+          targetPrice = currentPrice * (1 + Math.abs(change24h) / 100 * 2);
+          stopLoss = currentPrice * 0.95;
+        } else {
+          targetPrice = currentPrice * (1 - Math.abs(change24h) / 100 * 2);
+          stopLoss = currentPrice * 1.05;
         }
+        
+        signals.push({
+          id: `${token.token}-${timestamp}`,
+          token: token.token,
+          symbol: token.symbol,
+          chain: token.chain,
+          signal,
+          confidence: Math.round(confidence),
+          reason,
+          entryPrice,
+          targetPrice: Math.round(targetPrice * 1000000) / 1000000,
+          stopLoss: Math.round((stopLoss || 0) * 1000000) / 1000000,
+          timestamp,
+          timeAgo: timeAgo(timestamp),
+          details: `${token.name} showing ${reason.replace('_', ' ')} pattern`,
+        });
       }
-      
-      // Sort by confidence
-      return signals.sort((a, b) => b.confidence - a.confidence).slice(0, 20);
-    },
-    []
-  );
+    }
+    
+    return signals.sort((a, b) => b.confidence - a.confidence).slice(0, 20);
+  }, []);
 }
 
 export function formatSignalBadge(signal: SignalType): { emoji: string; color: string } {
