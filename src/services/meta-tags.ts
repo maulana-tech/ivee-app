@@ -11,7 +11,8 @@ interface StoryMeta {
   type: 'ciianalysis' | 'crisisalert' | 'dailybrief' | 'marketfocus';
 }
 
-const variantMeta = VARIANT_META[SITE_VARIANT] ?? VARIANT_META.full;
+const _variantMeta = VARIANT_META[SITE_VARIANT];
+const variantMeta = _variantMeta && _variantMeta.title ? _variantMeta : VARIANT_META.full;
 const BASE_URL = variantMeta.url.replace(/\/$/, '');
 const API_ORIGIN = getCanonicalApiOrigin();
 const DEFAULT_IMAGE = `${BASE_URL}/favico/${SITE_VARIANT === 'full' ? '' : SITE_VARIANT + '/'}og-image.png`;
