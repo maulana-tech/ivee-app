@@ -378,7 +378,18 @@ export class UnifiedSettings {
       { key: 'all', label: t('header.sourceRegionAll') }
     ];
 
+    // Get crypto-specific categories for crypto variant
+    const CRYPTO_CATEGORIES = ['core', 'whaleIntelligence', 'cryptoPortfolio', 'cryptoMarkets', 'cryptoTrading', 'fixedIncomeFx', 'finMarkets', 'cryptoDigital', 'marketsFinance'];
+    
     for (const [catKey, catDef] of Object.entries(PANEL_CATEGORY_MAP)) {
+      // For crypto variant, only show crypto-relevant categories
+      if (SITE_VARIANT === 'crypto') {
+        const isCryptoCat = catDef.variants?.includes('crypto') || CRYPTO_CATEGORIES.includes(catKey);
+        if (!isCryptoCat && catKey !== 'all' && catKey !== 'core' && catKey !== 'marketsFinance' && catKey !== 'cryptoDigital') {
+          continue;
+        }
+      }
+      
       const hasEnabledPanel = catDef.panelKeys.some(pk => settings[pk]?.enabled);
       if (hasEnabledPanel) {
         categories.push({ key: catKey, label: t(catDef.labelKey) });
