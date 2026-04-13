@@ -279,11 +279,27 @@ export function createDomainGateway(
       }
     }
 
+    // HACKATHON BYPASS: make market endpoints public for AVE Claw Hackathon
+    const marketPathnames = [
+      '/api/market/v1/list-crypto-quotes',
+      '/api/market/v1/list-crypto-sectors',
+      '/api/market/v1/list-defi-tokens',
+      '/api/market/v1/list-ai-tokens',
+      '/api/market/v1/list-other-tokens',
+      '/api/market/v1/list-stablecoin-markets',
+      '/api/market/v1/list-etf-flows',
+      '/api/market/v1/get-fear-greed-index',
+      '/api/market/v1/get-sector-summary',
+    ];
+    const isMarketEndpoint = marketPathnames.some(p => pathname.startsWith(p));
+
     // API key validation — tier-gated endpoints require EITHER an API key OR a valid bearer token.
     // Authenticated users (sessionUserId present) bypass the API key requirement.
-    const keyCheck = validateApiKey(request, {
-      forceKey: (isTierGated && !sessionUserId) || needsLegacyProBearerGate,
-    });
+    const keyCheck = isMarketEndpoint 
+      ? { valid: true, required: false, error: '' }
+      : validateApiKey(request, {
+          forceKey: (isTierGated && !sessionUserId) || needsLegacyProBearerGate,
+        });
     if (keyCheck.required && !keyCheck.valid) {
       if (needsLegacyProBearerGate) {
         const authHeader = request.headers.get('Authorization');
