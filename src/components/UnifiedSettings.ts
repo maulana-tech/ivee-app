@@ -405,6 +405,16 @@ export class UnifiedSettings {
       .filter(([key]) => key !== 'runtime-config' || this.config.isDesktopApp)
       .filter(([key]) => !key.startsWith('cw-'));
 
+    // For crypto variant, only show panels from CRYPTO_PANELS
+    if (SITE_VARIANT === 'crypto') {
+      const cryptoPanelKeys = new Set([
+        'map', 'live-news', 'insights', 'crypto', 'whale-alerts', 'portfolio', 'signals', 'risk-scanner', 'trending',
+        'crypto-news', 'heatmap', 'defi-tokens', 'ai-tokens', 'other-tokens', 'crypto-heatmap', 'stablecoins', 'etf-flows',
+        'markets', 'macro-signals', 'fear-greed', 'forex', 'bonds', 'economic-calendar', 'monitors', 'trading', 'backtest', 'price-alerts'
+      ]);
+      entries = entries.filter(([key]) => cryptoPanelKeys.has(key));
+    }
+
     if (this.activePanelCategory !== 'all') {
       const catDef = PANEL_CATEGORY_MAP[this.activePanelCategory];
       if (catDef) {

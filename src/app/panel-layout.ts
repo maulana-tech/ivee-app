@@ -1387,14 +1387,23 @@ export class PanelLayoutManager implements AppModule {
 
   getAllSourceNames(): string[] {
     const sources = new Set<string>();
-    Object.values(FEEDS).forEach(feeds => {
-      if (feeds) feeds.forEach(f => sources.add(f.name));
-    });
     
-    // Filter INTEL_SOURCES based on variant - only show for non-crypto variants
-    if (SITE_VARIANT !== 'crypto') {
+    // For crypto variant, only show FINANCE_FEEDS sources
+    if (SITE_VARIANT === 'crypto') {
+      const CRYPTO_FEED_KEYS = ['markets', 'forex', 'bonds', 'commodities', 'crypto', 'centralbanks', 'fintech', 'analysis'];
+      for (const fk of CRYPTO_FEED_KEYS) {
+        if (FEEDS[fk]) {
+          FEEDS[fk].forEach(f => sources.add(f.name));
+        }
+      }
+    } else {
+      // Full variant - show all feeds and intel sources
+      Object.values(FEEDS).forEach(feeds => {
+        if (feeds) feeds.forEach(f => sources.add(f.name));
+      });
       INTEL_SOURCES.forEach(f => sources.add(f.name));
     }
+    
     return Array.from(sources).sort((a, b) => a.localeCompare(b));
   }
 }
