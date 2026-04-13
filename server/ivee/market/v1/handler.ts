@@ -108,3 +108,26 @@ export const backtestStock = async (_req: any) => ({ results: [] });
 export const listStoredStockBacktests = async () => ({ backtests: [] });
 export const listEarningsCalendar = async (_req: any) => ({ earnings: [] });
 export const getCotPositioning = async () => ({ positioning: null });
+
+// Compose handlers for the RPC router
+export const marketHandler: any = {
+  listMarketQuotes,
+  listCryptoQuotes,
+  listCommodityQuotes,
+  getSectorSummary,
+  listStablecoinMarkets,
+  listEtfFlows,
+  getCountryStockIndex,
+  listGulfQuotes,
+  analyzeStock,
+  getStockAnalysisHistory,
+  backtestStock,
+  listStoredStockBacktests,
+  listCryptoSectors,
+  listDefiTokens,
+  listAiTokens,
+  listOtherTokens,
+  getFearGreedIndex,
+  listEarningsCalendar,
+  getCotPositioning,
+};
