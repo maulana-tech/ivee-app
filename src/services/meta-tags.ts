@@ -13,7 +13,11 @@ interface StoryMeta {
 
 const _variantMeta = VARIANT_META[SITE_VARIANT];
 const variantMeta = _variantMeta && _variantMeta.title ? _variantMeta : VARIANT_META.full;
+const CRYPTO_TITLE = 'IVEE - Crypto Trading Dashboard';
+const CRYPTO_DESCRIPTION = 'Real-time crypto trading dashboard with whale alerts, trading signals, portfolio tracking, and market intelligence powered by AVE.';
 const BASE_URL = variantMeta.url.replace(/\/$/, '');
+const effectiveTitle = SITE_VARIANT === 'crypto' ? CRYPTO_TITLE : variantMeta.title;
+const effectiveDesc = SITE_VARIANT === 'crypto' ? CRYPTO_DESCRIPTION : variantMeta.description;
 const API_ORIGIN = getCanonicalApiOrigin();
 const DEFAULT_IMAGE = `${BASE_URL}/favico/${SITE_VARIANT === 'full' ? '' : SITE_VARIANT + '/'}og-image.png`;
 
@@ -45,11 +49,10 @@ export function updateMetaTagsForStory(meta: StoryMeta): void {
 }
 
 export function resetMetaTags(): void {
-  const title = SITE_VARIANT === 'crypto' ? 'IVEE - Crypto Trading Dashboard' : variantMeta.title;
-  document.title = title;
+  document.title = effectiveTitle;
 
-  setMetaTag('title', variantMeta.title);
-  setMetaTag('description', variantMeta.description);
+  setMetaTag('title', effectiveTitle);
+  setMetaTag('description', effectiveDesc);
   setCanonicalLink(BASE_URL + '/');
   setMetaTag('og:title', variantMeta.title);
   setMetaTag('og:description', variantMeta.description);
