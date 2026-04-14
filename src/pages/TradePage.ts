@@ -9,12 +9,12 @@ import { getTrendingTokens, type AveToken } from '@/services/ave/client';
 type Tab = 'orders' | 'history' | 'agent' | 'positions';
 
 const TOKENS = [
-  { symbol: 'WETH', address: '0x4200000000000000000000000000000000000006' },
-  { symbol: 'USDC', address: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913' },
-  { symbol: 'AERO', address: '0xd4d42F0b6DEF4CE0383636770eF773790D1A0f17' },
-  { symbol: 'OP', address: '0x4200000000000000000000000000000000000042' },
-  { symbol: 'cbETH', address: '0x2ae3f1ec7f1f5012cfeab0185bfc7aa3cf0deC22' },
-  { symbol: 'WEWE', address: '0x8453FC6A7d35F8FcE659E6f80fAb5e0Bb8dA43f1' },
+  { symbol: 'WETH', address: '0x4200000000000000000000000000000000000006', chain: 'base' },
+  { symbol: 'USDC', address: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', chain: 'base' },
+  { symbol: 'AERO', address: '0xd4d42F0b6DEF4CE0383636770eF773790D1A0f17', chain: 'base' },
+  { symbol: 'OP', address: '0x4200000000000000000000000000000000000042', chain: 'base' },
+  { symbol: 'cbETH', address: '0x2ae3f1ec7f1f5012cfeab0185bfc7aa3cf0deC22', chain: 'base' },
+  { symbol: 'WEWE', address: '0x8453FC6A7d35F8FcE659E6f80fAb5e0Bb8dA43f1', chain: 'base' },
 ];
 
 export class TradePage {
@@ -59,7 +59,7 @@ export class TradePage {
       const tokenInfo = TOKENS.find(t => t.symbol === this.selectedToken);
       if (!tokenInfo) return;
       const { getTokenPrice } = await import('@/services/ave/client');
-      const data = await getTokenPrice(tokenInfo.address);
+      const data = await getTokenPrice(`${tokenInfo.address}-${tokenInfo.chain}`);
       if (data) {
         this.tokenPrice = parseFloat(data.current_price_usd || '0');
         this.tokenChange = parseFloat(data.price_change_24h || '0');
