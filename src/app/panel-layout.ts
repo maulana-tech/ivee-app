@@ -285,8 +285,8 @@ export class PanelLayoutManager implements AppModule {
           <div class="header-right">
            ${SITE_VARIANT === 'crypto' ? `
            <div class="page-tabs">
-             <button class="page-tab active" data-page="watch">Watch</button>
-             <button class="page-tab" data-page="trade">Trade</button>
+             <button class="page-tab active" data-page="watch"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>Watch</button>
+             <button class="page-tab" data-page="trade"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>Trade</button>
            </div>` : ''}
             <button class="search-btn" id="searchBtn"><kbd>⌘K</kbd> ${t('header.search')}</button>
           ${this.ctx.isDesktopApp ? '' : `<button class="copy-link-btn" id="copyLinkBtn">${t('header.copyLink')}</button>`}

@@ -67,105 +67,206 @@ export class OrderEntry {
     ).join('');
 
     const estimateDisplay = this.estimating
-      ? '<span class="estimating">Estimating...</span>'
+      ? '<span class="oe-estimating">Calculating...</span>'
       : this.estimateOut
-        ? `<span class="estimate-value">~${this.estimateOut}</span>`
-        : '<span class="estimate-dim">Enter amount</span>';
+        ? `<span class="oe-est-value">${this.estimateOut}</span>`
+        : '<span class="oe-est-dim">Enter amount to see estimate</span>';
 
     const resultHtml = this.lastResult
-      ? `<div class="order-result ${this.lastResult.success ? 'success' : 'error'}">${this.lastResult.msg}</div>`
+      ? `<div class="oe-result ${this.lastResult.success ? 'ok' : 'err'}">${this.lastResult.msg}</div>`
       : '';
 
-    const color = this.orderType === 'buy' ? '#22c55e' : '#ef4444';
-    const label = this.orderType === 'buy' ? 'BUY' : 'SELL';
+    const isBuy = this.orderType === 'buy';
+    const accentColor = isBuy ? '#22c55e' : '#ef4444';
+    const accentBg = isBuy ? 'rgba(34,197,94,.08)' : 'rgba(239,68,68,.08)';
 
     this.el.innerHTML = `
-      <div class="oe-section">
-        <div class="oe-title">Order Entry</div>
-        <div class="oe-row">
-          <select class="oe-select" data-field="token">${tokenOptions}</select>
-          <div class="oe-toggle">
-            <button class="oe-type-btn ${this.orderType === 'buy' ? 'active' : ''}" data-type="buy">Buy</button>
-            <button class="oe-type-btn ${this.orderType === 'sell' ? 'active' : ''}" data-type="sell">Sell</button>
+      <div class="oe-header">Order Entry</div>
+
+      <div class="oe-card">
+        <div class="oe-pair-row">
+          <select class="oe-token" data-field="token">${tokenOptions}</select>
+          <div class="oe-side-toggle">
+            <button class="oe-side ${isBuy ? 'active' : ''}" data-type="buy" style="${isBuy ? `background:${accentColor};color:#000` : ''}">BUY</button>
+            <button class="oe-side ${!isBuy ? 'active' : ''}" data-type="sell" style="${!isBuy ? `background:${accentColor};color:#000` : ''}">SELL</button>
           </div>
         </div>
-        <div class="oe-row">
-          <input type="number" class="oe-input" placeholder="Amount (ETH)" value="${this.amount}" data-field="amount" step="any" min="0">
+      </div>
+
+      <div class="oe-card">
+        <label class="oe-label">Amount</label>
+        <div class="oe-input-wrap">
+          <input type="number" class="oe-amount" placeholder="0.0" value="${this.amount}" data-field="amount" step="any" min="0">
+          <span class="oe-denom">ETH</span>
         </div>
-        <div class="oe-row oe-estimate">
-          <span class="oe-label">Est. Output</span>
+        <div class="oe-est-row">
+          <span class="oe-est-label">Estimated</span>
           ${estimateDisplay}
         </div>
-        <div class="oe-row">
-          <span class="oe-label">Slippage</span>
-          <div class="oe-toggle oe-sm">
-            <button class="oe-type-btn ${this.slippageMode === 'auto' ? 'active' : ''}" data-slip="auto">Auto</button>
-            <button class="oe-type-btn ${this.slippageMode === 'custom' ? 'active' : ''}" data-slip="custom">Custom</button>
+      </div>
+
+      <div class="oe-card">
+        <div class="oe-row-space">
+          <label class="oe-label">Slippage</label>
+          <div class="oe-pill-group">
+            <button class="oe-pill ${this.slippageMode === 'auto' ? 'sel' : ''}" data-slip="auto">Auto</button>
+            <button class="oe-pill ${this.slippageMode === 'custom' ? 'sel' : ''}" data-slip="custom">Custom</button>
           </div>
-          ${this.slippageMode === 'custom' ? `<input type="number" class="oe-input oe-sm" value="${this.customSlippage}" data-field="slippage" step="0.1" min="0.1" max="50">` : ''}
         </div>
-        <div class="oe-row">
-          <span class="oe-label">Wallet</span>
-          <div class="oe-toggle oe-sm">
-            <button class="oe-type-btn ${this.walletMode === 'proxy' ? 'active' : ''}" data-wallet="proxy">Proxy</button>
-            <button class="oe-type-btn ${this.walletMode === 'metamask' ? 'active' : ''}" data-wallet="metamask">MetaMask</button>
+        ${this.slippageMode === 'custom' ? `<input type="number" class="oe-sm-input" value="${this.customSlippage}" data-field="slippage" step="0.1" min="0.1" max="50" placeholder="%">` : ''}
+      </div>
+
+      <div class="oe-card">
+        <div class="oe-row-space">
+          <label class="oe-label">Wallet</label>
+          <div class="oe-pill-group">
+            <button class="oe-pill ${this.walletMode === 'proxy' ? 'sel' : ''}" data-wallet="proxy">AVE Bot</button>
+            <button class="oe-pill ${this.walletMode === 'metamask' ? 'sel' : ''}" data-wallet="metamask">MetaMask</button>
           </div>
         </div>
       </div>
 
-      <div class="oe-section">
-        <div class="oe-title oe-collapsible" data-toggle="autosell">
-          Auto-Sell Config ${this.enableAutoSell ? '✓' : '—'}
+      <div class="oe-card oe-auto-toggle" data-action="toggle-autosell">
+        <div class="oe-row-space">
+          <label class="oe-label">Auto-Sell Protection ${this.enableAutoSell ? '<span class="oe-on">ON</span>' : '<span class="oe-off">OFF</span>'}</label>
+          <span class="oe-chevron">${this.enableAutoSell ? '▾' : '▸'}</span>
         </div>
-        <div class="oe-autosell" ${this.enableAutoSell ? '' : 'style="display:none"'}>
-          <div class="oe-row">
-            <span class="oe-label">Stop Loss</span>
-            <input type="number" class="oe-input oe-sm" value="${this.stopLossPct}" data-field="stopLoss" step="1"> <span class="oe-unit">%</span>
+      </div>
+      <div class="oe-auto-rows" ${this.enableAutoSell ? '' : 'style="display:none"'}>
+        <div class="oe-card oe-auto-inner">
+          <div class="oe-sl-row">
+            <span class="oe-sl-icon sl">SL</span>
+            <input type="number" class="oe-sl-input" value="${this.stopLossPct}" data-field="stopLoss" step="1">
+            <span class="oe-sl-unit">%</span>
           </div>
-          <div class="oe-row">
-            <span class="oe-label">Take Profit</span>
-            <input type="number" class="oe-input oe-sm" value="${this.takeProfitPct}" data-field="takeProfit" step="1"> <span class="oe-unit">%</span>
+          <div class="oe-sl-row">
+            <span class="oe-sl-icon tp">TP</span>
+            <input type="number" class="oe-sl-input" value="${this.takeProfitPct}" data-field="takeProfit" step="1">
+            <span class="oe-sl-unit">%</span>
           </div>
-          <div class="oe-row">
-            <span class="oe-label">Trailing</span>
-            <input type="number" class="oe-input oe-sm" value="${this.trailingPct}" data-field="trailing" step="1"> <span class="oe-unit">%</span>
+          <div class="oe-sl-row">
+            <span class="oe-sl-icon tr">TR</span>
+            <input type="number" class="oe-sl-input" value="${this.trailingPct}" data-field="trailing" step="1">
+            <span class="oe-sl-unit">%</span>
           </div>
         </div>
       </div>
 
-      <button class="oe-execute" data-action="execute" style="background:${color}" ${this.submitting ? 'disabled' : ''}>
-        ${this.submitting ? 'Executing...' : `${label} ${this.selectedToken}`}
+      <button class="oe-exec" data-action="execute" style="background:${accentColor};color:#000" ${this.submitting ? 'disabled' : ''}>
+        ${this.submitting ? '<span class="oe-spinner"></span> Executing...' : `${isBuy ? 'BUY' : 'SELL'} ${this.selectedToken}`}
       </button>
       ${resultHtml}
 
       <style>
-        .order-entry{padding:12px;display:flex;flex-direction:column;gap:12px;font-family:system-ui,monospace;font-size:13px;color:#e5e5e5}
-        .oe-section{background:#0f0f0f;border:1px solid #222;border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:8px}
-        .oe-title{font-size:11px;text-transform:uppercase;color:#888;letter-spacing:.05em;font-weight:600}
-        .oe-row{display:flex;align-items:center;gap:8px}
-        .oe-label{font-size:12px;color:#888;min-width:75px}
-        .oe-select,.oe-input{background:#1a1a1a;border:1px solid #333;padding:8px 10px;border-radius:6px;color:#fff;font-size:13px;flex:1;min-width:0}
-        .oe-select:focus,.oe-input:focus{outline:none;border-color:#3b82f6}
-        .oe-input.oe-sm{flex:0 0 70px;text-align:right}
-        .oe-unit{font-size:12px;color:#666}
-        .oe-toggle{display:flex;gap:0;border-radius:6px;overflow:hidden;border:1px solid #333}
-        .oe-toggle.oe-sm{flex:0 0 auto}
-        .oe-type-btn{background:#1a1a1a;border:none;color:#888;padding:6px 14px;cursor:pointer;font-size:12px;font-weight:600;transition:all .15s}
-        .oe-type-btn.active{background:#333;color:#fff}
-        .oe-type-btn:hover{color:#fff}
-        .oe-estimate{padding:4px 0;border-bottom:1px solid #1a1a1a}
-        .estimate-value{color:#3b82f6;font-weight:600}
-        .estimate-dim{color:#555}
-        .estimating{color:#888}
-        .oe-execute{width:100%;padding:14px;border:none;border-radius:8px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;transition:opacity .15s;letter-spacing:.02em}
-        .oe-execute:hover:not(:disabled){opacity:.9}
-        .oe-execute:disabled{opacity:.4;cursor:not-allowed}
-        .oe-autosell{display:flex;flex-direction:column;gap:6px;padding-top:4px}
-        .oe-collapsible{cursor:pointer}
-        .oe-collapsible:hover{color:#bbb}
-        .order-result{padding:8px 12px;border-radius:6px;font-size:12px;margin-top:4px}
-        .order-result.success{background:#0a2a15;color:#22c55e;border:1px solid #166534}
-        .order-result.error{background:#2a0a0a;color:#ef4444;border:1px solid #7f1d1d}
+        .order-entry {
+          padding: 12px; display: flex; flex-direction: column; gap: 8px;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+          font-size: 13px; color: #ccc;
+        }
+        .oe-header {
+          font-size: 14px; font-weight: 700; color: #fff;
+          padding: 4px 0 8px; border-bottom: 1px solid #1a1a1a; margin-bottom: 4px;
+        }
+        .oe-card {
+          background: #111; border: 1px solid #1e1e1e; border-radius: 8px;
+          padding: 10px 12px; display: flex; flex-direction: column; gap: 8px;
+        }
+        .oe-label { font-size: 11px; color: #777; text-transform: uppercase; letter-spacing: .04em; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+        .oe-on { color: #22c55e; font-size: 10px; font-weight: 700; }
+        .oe-off { color: #555; font-size: 10px; font-weight: 700; }
+        .oe-chevron { color: #555; font-size: 11px; }
+
+        .oe-pair-row { display: flex; gap: 8px; align-items: center; }
+        .oe-token {
+          flex: 1; background: #0d0d0d; border: 1px solid #2a2a2a; color: #fff;
+          padding: 10px 12px; border-radius: 8px; font-size: 15px; font-weight: 700;
+        }
+        .oe-token:focus { outline: none; border-color: #3b82f6; }
+        .oe-side-toggle { display: flex; gap: 2px; border-radius: 8px; overflow: hidden; }
+        .oe-side {
+          padding: 10px 18px; border: none; cursor: pointer; font-weight: 700;
+          font-size: 12px; letter-spacing: .04em; transition: all .15s;
+          background: #1a1a1a; color: #555;
+        }
+        .oe-side:not(.active):hover { color: #aaa; }
+
+        .oe-input-wrap {
+          display: flex; align-items: center; background: #0d0d0d;
+          border: 1px solid #2a2a2a; border-radius: 8px; padding: 0 12px;
+          transition: border-color .15s;
+        }
+        .oe-input-wrap:focus-within { border-color: #3b82f6; }
+        .oe-amount {
+          flex: 1; background: none; border: none; color: #fff;
+          font-size: 20px; font-weight: 600; padding: 12px 0;
+          min-width: 0;
+        }
+        .oe-amount::placeholder { color: #333; }
+        .oe-amount:focus { outline: none; }
+        .oe-denom { color: #555; font-size: 13px; font-weight: 600; padding-left: 8px; }
+
+        .oe-est-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; }
+        .oe-est-label { font-size: 11px; color: #555; }
+        .oe-est-value { color: #3b82f6; font-weight: 600; font-size: 13px; }
+        .oe-est-dim { color: #333; font-size: 12px; }
+        .oe-estimating { color: #666; font-size: 12px; }
+
+        .oe-row-space { display: flex; justify-content: space-between; align-items: center; }
+        .oe-pill-group { display: flex; gap: 2px; border-radius: 6px; overflow: hidden; background: #0a0a0a; }
+        .oe-pill {
+          padding: 5px 14px; border: none; cursor: pointer;
+          font-size: 11px; font-weight: 600; color: #555;
+          background: transparent; transition: all .15s;
+        }
+        .oe-pill.sel { background: #222; color: #fff; }
+        .oe-pill:hover { color: #aaa; }
+        .oe-sm-input {
+          background: #0d0d0d; border: 1px solid #2a2a2a; color: #fff;
+          padding: 6px 10px; border-radius: 6px; font-size: 13px; width: 100%;
+        }
+        .oe-sm-input:focus { outline: none; border-color: #3b82f6; }
+
+        .oe-auto-toggle { cursor: pointer; transition: border-color .15s; }
+        .oe-auto-toggle:hover { border-color: #333; }
+        .oe-auto-rows {}
+        .oe-auto-inner { border-top: none; border-radius: 0 0 8px 8px; margin-top: -1px; }
+        .oe-sl-row { display: flex; align-items: center; gap: 8px; }
+        .oe-sl-icon {
+          width: 26px; height: 26px; border-radius: 4px; display: flex;
+          align-items: center; justify-content: center; font-size: 9px; font-weight: 800;
+        }
+        .oe-sl-icon.sl { background: rgba(239,68,68,.15); color: #ef4444; }
+        .oe-sl-icon.tp { background: rgba(34,197,94,.15); color: #22c55e; }
+        .oe-sl-icon.tr { background: rgba(59,130,246,.15); color: #3b82f6; }
+        .oe-sl-input {
+          flex: 1; background: #0d0d0d; border: 1px solid #2a2a2a; color: #fff;
+          padding: 6px 10px; border-radius: 6px; font-size: 13px; text-align: right;
+        }
+        .oe-sl-input:focus { outline: none; border-color: #3b82f6; }
+        .oe-sl-unit { color: #555; font-size: 12px; min-width: 16px; }
+
+        .oe-exec {
+          width: 100%; padding: 16px; border: none; border-radius: 10px;
+          font-size: 15px; font-weight: 800; cursor: pointer;
+          transition: all .15s; letter-spacing: .04em; margin-top: 4px;
+        }
+        .oe-exec:hover:not(:disabled) { filter: brightness(1.1); }
+        .oe-exec:disabled { opacity: .4; cursor: not-allowed; }
+        .oe-exec:active:not(:disabled) { transform: scale(.98); }
+
+        .oe-spinner {
+          display: inline-block; width: 14px; height: 14px;
+          border: 2px solid rgba(0,0,0,.2); border-top-color: currentColor;
+          border-radius: 50%; animation: oe-spin .6s linear infinite;
+        }
+        @keyframes oe-spin { to { transform: rotate(360deg); } }
+
+        .oe-result {
+          padding: 10px 14px; border-radius: 8px; font-size: 12px;
+          margin-top: 4px; font-weight: 500;
+        }
+        .oe-result.ok { background: rgba(34,197,94,.08); color: #4ade80; border: 1px solid rgba(34,197,94,.2); }
+        .oe-result.err { background: rgba(239,68,68,.08); color: #f87171; border: 1px solid rgba(239,68,68,.2); }
       </style>
     `;
 
@@ -214,7 +315,7 @@ export class OrderEntry {
       });
     });
 
-    on('[data-toggle="autosell"]', 'click', () => {
+    on('[data-action="toggle-autosell"]', 'click', () => {
       this.enableAutoSell = !this.enableAutoSell;
       this.render();
     });
@@ -231,7 +332,8 @@ export class OrderEntry {
     if (!amt || amt <= 0) { this.estimateOut = ''; return; }
 
     this.estimating = true;
-    this.el.querySelector('.oe-estimate')!.innerHTML = '<span class="oe-label">Est. Output</span><span class="estimating">Estimating...</span>';
+    const estEl = this.el.querySelector('.oe-est-row');
+    if (estEl) estEl.innerHTML = '<span class="oe-est-label">Estimated</span><span class="oe-estimating">Calculating...</span>';
 
     try {
       const tokenInfo = TOKENS.find(t => t.symbol === this.selectedToken);
@@ -241,11 +343,10 @@ export class OrderEntry {
       const outVal = parseFloat(quote.estimateOut) / Math.pow(10, quote.decimals);
       this.estimateOut = this.orderType === 'buy' ? `${outVal.toFixed(6)} ${this.selectedToken}` : `${outVal.toFixed(6)} ETH`;
     } catch {
-      this.estimateOut = '—';
+      this.estimateOut = '';
     } finally {
       this.estimating = false;
-      const el = this.el.querySelector('.oe-estimate');
-      if (el) el.innerHTML = `<span class="oe-label">Est. Output</span>${this.estimateOut ? `<span class="estimate-value">~${this.estimateOut}</span>` : '<span class="estimate-dim">Enter amount</span>'}`;
+      if (estEl) estEl.innerHTML = `<span class="oe-est-label">Estimated</span>${this.estimateOut ? `<span class="oe-est-value">${this.estimateOut}</span>` : '<span class="oe-est-dim">Enter amount to see estimate</span>'}`;
     }
   }
 

@@ -698,30 +698,38 @@ canvas,
 
 .page-tabs {
   display: flex;
-  gap: 0;
-  border-radius: 6px;
+  gap: 2px;
+  border-radius: 8px;
   overflow: hidden;
-  border: 1px solid #333;
+  background: #111;
+  border: 1px solid #222;
+  padding: 2px;
 }
 
 .page-tab {
-  background: #1a1a1a;
+  background: transparent;
   border: none;
-  color: #888;
-  padding: 6px 16px;
+  color: #666;
+  padding: 7px 18px;
   cursor: pointer;
   font-size: 12px;
-  font-weight: 600;
-  transition: all .15s;
+  font-weight: 700;
+  transition: all .2s;
+  border-radius: 6px;
+  letter-spacing: 0.02em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .page-tab.active {
-  background: #333;
+  background: #3b82f6;
   color: #fff;
 }
 
-.page-tab:hover {
+.page-tab:not(.active):hover {
   color: #ccc;
+  background: #1a1a1a;
 }
 
 .trade-page-container {
@@ -732,6 +740,7 @@ canvas,
   right: 0;
   bottom: 0;
   z-index: 100;
+  background: #080808;
 }
 
 .focus-label {
