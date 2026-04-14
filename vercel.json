@@ -19,7 +19,8 @@
       "headers": [
         { "key": "Access-Control-Allow-Origin", "value": "*" },
         { "key": "Access-Control-Allow-Methods", "value": "GET, POST, OPTIONS" },
-        { "key": "Access-Control-Allow-Headers", "value": "Content-Type, Authorization, X-Ivee-Key, X-Widget-Key, X-Pro-Key" }
+        { "key": "Access-Control-Allow-Headers", "value": "Content-Type, Authorization, X-Ivee-Key, X-Widget-Key, X-Pro-Key" },
+        { "key": "Cache-Control", "value": "public, s-maxage=90, stale-while-revalidate=180" }
       ]
     },
     {

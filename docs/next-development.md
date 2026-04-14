@@ -6,6 +6,8 @@
 - [x] 27 crypto panels rendering with live data
 - [x] Trade Chart with interactive token selector + intervals (CoinGecko)
 - [x] AVE Trade API integration (quote → create tx → MetaMask sign → send)
+- [x] AVE API Secret + HMAC-SHA256 signing for proxy wallet (market orders, limit orders)
+- [x] Proxy wallet created: `98ca754913164d7ca9085a163799632e`
 - [x] Single CoinGecko fetch with 90s cache + fallback data
 - [x] Panel dragging disabled for crypto variant
 - [x] CSP headers fixed in vercel.json
@@ -152,13 +154,15 @@ Portfolio shows static demo positions:
 
 ## Phase 5: Advanced Features (Priority: LOW)
 
-### 5.1 Limit Orders via AVE Bot Wallet
+### 5.1 Limit Orders via AVE Bot Wallet ✅ DONE
 AVE supports limit orders via proxy wallet:
-- `POST /v1/thirdParty/tx/sendLimitOrder`
-- `POST /v1/thirdParty/tx/cancelLimitOrder`
-- Stop-loss / take-profit automation
-- Trailing stop orders
-- Files: `src/services/ave/trading.ts`, new `LimitOrderPanel.ts`
+- [x] `POST /v1/thirdParty/tx/sendLimitOrder` — `sendLimitOrder()`
+- [x] `POST /v1/thirdParty/tx/cancelLimitOrder` — `cancelLimitOrder()`
+- [x] `sendMarketOrder()` for auto-trading without MetaMask
+- [x] `createProxyWallet()` / `getProxyWallets()` / `deleteProxyWallet()`
+- [x] HMAC-SHA256 signing via Web Crypto API
+- [ ] Stop-loss / take-profit automation (autoSellConfig)
+- [ ] Trailing stop orders
 
 ### 5.2 Multi-Agent Debate Visualization
 Current AI agent runs locally. Visualize the debate:
@@ -224,6 +228,7 @@ server/ivee/market/v1/
 |-----|----------|------|-----|
 | AVE Data | `https://prod.ave-api.com/v2` | `X-API-KEY` header | Token data, trending, klines |
 | AVE Trade | `https://bot-api.ave.ai` | `AVE-ACCESS-KEY` header | Quote, create tx, send tx |
+| AVE Bot Wallet | `https://bot-api.ave.ai` | `AVE-ACCESS-KEY` + HMAC `AVE-ACCESS-SIGN` | Proxy wallet, market/limit orders |
 | CoinGecko | `https://api.coingecko.com/api/v3` | None (free) | Market data, charts |
 | Fear & Greed | `https://alternative.me/crypto/api/` | None | Sentiment index |
 

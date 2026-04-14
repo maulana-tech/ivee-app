@@ -95,7 +95,7 @@ export class SignalsPanel extends Panel {
   private async loadSignals(): Promise<void> {
     this.showLoading('Analyzing market signals...');
     try {
-      this.signals = await generateSignals(this.chain, ['hot', 'gainers'], 15);
+      this.signals = await generateSignals(this.chain, 15);
       this.renderSignals();
     } catch (error) {
       this.showError('Failed to generate signals');
