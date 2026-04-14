@@ -494,6 +494,12 @@ export interface MarketOrder {
   id: string;
 }
 
+export interface AutoSellConfig {
+  priceChange: string;
+  sellRatio: string;
+  type: 'default' | 'trailing';
+}
+
 export const sendMarketOrder = (params: {
   chain: string;
   assetsId: string;
@@ -507,6 +513,7 @@ export const sendMarketOrder = (params: {
   extraGas?: string;
   autoSlippage?: boolean;
   autoGas?: string;
+  autoSellConfig?: AutoSellConfig[];
 }): Promise<MarketOrder> =>
   signedFetch('POST', '/v1/thirdParty/tx/sendSwapOrder', params);
 
@@ -531,20 +538,76 @@ export const sendLimitOrder = (params: {
 export const cancelLimitOrder = (chain: string, ids: string[]): Promise<string[]> =>
   signedFetch('POST', '/v1/thirdParty/tx/cancelLimitOrder', { chain, ids });
 
-export const getMarketOrders = (params: {
+export interface SwapOrderRecord {
+  id: string;
+  status: string;
   chain: string;
-  assetsId: string;
-  tokenAddress?: string;
-  page?: number;
-  pageSize?: number;
-}): Promise<any> =>
-  signedFetch('GET', `/v1/thirdParty/tx/getSwapOrders?chain=${params.chain}&assetsId=${params.assetsId}&page=${params.page || 1}&pageSize=${params.pageSize || 20}`);
+  swapType: string;
+  txPriceUsd: string;
+  txHash: string;
+  inAmount: string;
+  outAmount: string;
+  errorMessage: string;
+}
+
+export const getSwapOrder = (chain: string, ids: string[]): Promise<SwapOrderRecord[]> =>
+  signedFetch('GET', `/v1/thirdParty/tx/getSwapOrder?chain=${chain}&ids=${ids.join(',')}`);
+
+export interface LimitOrderRecord {
+  id: string;
+  status: string;
+  chain: string;
+  swapType: string;
+  inTokenAddress: string;
+  outTokenAddress: string;
+  txPriceUsd: string;
+  txHash: string;
+  errorMessage: string;
+  limitPrice: string;
+  createPrice: string;
+  expireAt: string;
+  inAmount: string;
+  outAmount: string;
+  trailingPriceChange: string;
+  autoSellTriggerHash: string;
+}
 
 export const getLimitOrders = (params: {
   chain: string;
   assetsId: string;
   status?: string;
-  page?: number;
+  token?: string;
   pageSize?: number;
-}): Promise<any> =>
-  signedFetch('GET', `/v1/thirdParty/tx/getLimitOrders?chain=${params.chain}&assetsId=${params.assetsId}&status=${params.status || ''}&page=${params.page || 1}&pageSize=${params.pageSize || 20}`);
+  pageNo?: number;
+}): Promise<LimitOrderRecord[]> => {
+  const q = new URLSearchParams();
+  q.set('chain', params.chain);
+  q.set('assetsId', params.assetsId);
+  if (params.status) q.set('status', params.status);
+  if (params.token) q.set('token', params.token);
+  q.set('pageSize', String(params.pageSize || 20));
+  q.set('pageNo', String(params.pageNo ?? 0));
+  return signedFetch('GET', `/v1/thirdParty/tx/getLimitOrder?${q.toString()}`);
+};
+
+export const approveTokenForProxy = (params: {
+  chain: string;
+  assetsId: string;
+  tokenAddress: string;
+}): Promise<{ id: string; spender: string; amm: string }> =>
+  signedFetch('POST', '/v1/thirdParty/tx/approve', params);
+
+export const transferToken = (params: {
+  chain: string;
+  assetsId: string;
+  fromAddress: string;
+  toAddress: string;
+  tokenAddress: string;
+  amount: string;
+  gas?: string;
+  extraGas?: string;
+}): Promise<{ id: string }> =>
+  signedFetch('POST', '/v1/thirdParty/tx/transfer', params);
+
+export const getTransferStatus = (chain: string, ids: string[]): Promise<any[]> =>
+  signedFetch('GET', `/v1/thirdParty/tx/getTransfer?chain=${chain}&ids=${ids.join(',')}`);

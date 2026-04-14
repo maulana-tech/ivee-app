@@ -5,6 +5,7 @@ import {
   getLimitOrders,
   getProxyWallets,
   type ProxyWallet,
+  type LimitOrderRecord,
 } from '@/services/ave/trading';
 
 interface LimitOrder {
@@ -21,16 +22,14 @@ interface LimitOrder {
 
 const PROXY_ASSETS_ID = '98ca754913164d7ca9085a163799632e';
 const NATIVE_ETH = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee';
-const WETH = '0x4200000000000000000000000000000000000006';
-const USDC = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913';
 
 const TOKENS = [
-  { symbol: 'WETH', address: WETH },
-  { symbol: 'USDC', address: USDC },
+  { symbol: 'WETH', address: '0x4200000000000000000000000000000000000006' },
+  { symbol: 'USDC', address: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913' },
 ];
 
 export class LimitOrderPanel extends Panel {
-  private orders: LimitOrder[] = [];
+  private orders: LimitOrderRecord[] = [];
   private selectedToken: string = 'WETH';
   private orderType: 'buy' | 'sell' = 'buy';
   private amount: string = '';
@@ -129,7 +128,7 @@ export class LimitOrderPanel extends Panel {
     this.attachListeners();
   }
 
-  private renderOrderRow(order: LimitOrder): string {
+  private renderOrderRow(order: LimitOrderRecord): string {
     const typeClass = order.swapType === 'buy' ? 'type-buy' : 'type-sell';
     const isActive = order.status === 'pending' || order.status === 'open';
     return `
@@ -221,7 +220,9 @@ export class LimitOrderPanel extends Panel {
         swapType: this.orderType,
         slippage: '500',
         useMev: false,
-        limitPrice: BigInt(Math.floor(limitPrice * 1e18)).toString(),
+        limitPrice: String(limitPrice),
+        autoSlippage: true,
+        autoGas: 'average',
       });
 
       this.amount = '';
@@ -251,8 +252,8 @@ export class LimitOrderPanel extends Panel {
       const data = await getLimitOrders({
         chain: 'base',
         assetsId: PROXY_ASSETS_ID,
-        page: 1,
         pageSize: 20,
+        pageNo: 0,
       });
       this.orders = Array.isArray(data) ? data : [];
     } catch {

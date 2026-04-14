@@ -181,6 +181,14 @@ async function runCycle(): Promise<void> {
             slippage: '500',
             useMev: false,
             autoSlippage: true,
+            autoGas: 'average',
+            ...(isBuy ? {
+              autoSellConfig: [
+                { priceChange: '-5000', sellRatio: '10000', type: 'default' as const },
+                { priceChange: '5000', sellRatio: '5000', type: 'default' as const },
+                { priceChange: '1000', sellRatio: '10000', type: 'trailing' as const },
+              ],
+            } : {}),
           });
 
           result.executed = true;
