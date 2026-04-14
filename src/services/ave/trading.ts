@@ -31,7 +31,7 @@ interface EthereumProvider {
 }
 
 const BOT_API = 'https://bot-api.ave.ai';
-const AVE_API_KEY = import.meta.env.VITE_AVE_BOT_KEY || '';
+export const AVE_API_KEY = import.meta.env.VITE_AVE_BOT_KEY || '';
 const AVE_API_SECRET = import.meta.env.VITE_AVE_BOT_SECRET || '';
 
 const NATIVE_ETH = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee';

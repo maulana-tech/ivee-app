@@ -1,5 +1,6 @@
 import { Panel } from '../Panel';
 import { getTrendingTokens, type AveToken } from '@/services/ave/client';
+import { navigateTo } from '@/app/page-router';
 
 export class TrendingPanel extends Panel {
   private trending: AveToken[] = [];
@@ -67,7 +68,7 @@ export class TrendingPanel extends Panel {
     const changeColor = change >= 0 ? '#00ff00' : '#ff4444';
     
     return `
-      <div class="trending-item" data-token="${token.token}">
+      <div class="trending-item clickable" data-token="${token.token}" data-symbol="${token.symbol}" data-chain="${token.chain || 'base'}" title="Click to trade ${token.symbol}">
         <div class="trending-rank">${rank + 1}</div>
         <div class="trending-token">
           <span class="token-symbol">${token.symbol}</span>
@@ -95,12 +96,21 @@ export class TrendingPanel extends Panel {
       this.loadTrending();
     });
 
-    // Add to watchlist buttons
+    this.element.querySelectorAll('.trending-item.clickable').forEach(item => {
+      item.addEventListener('click', (e) => {
+        const btn = (e.target as HTMLElement).closest('.add-watchlist-btn');
+        if (btn) return;
+        const symbol = (item as HTMLElement).dataset.symbol || '';
+        const address = (item as HTMLElement).dataset.token || '';
+        const chain = (item as HTMLElement).dataset.chain || 'base';
+        if (symbol) navigateTo('trade', symbol, address, chain);
+      });
+    });
+
     this.element.querySelectorAll('.add-watchlist-btn').forEach((btn, i) => {
       btn.addEventListener('click', () => {
         const token = this.trending[i];
         if (token) {
-          // Could dispatch event or save to localStorage
           btn.textContent = '✓';
           (btn as HTMLElement).style.color = '#00ff00';
         }
@@ -111,7 +121,7 @@ export class TrendingPanel extends Panel {
   private async loadTrending(): Promise<void> {
     this.showLoading('Loading trending tokens...');
     try {
-      this.trending = await getTrendingTokens(this.chain, this.topic as 'hot' | 'gainers' | 'losers' | 'new');
+      this.trending = await getTrendingTokens(this.chain, 20);
       this.renderTrending();
     } catch (error) {
       this.showError('Failed to load trending tokens');

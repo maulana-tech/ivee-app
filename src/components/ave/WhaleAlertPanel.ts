@@ -1,5 +1,6 @@
 import { Panel } from '../Panel';
 import { getWhaleAlerts, WhaleAlert } from '@/services/ave/monitor';
+import { navigateTo } from '@/app/page-router';
 
 export class WhaleAlertPanel extends Panel {
   private alerts: WhaleAlert[] = [];
@@ -77,7 +78,7 @@ export class WhaleAlertPanel extends Panel {
     const typeClass = alert.type === 'buy' ? 'buy' : 'sell';
     
     return `
-      <div class="whale-alert-item ${typeClass}" data-id="${alert.id}">
+      <div class="whale-alert-item ${typeClass} clickable" data-id="${alert.id}" data-symbol="${alert.tokenSymbol}" title="Click to trade ${alert.tokenSymbol}">
         <div class="whale-emoji">${typeEmoji}</div>
         <div class="whale-details">
           <div class="whale-token">${alert.tokenSymbol}</div>
@@ -111,6 +112,13 @@ export class WhaleAlertPanel extends Panel {
 
     refreshBtn?.addEventListener('click', () => {
       this.loadAlerts();
+    });
+
+    this.element.querySelectorAll('.whale-alert-item.clickable').forEach(item => {
+      item.addEventListener('click', () => {
+        const symbol = (item as HTMLElement).dataset.symbol || '';
+        if (symbol) navigateTo('trade', symbol);
+      });
     });
   }
 

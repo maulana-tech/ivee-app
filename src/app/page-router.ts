@@ -7,6 +7,8 @@ let watchContainer: HTMLElement | null = null;
 let tradeContainer: HTMLElement | null = null;
 let onPageChangeFn: ((page: PageId) => void) | null = null;
 let pendingToken: string | null = null;
+let pendingAddress: string | null = null;
+let pendingChain: string | null = null;
 
 export function initPageRouter(): void {
   if (SITE_VARIANT !== 'crypto') return;
@@ -16,6 +18,8 @@ export function initPageRouter(): void {
     currentPage = 'trade';
     const params = new URLSearchParams(hash.split('?')[1] || '');
     pendingToken = params.get('token');
+    pendingAddress = params.get('address');
+    pendingChain = params.get('chain');
   }
 
   window.addEventListener('hashchange', () => {
@@ -23,6 +27,8 @@ export function initPageRouter(): void {
     if (h.startsWith('trade')) {
       const params = new URLSearchParams(h.split('?')[1] || '');
       pendingToken = params.get('token');
+      pendingAddress = params.get('address');
+      pendingChain = params.get('chain');
       if (currentPage !== 'trade') {
         currentPage = 'trade';
         renderCurrentPage();
@@ -40,12 +46,18 @@ export function getCurrentPage(): PageId {
   return currentPage;
 }
 
-export function navigateTo(page: PageId, token?: string): void {
+export function navigateTo(page: PageId, token?: string, address?: string, chain?: string): void {
   if (SITE_VARIANT !== 'crypto') return;
   currentPage = page;
   if (page === 'trade' && token) {
     pendingToken = token;
-    window.location.hash = `#/trade?token=${encodeURIComponent(token)}`;
+    pendingAddress = address || null;
+    pendingChain = chain || null;
+    const params = new URLSearchParams();
+    params.set('token', token);
+    if (address) params.set('address', address);
+    if (chain) params.set('chain', chain);
+    window.location.hash = `#/trade?${params.toString()}`;
   } else if (page === 'trade') {
     window.location.hash = '#/trade';
   } else {
@@ -58,6 +70,18 @@ export function getPendingToken(): string | null {
   const t = pendingToken;
   pendingToken = null;
   return t;
+}
+
+export function getPendingAddress(): string | null {
+  const a = pendingAddress;
+  pendingAddress = null;
+  return a;
+}
+
+export function getPendingChain(): string | null {
+  const c = pendingChain;
+  pendingChain = null;
+  return c;
 }
 
 export function registerContainers(watch: HTMLElement, trade: HTMLElement): void {

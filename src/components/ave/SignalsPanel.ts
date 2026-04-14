@@ -1,5 +1,6 @@
 import { Panel } from '../Panel';
 import { generateSignals, formatSignalBadge, TradingSignal } from '@/services/ave/signals';
+import { navigateTo } from '@/app/page-router';
 
 export class SignalsPanel extends Panel {
   private signals: TradingSignal[] = [];
@@ -62,7 +63,7 @@ export class SignalsPanel extends Panel {
     const isBuy = signal.signal.includes('buy');
     
     return `
-      <div class="signal-item ${isBuy ? 'buy-signal' : 'sell-signal'}" data-id="${signal.id}">
+      <div class="signal-item ${isBuy ? 'buy-signal' : 'sell-signal'} clickable" data-id="${signal.id}" data-symbol="${signal.symbol}" data-token="${signal.token}" data-chain="${signal.chain}" title="Click to trade ${signal.symbol}">
         <div class="signal-badge" style="background: ${color}">${emoji} ${signal.signal.replace('_', ' ').toUpperCase()}</div>
         <div class="signal-details">
           <div class="signal-token">${signal.symbol}</div>
@@ -89,6 +90,15 @@ export class SignalsPanel extends Panel {
     const refreshBtn = this.element.querySelector('.refresh-btn') as HTMLButtonElement;
     refreshBtn?.addEventListener('click', () => {
       this.loadSignals();
+    });
+
+    this.element.querySelectorAll('.signal-item.clickable').forEach(item => {
+      item.addEventListener('click', () => {
+        const symbol = (item as HTMLElement).dataset.symbol || '';
+        const address = (item as HTMLElement).dataset.token || '';
+        const chain = (item as HTMLElement).dataset.chain || 'base';
+        if (symbol) navigateTo('trade', symbol, address, chain);
+      });
     });
   }
 
