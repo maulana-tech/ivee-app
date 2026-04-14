@@ -14,6 +14,13 @@
 - [x] Bootstrap endpoint stub
 - [x] All API endpoints returning real data
 - [x] Deployed at https://ivee-apps.vercel.app
+- [x] **Phase 1**: TypeScript variant narrowing fixed
+- [x] **Phase 1**: SignalsPanel 3-arg bug fixed
+- [x] **Phase 1**: Vercel CDN cache headers (s-maxage=90)
+- [x] **Phase 2.1**: Real technical analysis (RSI, MACD, Bollinger Bands) from AVE kline data
+- [x] **Phase 2.2**: Real sentiment analysis (news, fear/greed, AVE trending)
+- [x] **Phase 2.3**: Auto-trading agent loop (analyze → decide → execute via proxy wallet)
+- [x] **Phase 2.3**: Start/Stop agent UI in TradingPanel with live stats
 
 ### Known Issues
 - [ ] CoinGecko rate limiting (429) — mitigated with fallback data but real data sometimes empty
