@@ -1079,7 +1079,6 @@ export class PanelLayoutManager implements AppModule {
 
   private makeDraggable(el: HTMLElement, key: string): void {
     el.dataset.panel = key;
-    if (SITE_VARIANT === 'crypto') return;
     let isDragging = false;
     let dragStarted = false;
     let startX = 0;
