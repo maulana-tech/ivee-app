@@ -25,6 +25,8 @@ export class TradePage {
   private selectedToken = 'WETH';
   private tokenPrice = 0;
   private tokenChange = 0;
+  private chartInterval = '1';
+  private chartPrices: { time: number; price: number }[] = [];
 
   constructor(container: HTMLElement) {
     this.el = document.createElement('div');
@@ -46,6 +48,7 @@ export class TradePage {
     this.showTab(this.activeTab);
     if (pendingToken) this.orderEntry.setToken(pendingToken);
     this.loadTokenPrice();
+    this.loadChartData();
   }
 
   navigateToken(symbol: string): void {
@@ -68,15 +71,85 @@ export class TradePage {
     } catch {}
   }
 
-  private updatePriceDisplay(): void {
-    const priceEl = this.el.querySelector('.tp-price-value') as HTMLElement;
-    const changeEl = this.el.querySelector('.tp-price-change') as HTMLElement;
-    if (priceEl) priceEl.textContent = `$${this.tokenPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 4 })}`;
-    if (changeEl) {
-      const sign = this.tokenChange >= 0 ? '+' : '';
-      changeEl.textContent = `${sign}${this.tokenChange.toFixed(2)}%`;
-      changeEl.style.color = this.tokenChange >= 0 ? '#22c55e' : '#ef4444';
+  private async loadChartData(): Promise<void> {
+    const body = this.el.querySelector('.tp-chart-body') as HTMLElement;
+    if (!body) return;
+
+    body.innerHTML = '<div class="tp-chart-watermark"><span style="color:#444">Loading chart...</span></div>';
+
+    try {
+      const resp = await fetch(`/api/chart/crypto?symbol=${this.selectedToken}&days=${this.chartInterval}`);
+      if (!resp.ok) throw new Error(`${resp.status}`);
+      const data = await resp.json();
+      this.chartPrices = data.prices || [];
+      if (this.chartPrices.length < 2) {
+        body.innerHTML = '<div class="tp-chart-watermark"><span style="color:#444">No chart data available</span></div>';
+        return;
+      }
+      this.drawChart(body);
+    } catch {
+      body.innerHTML = '<div class="tp-chart-watermark"><span style="color:#444">Failed to load chart</span></div>';
     }
+  }
+
+  private drawChart(container: HTMLElement): void {
+    const prices = this.chartPrices;
+    const vals = prices.map(p => p.price);
+    const minP = Math.min(...vals);
+    const maxP = Math.max(...vals);
+    const rangeP = maxP - minP || 1;
+    const current = vals[vals.length - 1];
+    const first = vals[0];
+    const change = ((current - first) / first) * 100;
+    const color = change >= 0 ? '#22c55e' : '#ef4444';
+
+    const W = 800, H = 400;
+    const pad = { t: 10, r: 55, b: 30, l: 10 };
+    const cW = W - pad.l - pad.r;
+    const cH = H - pad.t - pad.b;
+    const len = Math.max(prices.length, 2);
+
+    const pts = prices.map((p, i) => ({
+      x: pad.l + (i / (len - 1)) * cW,
+      y: pad.t + cH - ((p.price - minP) / rangeP) * cH,
+    }));
+
+    const lineD = pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+    const areaD = `${lineD} L${pts[pts.length - 1].x.toFixed(1)},${pad.t + cH} L${pts[0].x.toFixed(1)},${pad.t + cH} Z`;
+
+    const gridLines: string[] = [];
+    for (let i = 0; i <= 4; i++) {
+      const y = pad.t + (i / 4) * cH;
+      const price = maxP - (i / 4) * rangeP;
+      const label = price >= 1000 ? price.toFixed(0) : price >= 1 ? price.toFixed(2) : price.toFixed(6);
+      gridLines.push(`<line x1="${pad.l}" y1="${y}" x2="${W - pad.r}" y2="${y}" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>`);
+      gridLines.push(`<text x="${W - pad.r + 4}" y="${y + 3}" fill="rgba(255,255,255,0.3)" font-size="9" font-family="monospace">${label}</text>`);
+    }
+
+    const timeLabels: string[] = [];
+    const labelCount = Math.min(6, prices.length);
+    for (let i = 0; i <= labelCount; i++) {
+      const idx = Math.floor((i / labelCount) * (len - 1));
+      const x = pad.l + (idx / (len - 1)) * cW;
+      const d = new Date(prices[Math.min(idx, prices.length - 1)].time);
+      const label = this.chartInterval === '1' ? `${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}` : `${d.getMonth() + 1}/${d.getDate()}`;
+      timeLabels.push(`<text x="${x.toFixed(1)}" y="${H - 4}" text-anchor="middle" fill="rgba(255,255,255,0.25)" font-size="9">${label}</text>`);
+    }
+
+    container.innerHTML = `
+      <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="width:100%;height:100%;display:block">
+        <defs>
+          <linearGradient id="tg" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="${color}" stop-opacity="0.2"/>
+            <stop offset="100%" stop-color="${color}" stop-opacity="0.01"/>
+          </linearGradient>
+        </defs>
+        ${gridLines.join('')}
+        <path d="${areaD}" fill="url(#tg)"/>
+        <path d="${lineD}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="${pts[pts.length - 1].x.toFixed(1)}" cy="${pts[pts.length - 1].y.toFixed(1)}" r="3" fill="${color}"/>
+        ${timeLabels.join('')}
+      </svg>`;
   }
 
   private render(): void {
@@ -238,12 +311,17 @@ export class TradePage {
       this.selectedToken = (e.target as HTMLSelectElement).value;
       this.orderEntry.setToken(this.selectedToken);
       this.loadTokenPrice();
+      this.loadChartData();
     });
 
+    const intervalDays: Record<string, string> = { '24h': '1', '7d': '7', '30d': '30', '90d': '90' };
     this.el.querySelectorAll('.tp-interval').forEach(btn => {
       btn.addEventListener('click', () => {
         this.el.querySelectorAll('.tp-interval').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
+        const int = (btn as HTMLElement).dataset.interval || '24h';
+        this.chartInterval = intervalDays[int] || '1';
+        this.loadChartData();
       });
     });
 
