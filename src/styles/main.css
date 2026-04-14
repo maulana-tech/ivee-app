@@ -12135,6 +12135,25 @@ a.prediction-link:hover {
     width: 100% !important;
     min-height: 250px;
     max-height: min(70vh, 500px);
+    cursor: default !important;
+  }
+
+  .panel .panel-content {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .trade-chart-panel .tc-body {
+    min-height: 180px;
+  }
+
+  .trade-chart-panel .tc-header {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .tc-intervals {
+    width: 100%;
   }
 
   .panel-content {

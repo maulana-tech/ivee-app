@@ -710,6 +710,10 @@ export class PanelLayoutManager implements AppModule {
 
     window.addEventListener('resize', () => this.ensureCorrectZones());
 
+    if (SITE_VARIANT === 'crypto') {
+      import('./keyboard').then(m => m.setupKeyboardShortcuts(this.ctx));
+    }
+
     this.ctx.map?.onTimeRangeChanged((range) => {
       this.ctx.currentTimeRange = range;
       this.applyTimeRangeFilterDebounced();
