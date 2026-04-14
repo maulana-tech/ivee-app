@@ -29,7 +29,6 @@ export class TradePage {
   constructor(container: HTMLElement) {
     this.el = document.createElement('div');
     this.el.className = 'trade-page';
-    this.el.style.display = 'none';
     container.appendChild(this.el);
   }
 
