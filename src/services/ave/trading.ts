@@ -32,6 +32,7 @@ interface EthereumProvider {
 
 const BOT_API = 'https://bot-api.ave.ai';
 const AVE_API_KEY = '4jFc0Luq30MboTRHof15K7frDMkPZ8xW6Y9JGmEUlXK4dKoVcqrHMzRjF8FTfEAM';
+const AVE_API_SECRET = '31ee10cf3fc7cefd6c72da3e6e5952e32a9d58d95fa31ddf285f78be9398b43a';
 
 const NATIVE_ETH = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee';
 
@@ -426,3 +427,124 @@ export async function getGasTip(): Promise<{ high: string; average: string; low:
     return { high: '0', average: '0', low: '0' };
   }
 }
+
+// --- HMAC-SHA256 Signing for Proxy Wallet API ---
+
+async function hmacSha256(key: string, message: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const keyData = encoder.encode(key);
+  const msgData = encoder.encode(message);
+  const cryptoKey = await crypto.subtle.importKey('raw', keyData, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const sig = await crypto.subtle.sign('HMAC', cryptoKey, msgData);
+  return btoa(String.fromCharCode(...new Uint8Array(sig)));
+}
+
+function sortObjectKeys(obj: any): any {
+  if (obj === null || typeof obj !== 'object') return obj;
+  if (Array.isArray(obj)) return obj.map(sortObjectKeys);
+  const sorted: any = {};
+  Object.keys(obj).sort().forEach(k => { sorted[k] = sortObjectKeys(obj[k]); });
+  return sorted;
+}
+
+async function generateSignature(method: string, path: string, body?: any): Promise<{ timestamp: string; sign: string }> {
+  const timestamp = new Date().toISOString();
+  const msg = timestamp + method.toUpperCase() + path + (body ? JSON.stringify(sortObjectKeys(body)) : '');
+  const sign = await hmacSha256(AVE_API_SECRET, msg);
+  return { timestamp, sign };
+}
+
+async function signedFetch<T>(method: string, path: string, body?: any): Promise<T> {
+  const { timestamp, sign } = await generateSignature(method, path, body);
+  const resp = await fetch(`${BOT_API}${path}`, {
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+      'AVE-ACCESS-KEY': AVE_API_KEY,
+      'AVE-ACCESS-TIMESTAMP': timestamp,
+      'AVE-ACCESS-SIGN': sign,
+    },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  const data = await resp.json();
+  if (data.status !== 200 && data.status !== 0) throw new Error(data.msg || 'API error');
+  return data.data;
+}
+
+// --- Proxy Wallet (Bot Wallet) API ---
+
+export interface ProxyWallet {
+  assetsId: string;
+  status: string;
+  type: string;
+  assetsName: string;
+  addressList: { chain: string; address: string }[];
+}
+
+export const getProxyWallets = (): Promise<ProxyWallet[]> =>
+  signedFetch<ProxyWallet[]>('GET', '/v1/thirdParty/user/getUserByAssetsId');
+
+export const createProxyWallet = (name: string): Promise<{ assetsId: string; addressList: { chain: string; address: string }[] }> =>
+  signedFetch('POST', '/v1/thirdParty/user/generateWallet', { assetsName: name, returnMnemonic: false });
+
+export const deleteProxyWallet = (assetsIds: string[]): Promise<{ assetsIds: string[] }> =>
+  signedFetch('POST', '/v1/thirdParty/user/deleteWallet', { assetsIds });
+
+export interface MarketOrder {
+  id: string;
+}
+
+export const sendMarketOrder = (params: {
+  chain: string;
+  assetsId: string;
+  inTokenAddress: string;
+  outTokenAddress: string;
+  inAmount: string;
+  swapType: 'buy' | 'sell';
+  slippage: string;
+  useMev: boolean;
+  gas?: string;
+  extraGas?: string;
+  autoSlippage?: boolean;
+  autoGas?: string;
+}): Promise<MarketOrder> =>
+  signedFetch('POST', '/v1/thirdParty/tx/sendSwapOrder', params);
+
+export const sendLimitOrder = (params: {
+  chain: string;
+  assetsId: string;
+  inTokenAddress: string;
+  outTokenAddress: string;
+  inAmount: string;
+  swapType: 'buy' | 'sell';
+  slippage: string;
+  useMev: boolean;
+  limitPrice: string;
+  gas?: string;
+  extraGas?: string;
+  expireTime?: string;
+  autoSlippage?: boolean;
+  autoGas?: string;
+}): Promise<MarketOrder> =>
+  signedFetch('POST', '/v1/thirdParty/tx/sendLimitOrder', params);
+
+export const cancelLimitOrder = (chain: string, ids: string[]): Promise<string[]> =>
+  signedFetch('POST', '/v1/thirdParty/tx/cancelLimitOrder', { chain, ids });
+
+export const getMarketOrders = (params: {
+  chain: string;
+  assetsId: string;
+  tokenAddress?: string;
+  page?: number;
+  pageSize?: number;
+}): Promise<any> =>
+  signedFetch('GET', `/v1/thirdParty/tx/getSwapOrders?chain=${params.chain}&assetsId=${params.assetsId}&page=${params.page || 1}&pageSize=${params.pageSize || 20}`);
+
+export const getLimitOrders = (params: {
+  chain: string;
+  assetsId: string;
+  status?: string;
+  page?: number;
+  pageSize?: number;
+}): Promise<any> =>
+  signedFetch('GET', `/v1/thirdParty/tx/getLimitOrders?chain=${params.chain}&assetsId=${params.assetsId}&status=${params.status || ''}&page=${params.page || 1}&pageSize=${params.pageSize || 20}`);
