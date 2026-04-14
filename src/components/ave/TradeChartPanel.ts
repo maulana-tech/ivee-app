@@ -173,8 +173,9 @@ export class TradeChartPanel extends Panel {
     }
 
     const rect = svgEl.getBoundingClientRect();
-    const W = rect.width || 800;
-    const H = rect.height || 300;
+    const W = rect.width || svgEl.parentElement?.offsetWidth || svgEl.getAttribute('width') as unknown as number || 800;
+    const H = rect.height || svgEl.parentElement?.offsetHeight || svgEl.getAttribute('height') as unknown as number || 300;
+    if (W < 10 || H < 10) return;
     const pad = { t: 8, r: 50, b: 24, l: 8 };
     const cW = W - pad.l - pad.r;
     const cH = H - pad.t - pad.b;
@@ -188,9 +189,10 @@ export class TradeChartPanel extends Panel {
     const minP = Math.min(...prices);
     const maxP = Math.max(...prices);
     const rangeP = maxP - minP || 1;
+    const len = Math.max(this.prices.length, 2);
 
     const pts = this.prices.map((p, i) => ({
-      x: pad.l + (i / (this.prices.length - 1)) * cW,
+      x: pad.l + (i / (len - 1)) * cW,
       y: pad.t + cH - ((p.price - minP) / rangeP) * cH,
     }));
 
@@ -208,8 +210,8 @@ export class TradeChartPanel extends Panel {
     const timeLabels: string[] = [];
     const labelCount = Math.min(6, this.prices.length);
     for (let i = 0; i <= labelCount; i++) {
-      const idx = Math.floor((i / labelCount) * (this.prices.length - 1));
-      const x = pad.l + (idx / (this.prices.length - 1)) * cW;
+      const idx = Math.floor((i / labelCount) * (len - 1));
+      const x = pad.l + (idx / (len - 1)) * cW;
       const d = new Date(this.prices[idx].time);
       const label = this.interval === '1' ? `${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}` : `${d.getMonth() + 1}/${d.getDate()}`;
       timeLabels.push(`<text x="${x.toFixed(1)}" y="${H - 4}" text-anchor="middle" fill="rgba(255,255,255,0.25)" font-size="9">${label}</text>`);
