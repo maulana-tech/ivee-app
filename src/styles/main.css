@@ -743,6 +743,10 @@ canvas,
   background: #080808;
 }
 
+.trade-page-container > .trade-page {
+  display: flex;
+}
+
 .focus-label {
   font-size: 10px;
   color: var(--text-dim);

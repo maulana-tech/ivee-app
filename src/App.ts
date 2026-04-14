@@ -519,20 +519,23 @@ export class App {
 
     // Initialize page router for crypto variant (Watch/Trade tabs)
     if (SITE_VARIANT === 'crypto') {
-      const { initPageRouter, registerContainers, setupPageTabs, onPageChange } = await import('@/app/page-router');
+      const { initPageRouter, registerContainers, setupPageTabs, onPageChange, getCurrentPage } = await import('@/app/page-router');
       const { TradePage } = await import('@/pages/TradePage');
       const mainContent = this.state.container.querySelector('.main-content') as HTMLElement;
       const tradeContainer = this.state.container.querySelector('#tradePageContainer') as HTMLElement;
       if (mainContent && tradeContainer) {
         initPageRouter();
         const tradePage = new TradePage(tradeContainer);
-        registerContainers(mainContent, tradeContainer);
-        setupPageTabs();
         onPageChange((page) => {
           if (page === 'trade') {
             tradePage.init();
           }
         });
+        registerContainers(mainContent, tradeContainer);
+        setupPageTabs();
+        if (getCurrentPage() === 'trade') {
+          tradePage.init();
+        }
       }
     }
     // showProBanner(this.state.container); // Disabled for hackathon

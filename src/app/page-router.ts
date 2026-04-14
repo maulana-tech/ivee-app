@@ -75,7 +75,7 @@ function renderCurrentPage(): void {
 
   if (currentPage === 'trade') {
     watchContainer.style.display = 'none';
-    tradeContainer.style.display = '';
+    tradeContainer.style.display = 'flex';
   } else {
     watchContainer.style.display = '';
     tradeContainer.style.display = 'none';
