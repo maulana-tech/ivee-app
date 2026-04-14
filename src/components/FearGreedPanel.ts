@@ -75,6 +75,7 @@ function getDivergenceWarnings(d: FearGreedData): string[] {
 }
 
 function renderGauge(score: number, label: string, delta: number | null, color: string): string {
+  if (isNaN(score) || score == null) return '<div style="color:#555;text-align:center;padding:20px">No data</div>';
   const cx = 100, cy = 100, R = 88, r = 60;
 
   function coord(deg: number, radius: number): string {
@@ -118,6 +119,8 @@ function renderGauge(score: number, label: string, delta: number | null, color: 
 function mapSeedPayload(raw: Record<string, unknown>): FearGreedData | null {
   const comp = raw.composite as Record<string, unknown> | undefined;
   if (!comp?.score) return null;
+  const rawScore = Number(comp.score);
+  if (isNaN(rawScore)) return null;
   const cats = (raw.categories ?? {}) as Record<string, Record<string, unknown>>;
   const hdr = (raw.headerMetrics ?? {}) as Record<string, Record<string, unknown> | null>;
   const mapCat = (c: Record<string, unknown> | undefined): CategoryData | undefined => c ? {

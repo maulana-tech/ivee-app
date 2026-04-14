@@ -1,4 +1,4 @@
-const AVE_BASE_URL = import.meta.env.DEV ? '/api/ave' : 'https://prod.ave-api.com/v2';
+const AVE_BASE_URL = '/api/ave';
 
 // TokenInfo now uses AveToken type from below
 
