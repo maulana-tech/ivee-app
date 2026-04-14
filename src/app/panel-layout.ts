@@ -1418,14 +1418,11 @@ export class PanelLayoutManager implements AppModule {
   getAllSourceNames(): string[] {
     const sources = new Set<string>();
     
-    // For crypto variant, only show FINANCE_FEEDS sources
+    // For crypto variant, FEEDS is already CRYPTO_FEEDS — just show all
     if (SITE_VARIANT === 'crypto') {
-      const CRYPTO_FEED_KEYS = ['markets', 'forex', 'bonds', 'commodities', 'crypto', 'centralbanks', 'fintech', 'analysis'];
-      for (const fk of CRYPTO_FEED_KEYS) {
-        if (FEEDS[fk]) {
-          FEEDS[fk].forEach(f => sources.add(f.name));
-        }
-      }
+      Object.values(FEEDS).forEach(feeds => {
+        if (feeds) feeds.forEach(f => sources.add(f.name));
+      });
     } else {
       // Full variant - show all feeds and intel sources
       Object.values(FEEDS).forEach(feeds => {

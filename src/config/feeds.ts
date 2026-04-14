@@ -646,6 +646,54 @@ const TECH_FEEDS: Record<string, Feed[]> = {
   ],
 };
 
+// Crypto-only variant feeds — subset of FINANCE_FEEDS focused on crypto/trading
+const CRYPTO_FEEDS: Record<string, Feed[]> = {
+  crypto: [
+    { name: 'CoinDesk', url: rss('https://www.coindesk.com/arc/outboundfeeds/rss/') },
+    { name: 'Cointelegraph', url: rss('https://cointelegraph.com/rss') },
+    { name: 'The Block', url: rss('https://news.google.com/rss/search?q=site:theblock.co+when:1d&hl=en-US&gl=US&ceid=US:en') },
+    { name: 'Crypto News', url: rss('https://news.google.com/rss/search?q=(bitcoin+OR+ethereum+OR+crypto+OR+"digital+assets")+when:1d&hl=en-US&gl=US&ceid=US:en') },
+    { name: 'DeFi News', url: rss('https://news.google.com/rss/search?q=(DeFi+OR+"decentralized+finance"+OR+DEX+OR+"yield+farming")+when:3d&hl=en-US&gl=US&ceid=US:en') },
+    { name: 'Decrypt', url: rss('https://decrypt.co/feed') },
+    { name: 'Blockworks', url: rss('https://blockworks.co/feed') },
+    { name: 'The Defiant', url: rss('https://thedefiant.io/feed') },
+    { name: 'Bitcoin Magazine', url: rss('https://bitcoinmagazine.com/feed') },
+    { name: 'DL News', url: rss('https://news.google.com/rss/search?q=site:dlnews.com+when:3d&hl=en-US&gl=US&ceid=US:en') },
+    { name: 'CryptoSlate', url: rss('https://cryptoslate.com/feed/') },
+    { name: 'Unchained', url: rss('https://unchainedcrypto.com/feed/') },
+    { name: 'Wu Blockchain', url: rss('https://news.google.com/rss/search?q=site:wublockchain.com+when:7d&hl=en-US&gl=US&ceid=US:en') },
+    { name: 'Messari', url: rss('https://news.google.com/rss/search?q=site:messari.io+when:3d&hl=en-US&gl=US&ceid=US:en') },
+    { name: 'Bloomberg Crypto', url: rss('https://news.google.com/rss/search?q=bloomberg+crypto+when:1d&hl=en-US&gl=US&ceid=US:en') },
+    { name: 'Reuters Crypto', url: rss('https://news.google.com/rss/search?q=reuters+crypto+when:1d&hl=en-US&gl=US&ceid=US:en') },
+    { name: 'NFT News', url: rss('https://news.google.com/rss/search?q=(NFT+OR+"non-fungible")+when:3d&hl=en-US&gl=US&ceid=US:en') },
+    { name: 'Stablecoin Policy', url: rss('https://news.google.com/rss/search?q=(stablecoin+regulation+OR+"stablecoin+bill")+when:7d&hl=en-US&gl=US&ceid=US:en') },
+  ],
+  markets: [
+    { name: 'CNBC', url: rss('https://www.cnbc.com/id/100003114/device/rss/rss.html') },
+    { name: 'MarketWatch', url: rss('https://news.google.com/rss/search?q=site:marketwatch.com+markets+when:1d&hl=en-US&gl=US&ceid=US:en') },
+    { name: 'Yahoo Finance', url: rss('https://finance.yahoo.com/rss/topstories') },
+    { name: 'Bloomberg Markets', url: rss('https://news.google.com/rss/search?q=site:bloomberg.com+markets+when:1d&hl=en-US&gl=US&ceid=US:en') },
+  ],
+  centralbanks: [
+    { name: 'Federal Reserve', url: rss('https://www.federalreserve.gov/feeds/press_all.xml') },
+    { name: 'ECB Watch', url: rss('https://news.google.com/rss/search?q=("European+Central+Bank"+OR+ECB+OR+Lagarde)+monetary+policy+when:3d&hl=en-US&gl=US&ceid=US:en') },
+    { name: 'Global Central Banks', url: rss('https://news.google.com/rss/search?q=("rate+hike"+OR+"rate+cut"+OR+"interest+rate+decision")+central+bank+when:3d&hl=en-US&gl=US&ceid=US:en') },
+  ],
+  'fin-regulation': [
+    { name: 'SEC', url: rss('https://www.sec.gov/news/pressreleases.rss') },
+    { name: 'Crypto Regulation', url: rss('https://news.google.com/rss/search?q=(crypto+regulation+OR+"digital+asset"+regulation+OR+"stablecoin"+regulation)+when:7d&hl=en-US&gl=US&ceid=US:en') },
+    { name: 'Financial Regulation', url: rss('https://news.google.com/rss/search?q=(SEC+OR+CFTC+OR+FINRA+OR+FCA)+regulation+OR+enforcement+when:3d&hl=en-US&gl=US&ceid=US:en') },
+  ],
+  fintech: [
+    { name: 'Fintech News', url: rss('https://news.google.com/rss/search?q=(fintech+OR+"payment+technology"+OR+"neobank"+OR+"digital+banking")+when:3d&hl=en-US&gl=US&ceid=US:en') },
+    { name: 'Blockchain Finance', url: rss('https://news.google.com/rss/search?q=("blockchain+finance"+OR+"tokenization"+OR+"digital+securities"+OR+CBDC)+when:7d&hl=en-US&gl=US&ceid=US:en') },
+  ],
+  analysis: [
+    { name: 'Market Outlook', url: rss('https://news.google.com/rss/search?q=("market+outlook"+OR+"stock+market+forecast"+OR+"bull+market"+OR+"bear+market")+when:3d&hl=en-US&gl=US&ceid=US:en') },
+    { name: 'Risk & Volatility', url: rss('https://news.google.com/rss/search?q=(VIX+OR+"market+volatility"+OR+"risk+off"+OR+"market+correction")+when:3d&hl=en-US&gl=US&ceid=US:en') },
+  ],
+};
+
 // Finance/Trading variant feeds (all free RSS / Google News proxies)
 const FINANCE_FEEDS: Record<string, Feed[]> = {
   markets: [
@@ -886,8 +934,10 @@ const COMMODITY_FEEDS: Record<string, Feed[]> = {
 const variant = SITE_VARIANT as string;
 export const FEEDS = variant === 'tech'
   ? TECH_FEEDS
-  : variant === 'finance' || variant === 'crypto'
-    ? FINANCE_FEEDS
+  : variant === 'crypto'
+    ? CRYPTO_FEEDS
+    : variant === 'finance'
+      ? FINANCE_FEEDS
     : variant === 'happy'
       ? HAPPY_FEEDS
       : variant === 'commodity'
