@@ -6,6 +6,7 @@ export class WhaleAlertPanel extends Panel {
   private selectedPair: string = 'WETH-USDC';
   private chain: string = 'base';
   private loaded: boolean = false;
+  private refreshTimer: ReturnType<typeof setInterval> | null = null;
 
   constructor(options: { id: string; title: string }) {
     super(options);
@@ -68,6 +69,7 @@ export class WhaleAlertPanel extends Panel {
 
     this.setContent(html);
     this.attachEventListeners();
+    this.startAutoRefresh();
   }
 
   private renderAlert(alert: WhaleAlert): string {
@@ -124,6 +126,18 @@ export class WhaleAlertPanel extends Panel {
       ];
     }
     this.renderAlerts();
+  }
+
+  private startAutoRefresh(): void {
+    this.stopAutoRefresh();
+    this.refreshTimer = setInterval(() => this.loadAlerts(), 30000);
+  }
+
+  private stopAutoRefresh(): void {
+    if (this.refreshTimer) {
+      clearInterval(this.refreshTimer);
+      this.refreshTimer = null;
+    }
   }
 
   public async refresh(): Promise<void> {

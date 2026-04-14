@@ -550,6 +550,7 @@ export class App {
 
     // Phase 3: UI setup methods
     this.eventHandlers.startHeaderClock();
+    this.eventHandlers.setupPriceTicker();
     this.eventHandlers.setupPlaybackControl();
     this.eventHandlers.setupStatusPanel();
     this.eventHandlers.setupPizzIntIndicator();

@@ -751,6 +751,7 @@ const CRYPTO_PANELS: Record<string, PanelConfig> = {
   trading: { name: 'Trade Execution', enabled: true, priority: 1 },
   backtest: { name: 'Strategy Backtest', enabled: true, priority: 1 },
   'price-alerts': { name: 'Price Alerts', enabled: true, priority: 1 },
+  'limit-orders': { name: 'Limit Orders', enabled: true, priority: 1 },
 };
 
 const CRYPTO_MAP_LAYERS: MapLayers = {

@@ -1,6 +1,7 @@
 import { Panel } from '../Panel';
 import { scanRisk, type RiskWarning } from '@/services/ave/monitoring';
 import { getDemoTokens, runFullAnalysis, type TradeDecision, type RiskCheck, type AnalystResult, type DebateResult } from '@/services/ave/ai-agent';
+import { getRiskReport, type RiskReport } from '@/services/ave/client';
 
 interface AgentStats {
   totalRuns: number;
@@ -22,6 +23,7 @@ export class RiskScannerPanel extends Panel {
     decision: TradeDecision;
     risk: RiskCheck;
   } | null = null;
+  private tokenRiskReport: RiskReport | null = null;
   private stats: AgentStats = {
     totalRuns: 15,
     tradesExecuted: 12,
@@ -50,8 +52,12 @@ export class RiskScannerPanel extends Panel {
     this.showLoading('🤖 Running AI analysis...');
 
     try {
-      const result = await runFullAnalysis(this.selectedToken);
+      const [result, riskReport] = await Promise.all([
+        runFullAnalysis(this.selectedToken),
+        this.fetchTokenRisk(),
+      ]);
       this.analysisResult = result;
+      this.tokenRiskReport = riskReport;
       this.stats.totalRuns++;
       this.stats.lastRun = Date.now();
       this.renderAI();
@@ -59,6 +65,24 @@ export class RiskScannerPanel extends Panel {
       this.showError('Analysis failed');
     } finally {
       this.loading = false;
+    }
+  }
+
+  private async fetchTokenRisk(): Promise<RiskReport | null> {
+    const tokenMap: Record<string, string> = {
+      WETH: '0x4200000000000000000000000000000000000006',
+      USDC: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+      cbETH: '0x2ae3f1ec7f1f5012cfeab0185bfc7aa3cf0deC22',
+      AERO: '0xd4d42F0b6DEF4CE0383636770eF773790D1A0f17',
+      OP: '0x4200000000000000000000000000000000000042',
+      WEWE: '0x8453FC6A7d35F8FcE659E6f80fAb5e0Bb8dA43f1',
+    };
+    const address = tokenMap[this.selectedToken];
+    if (!address) return null;
+    try {
+      return await getRiskReport(address, 'base');
+    } catch {
+      return null;
     }
   }
 
@@ -149,6 +173,8 @@ export class RiskScannerPanel extends Panel {
           </div>
         </div>
 
+        ${this.renderTokenRisk()}
+
         <div class="section-title">📈 Agent Stats</div>
         <div class="agent-stats">
           <div class="stat-row">
@@ -215,6 +241,9 @@ export class RiskScannerPanel extends Panel {
         .risk-result{background:#0f0f0f;border:1px solid #222;border-radius:8px;padding:12px}
         .risk-badge{display:inline-block;padding:6px 12px;border-radius:6px;color:#fff;font-weight:700;font-size:14px;margin-bottom:8px}
         .risk-reasons{font-size:11px;color:#666}
+        .ave-risk-card{background:#0f0f0f;border:1px solid #222;border-radius:8px;padding:10px}
+        .ave-risk-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #1a1a1a;font-size:12px;color:#ccc}
+        .ave-risk-row:last-child{border:none}
         .agent-stats{background:#0f0f0f;border:1px solid #222;border-radius:8px;padding:8px}
         .stat-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #1a1a1a}
         .stat-row:last-child{border:none}
@@ -229,6 +258,44 @@ export class RiskScannerPanel extends Panel {
 
     this.setContent(html);
     this.attachListeners();
+  }
+
+  private renderTokenRisk(): string {
+    if (!this.tokenRiskReport) return '';
+    const r = this.tokenRiskReport;
+    const honeypotColor = r.is_honeypot ? '#ef4444' : '#22c55e';
+    const taxColor = (r.buy_tax > 0.05 || r.sell_tax > 0.05) ? '#ef4444' : '#22c55e';
+    const ownerColor = r.owner_renounced ? '#22c55e' : '#eab308';
+    const liqColor = r.liquidity_locked ? '#22c55e' : '#eab308';
+    return `
+      <div class="section-title">🔍 AVE Risk Report</div>
+      <div class="ave-risk-card">
+        <div class="ave-risk-row">
+          <span>Honeypot</span>
+          <span style="color:${honeypotColor};font-weight:700">${r.is_honeypot ? '⚠ YES' : '✓ No'}</span>
+        </div>
+        <div class="ave-risk-row">
+          <span>Buy Tax</span>
+          <span style="color:${taxColor}">${(r.buy_tax * 100).toFixed(1)}%</span>
+        </div>
+        <div class="ave-risk-row">
+          <span>Sell Tax</span>
+          <span style="color:${taxColor}">${(r.sell_tax * 100).toFixed(1)}%</span>
+        </div>
+        <div class="ave-risk-row">
+          <span>Owner Renounced</span>
+          <span style="color:${ownerColor}">${r.owner_renounced ? '✓ Yes' : '✗ No'}</span>
+        </div>
+        <div class="ave-risk-row">
+          <span>Liquidity Locked</span>
+          <span style="color:${liqColor}">${r.liquidity_locked ? '✓ Yes' : '✗ No'}</span>
+        </div>
+        <div class="ave-risk-row">
+          <span>Holders</span>
+          <span>${r.holders?.toLocaleString() || '—'}</span>
+        </div>
+      </div>
+    `;
   }
 
   private attachListeners(): void {

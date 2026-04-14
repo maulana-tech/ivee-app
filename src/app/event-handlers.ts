@@ -995,6 +995,19 @@ export class EventHandlerManager implements AppModule {
     this.clockIntervalId = setInterval(tick, 1000);
   }
 
+  setupPriceTicker(): void {
+    if (SITE_VARIANT !== 'crypto') return;
+    const el = document.getElementById('priceTicker');
+    if (!el) return;
+    import('@/services/realtime').then(({ startPriceFeed, onPriceUpdate, formatTicker }) => {
+      startPriceFeed();
+      onPriceUpdate((prices) => {
+        const html = formatTicker(prices, 8);
+        if (html) el.innerHTML = html;
+      });
+    });
+  }
+
   setupStatusPanel(): void {
     this.ctx.statusPanel = new StatusPanel();
   }

@@ -32,6 +32,14 @@ function formatDate(ts: number): string {
   return new Date(ts).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 
+const QUICK_TOKENS = [
+  { address: '0x4200000000000000000000000000000000000006', symbol: 'WETH', chain: 'base' },
+  { address: '0x2ae3f1ec7f1f5012cfeab0185bfc7aa3cf0deC22', symbol: 'cbETH', chain: 'base' },
+  { address: '0xd4d42F0b6DEF4CE0383636770eF773790D1A0f17', symbol: 'AERO', chain: 'base' },
+  { address: '0x8453FC6A7d35F8FcE659E6f80fAb5e0Bb8dA43f1', symbol: 'WEWE', chain: 'base' },
+  { address: '0x4200000000000000000000000000000000000042', symbol: 'OP', chain: 'base' },
+];
+
 export class BacktestPanel extends Panel {
   private result: BacktestResult | null = null;
   private tokenInput: string = '';
@@ -94,6 +102,9 @@ export class BacktestPanel extends Panel {
       <div class="backtest-panel-inner">
         <div class="backtest-controls">
           <input type="text" class="token-input" placeholder="Token address or symbol" value="${this.tokenInput}" data-field="token">
+          <div class="quick-tokens">
+            ${QUICK_TOKENS.map(t => `<button class="quick-token-btn" data-token="${t.address}" title="${t.symbol}">${t.symbol}</button>`).join('')}
+          </div>
           <select data-field="chain">${chainOptions}</select>
           <select data-field="strategy">${strategyOptions}</select>
           <select data-field="period">${periodOptions}</select>
@@ -183,6 +194,15 @@ export class BacktestPanel extends Panel {
 
     content.querySelector('[data-field="token"]')?.addEventListener('input', (e) => {
       this.tokenInput = (e.target as HTMLInputElement).value;
+    });
+
+    content.querySelectorAll('.quick-token-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const address = (e.target as HTMLElement).getAttribute('data-token') || '';
+        this.tokenInput = address;
+        const input = content.querySelector('[data-field="token"]') as HTMLInputElement;
+        if (input) input.value = address;
+      });
     });
 
     content.querySelector('[data-field="strategy"]')?.addEventListener('change', (e) => {

@@ -24,6 +24,11 @@
 - [x] **Phase 3.2**: Mobile responsive (single column, touch-friendly chart, no drag)
 - [x] **Phase 3.3**: Panel fullscreen mode (F key, ESC to exit)
 - [x] **Phase 3.4**: Keyboard shortcuts (R refresh, F fullscreen, ESC exit)
+- [x] **Phase 4.1**: Real-time price feed in header ticker (30s polling via realtime.ts)
+- [x] **Phase 4.2**: Live whale alerts with 30s auto-refresh
+- [x] **Phase 5.1**: Limit Order Panel with stop-loss/take-profit UI
+- [x] **Phase 5.3**: BacktestPanel with quick token buttons + real AVE kline data
+- [x] **Phase 5.5**: AVE risk scoring in RiskScannerPanel (honeypot, tax, owner, liquidity)
 
 ### Known Issues
 - [ ] CoinGecko rate limiting (429) — mitigated with fallback data but real data sometimes empty
