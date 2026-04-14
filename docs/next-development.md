@@ -21,6 +21,9 @@
 - [x] **Phase 2.2**: Real sentiment analysis (news, fear/greed, AVE trending)
 - [x] **Phase 2.3**: Auto-trading agent loop (analyze → decide → execute via proxy wallet)
 - [x] **Phase 2.3**: Start/Stop agent UI in TradingPanel with live stats
+- [x] **Phase 3.2**: Mobile responsive (single column, touch-friendly chart, no drag)
+- [x] **Phase 3.3**: Panel fullscreen mode (F key, ESC to exit)
+- [x] **Phase 3.4**: Keyboard shortcuts (R refresh, F fullscreen, ESC exit)
 
 ### Known Issues
 - [ ] CoinGecko rate limiting (429) — mitigated with fallback data but real data sometimes empty
