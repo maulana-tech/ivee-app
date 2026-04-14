@@ -696,6 +696,44 @@ canvas,
   padding: 0 8px;
 }
 
+.page-tabs {
+  display: flex;
+  gap: 0;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid #333;
+}
+
+.page-tab {
+  background: #1a1a1a;
+  border: none;
+  color: #888;
+  padding: 6px 16px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all .15s;
+}
+
+.page-tab.active {
+  background: #333;
+  color: #fff;
+}
+
+.page-tab:hover {
+  color: #ccc;
+}
+
+.trade-page-container {
+  display: none;
+  position: fixed;
+  top: 44px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 100;
+}
+
 .focus-label {
   font-size: 10px;
   color: var(--text-dim);
