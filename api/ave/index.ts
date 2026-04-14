@@ -1,6 +1,6 @@
 export const config = { runtime: 'edge' };
 
-const AVE_API_KEY = process.env.AVE_API_KEY || '4jFc0Luq30MboTRHof15K7frDMkPZ8xW6Y9JGmEUlXK4dKoVcqrHMzRjF8FTfEAM';
+const AVE_API_KEY = process.env.AVE_API_KEY || '';
 const AVE_API_BASE = 'https://prod.ave-api.com/v2';
 
 const corsHeaders = {
@@ -17,8 +17,8 @@ export default async function handler(request: Request): Promise<Response> {
   }
 
   const url = new URL(request.url);
-  const path = url.pathname.replace(/^\/api\/ave/, '');
-  const targetUrl = `${AVE_API_BASE}${path}${url.search}`;
+  const path = url.pathname.replace(/^\/api\/ave\/?/, '');
+  const targetUrl = `${AVE_API_BASE}/${path}${url.search}`;
 
   try {
     const resp = await fetch(targetUrl, {
@@ -28,8 +28,8 @@ export default async function handler(request: Request): Promise<Response> {
       },
     });
 
-    const data = await resp.json();
-    return new Response(JSON.stringify(data), {
+    const data = await resp.text();
+    return new Response(data, {
       status: resp.status,
       headers: corsHeaders,
     });

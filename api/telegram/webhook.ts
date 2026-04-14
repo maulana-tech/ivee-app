@@ -1,8 +1,8 @@
 export const config = { runtime: 'edge' };
 
 const TELEGRAM_BOT_TOKEN = process.env.VITE_TELEGRAM_BOT_TOKEN || '';
-const AVE_API_KEY = process.env.AVE_API_KEY || '4jFc0Luq30MboTRHof15K7frDMkPZ8xW6Y9JGmEUlXK4dKoVcqrHMzRjF8FTfEAM';
-const AVE_API_SECRET = process.env.AVE_API_SECRET || '31ee10cf3fc7cefd6c72da3e6e5952e32a9d58d95fa31ddf285f78be9398b43a';
+const AVE_API_KEY = process.env.AVE_API_KEY || '';
+const AVE_API_SECRET = process.env.AVE_API_SECRET || '';
 const PROXY_ASSETS_ID = process.env.PROXY_ASSETS_ID || '98ca754913164d7ca9085a163799632e';
 const BOT_API = 'https://bot-api.ave.ai';
 

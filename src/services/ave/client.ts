@@ -151,38 +151,15 @@ export interface AveChain {
 }
 
 function getApiKey(): string {
-  // Hardcoded for hackathon - from .env.local
-  const HARDCODED_KEY = '4jFc0Luq30MboTRHof15K7frDMkPZ8xW6Y9JGmEUlXK4dKoVcqrHMzRjF8FTfEAM';
   return (
     import.meta.env.VITE_AVE_API_KEY ||
-    HARDCODED_KEY ||
     (typeof window !== 'undefined' ? localStorage.getItem('ave-api-key') : null) ||
     ''
   );
 }
 
 function isEnabled(): boolean {
-  // Hardcoded for hackathon
-  const HARDCODED_ENABLED = 'true';
-  const envEnabled = import.meta.env.VITE_AVE_ENABLED === 'true' || HARDCODED_ENABLED === 'true';
-  const hasKey = !!getApiKey();
-  
-  if (envEnabled && hasKey) {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('ave-api-key', getApiKey());
-      localStorage.setItem('ave-enabled', 'true');
-    }
-    return true;
-  }
-  
-  // Also check localStorage as fallback
-  if (typeof window !== 'undefined') {
-    const lsEnabled = localStorage.getItem('ave-enabled');
-    const lsKey = localStorage.getItem('ave-api-key');
-    if (lsEnabled === 'true' && lsKey) return true;
-  }
-  
-  return false;
+  return true;
 }
 
 async function aveFetch<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
