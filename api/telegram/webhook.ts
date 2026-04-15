@@ -1,8 +1,9 @@
 export const config = { runtime: 'edge' };
 
-const TELEGRAM_BOT_TOKEN = process.env.VITE_TELEGRAM_BOT_TOKEN || '';
-const AVE_API_KEY = process.env.AVE_API_KEY || '';
-const AVE_API_SECRET = process.env.AVE_API_SECRET || '';
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || process.env.VITE_TELEGRAM_BOT_TOKEN || '';
+const AVE_DATA_KEY = process.env.AVE_API_KEY || '';
+const AVE_BOT_KEY = process.env.AVE_BOT_KEY || process.env.VITE_AVE_BOT_KEY || process.env.AVE_API_KEY || '';
+const AVE_BOT_SECRET = process.env.AVE_BOT_SECRET || process.env.VITE_AVE_BOT_SECRET || process.env.AVE_API_SECRET || '';
 const PROXY_ASSETS_ID = process.env.PROXY_ASSETS_ID || '98ca754913164d7ca9085a163799632e';
 const BOT_API = 'https://bot-api.ave.ai';
 
@@ -37,12 +38,12 @@ function sortObjectKeys(obj: any): any {
 async function signedFetch<T>(method: string, path: string, body?: any): Promise<T> {
   const timestamp = new Date().toISOString();
   const msg = timestamp + method.toUpperCase() + path + (body ? JSON.stringify(sortObjectKeys(body)) : '');
-  const sign = await hmacSha256(AVE_API_SECRET, msg);
+  const sign = await hmacSha256(AVE_BOT_SECRET, msg);
   const resp = await fetch(`${BOT_API}${path}`, {
     method,
     headers: {
       'Content-Type': 'application/json',
-      'AVE-ACCESS-KEY': AVE_API_KEY,
+      'AVE-ACCESS-KEY': AVE_BOT_KEY,
       'AVE-ACCESS-TIMESTAMP': timestamp,
       'AVE-ACCESS-SIGN': sign,
     },
@@ -57,12 +58,7 @@ async function sendTelegramReply(chatId: string, text: string): Promise<void> {
   await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      chat_id: chatId,
-      text,
-      parse_mode: 'MarkdownV2',
-      disable_web_page_preview: true,
-    }),
+    body: JSON.stringify({ chat_id: chatId, text: text.slice(0, 4096), disable_web_page_preview: true }),
   });
 }
 
@@ -71,34 +67,69 @@ async function handleCommand(text: string, chatId: string): Promise<string> {
 
   if (cmd === '/start' || cmd === '/help') {
     return [
-      '*IVEE Trading Bot*',
+      'IVEE Trading Bot',
       '',
-      '/trending \\- Top trending tokens',
-      '/signals \\- Active trading signals',
-      '/status \\- Proxy wallet status',
-      '/buy \\[TOKEN\\] \\[ETH AMOUNT\\] \\- Buy token',
-      '/sell \\[TOKEN\\] \\[TOKEN AMOUNT\\] \\- Sell token',
-      '/orders \\- Open limit orders',
-      '/cancel \\[ORDER ID\\] \\- Cancel order',
+      '/trending - Top trending tokens',
+      '/signals - Active trading signals',
+      '/status - Proxy wallet status',
+      '/buy [TOKEN] [ETH AMOUNT] - Buy token',
+      '/sell [TOKEN] [TOKEN AMOUNT] - Sell token',
+      '/orders - Open limit orders',
+      '/cancel [ORDER ID] - Cancel order',
     ].join('\n');
   }
 
   if (cmd === '/trending') {
     try {
       const resp = await fetch(`https://prod.ave-api.com/v2/tokens/trending?chain=base&page_size=10`, {
-        headers: { 'X-API-KEY': AVE_API_KEY },
+        headers: { 'X-API-KEY': AVE_DATA_KEY },
       });
       const data = await resp.json();
       const tokens = data.data?.tokens || [];
       if (tokens.length === 0) return 'No trending tokens found';
       const lines = tokens.map((t: any, i: number) => {
         const change = parseFloat(t.price_change_24h || '0');
-        const arrow = change >= 0 ? '↑' : '↓';
-        return `${i + 1}\\. ${escapeMd(t.symbol)} $${parseFloat(t.current_price_usd || '0').toFixed(4)} ${arrow}${change.toFixed(1)}%`;
+        const price = parseFloat(t.current_price_usd || '0');
+        const arrow = change >= 0 ? '🟢' : '🔴';
+        const priceStr = price >= 1 ? price.toFixed(2) : price.toFixed(6);
+        return `${i + 1}. ${t.symbol} $${priceStr} ${arrow} ${change >= 0 ? '+' : ''}${change.toFixed(1)}%`;
       });
-      return `*🔥 Trending on Base:*\n\n${lines.join('\n')}`;
+      return `🔥 Trending on Base:\n\n${lines.join('\n')}`;
     } catch {
       return 'Failed to fetch trending tokens';
+    }
+  }
+
+  if (cmd === '/signals') {
+    try {
+      const resp = await fetch(`https://prod.ave-api.com/v2/tokens/trending?chain=base&page_size=20`, {
+        headers: { 'X-API-KEY': AVE_DATA_KEY },
+      });
+      const data = await resp.json();
+      const tokens: any[] = data.data?.tokens || [];
+      if (tokens.length === 0) return 'No signals available';
+
+      const signals = tokens
+        .filter((t: any) => {
+          const change = parseFloat(t.price_change_24h || '0');
+          return Math.abs(change) > 5;
+        })
+        .slice(0, 8)
+        .map((t: any) => {
+          const change = parseFloat(t.price_change_24h || '0');
+          const price = parseFloat(t.current_price_usd || '0');
+          const vol = parseFloat(t.token_tx_volume_usd_24h || t.tx_volume_u_24h || '0');
+          const isStrong = Math.abs(change) > 20 && vol > 1000000;
+          const emoji = change > 0 ? (isStrong ? '🚀' : '📈') : (isStrong ? '💥' : '📉');
+          const action = change > 0 ? (isStrong ? 'STRONG BUY' : 'BUY') : (isStrong ? 'STRONG SELL' : 'SELL');
+          const conf = Math.min(Math.round(Math.abs(change) * 3 + vol / 500000), 95);
+          return `${emoji} ${t.symbol} - ${action} (${conf}% conf)\n  $${price >= 1 ? price.toFixed(2) : price.toFixed(6)} ${change >= 0 ? '+' : ''}${change.toFixed(1)}% | Vol: $${(vol / 1e6).toFixed(1)}M`;
+        });
+
+      if (signals.length === 0) return 'No strong signals right now';
+      return `📊 Trading Signals:\n\n${signals.join('\n\n')}`;
+    } catch {
+      return 'Failed to generate signals';
     }
   }
 
@@ -109,10 +140,10 @@ async function handleCommand(text: string, chatId: string): Promise<string> {
       if (!wallet) return 'No proxy wallet found';
       const baseAddr = wallet.addressList?.find((a: any) => a.chain === 'base');
       return [
-        `*💰 Proxy Wallet*`,
-        `Address: \`${baseAddr?.address || 'N/A'}\``,
-        `Status: ${wallet.status}`,
-        `Type: ${wallet.type}`,
+        '💰 Proxy Wallet',
+        `Address: ${baseAddr?.address || 'N/A'}`,
+        `Status: ${wallet.status || 'Active'}`,
+        `Type: ${wallet.type || 'Proxy'}`,
       ].join('\n');
     } catch (e: any) {
       return `Failed to get wallet: ${e.message}`;
@@ -130,7 +161,7 @@ async function handleCommand(text: string, chatId: string): Promise<string> {
       OP: '0x4200000000000000000000000000000000000042',
     };
     const tokenAddr = tokenMap[token];
-    if (!tokenAddr) return `Unknown token: ${escapeMd(token)}`;
+    if (!tokenAddr) return `Unknown token: ${token}. Available: WETH, AERO, USDC, OP`;
     const inAmount = BigInt(Math.floor(amount * 1e18)).toString();
     try {
       const result: any = await signedFetch('POST', '/v1/thirdParty/tx/sendSwapOrder', {
@@ -145,9 +176,9 @@ async function handleCommand(text: string, chatId: string): Promise<string> {
         autoSlippage: true,
         autoGas: 'average',
       });
-      return `*🟢 Buy Order Placed*\nToken: ${escapeMd(token)}\nAmount: ${amount} ETH\nOrder ID: \`${result.id}\``;
+      return `🟢 Buy Order Placed\nToken: ${token}\nAmount: ${amount} ETH\nOrder ID: ${result.id}`;
     } catch (e: any) {
-      return `Buy failed: ${escapeMd(e.message)}`;
+      return `Buy failed: ${e.message}`;
     }
   }
 
@@ -162,7 +193,7 @@ async function handleCommand(text: string, chatId: string): Promise<string> {
       OP: '0x4200000000000000000000000000000000000042',
     };
     const tokenAddr = tokenMap[token];
-    if (!tokenAddr) return `Unknown token: ${escapeMd(token)}`;
+    if (!tokenAddr) return `Unknown token: ${token}. Available: WETH, AERO, USDC, OP`;
     const inAmount = BigInt(Math.floor(amount * 1e18)).toString();
     try {
       const result: any = await signedFetch('POST', '/v1/thirdParty/tx/sendSwapOrder', {
@@ -177,9 +208,9 @@ async function handleCommand(text: string, chatId: string): Promise<string> {
         autoSlippage: true,
         autoGas: 'average',
       });
-      return `*🔴 Sell Order Placed*\nToken: ${escapeMd(token)}\nAmount: ${amount}\nOrder ID: \`${result.id}\``;
+      return `🔴 Sell Order Placed\nToken: ${token}\nAmount: ${amount}\nOrder ID: ${result.id}`;
     } catch (e: any) {
-      return `Sell failed: ${escapeMd(e.message)}`;
+      return `Sell failed: ${e.message}`;
     }
   }
 
@@ -189,11 +220,11 @@ async function handleCommand(text: string, chatId: string): Promise<string> {
       if (!orders || orders.length === 0) return 'No open orders';
       const lines = orders.map((o: any) => {
         const type = o.swapType === 'buy' ? 'BUY' : 'SELL';
-        return `${type} ${escapeMd(o.swapType)} @ $${o.limitPrice} - \`${o.id.slice(0, 8)}\``;
+        return `${type} @ $${o.limitPrice || 'market'} - ID: ${String(o.id).slice(0, 8)}`;
       });
-      return `*Open Orders:*\n\n${lines.join('\n')}`;
-    } catch {
-      return 'Failed to fetch orders';
+      return `Open Orders:\n\n${lines.join('\n')}`;
+    } catch (e: any) {
+      return `Failed to fetch orders: ${e.message}`;
     }
   }
 
@@ -202,13 +233,13 @@ async function handleCommand(text: string, chatId: string): Promise<string> {
     const orderId = cancelMatch[1]!;
     try {
       await signedFetch('POST', '/v1/thirdParty/tx/cancelLimitOrder', { chain: 'base', ids: [orderId] });
-      return `Order \`${escapeMd(orderId.slice(0, 8))}\` cancelled`;
+      return `Order ${orderId.slice(0, 8)} cancelled`;
     } catch (e: any) {
-      return `Cancel failed: ${escapeMd(e.message)}`;
+      return `Cancel failed: ${e.message}`;
     }
   }
 
-  return 'Unknown command\\. Type /help for available commands\\.';
+  return 'Unknown command. Type /help for available commands.';
 }
 
 export default async function handler(request: Request): Promise<Response> {
@@ -232,6 +263,7 @@ export default async function handler(request: Request): Promise<Response> {
   }
 
   if (request.method === 'POST') {
+    let chatId = '';
     try {
       const body = await request.json();
       const message = body?.message;
@@ -239,14 +271,17 @@ export default async function handler(request: Request): Promise<Response> {
         return new Response(JSON.stringify({ ok: true }), { headers: corsHeaders });
       }
 
+      chatId = String(message.chat.id);
       const text = message.text as string;
-      const chatId = String(message.chat.id);
 
       const reply = await handleCommand(text, chatId);
       await sendTelegramReply(chatId, reply);
 
       return new Response(JSON.stringify({ ok: true }), { headers: corsHeaders });
     } catch (e: any) {
+      if (chatId) {
+        await sendTelegramReply(chatId, `Error: ${e.message || 'Unknown error'}`);
+      }
       return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: corsHeaders });
     }
   }
