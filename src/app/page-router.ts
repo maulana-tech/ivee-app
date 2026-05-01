@@ -11,7 +11,7 @@ let pendingAddress: string | null = null;
 let pendingChain: string | null = null;
 
 export function initPageRouter(): void {
-  if (SITE_VARIANT !== 'crypto') return;
+  if (SITE_VARIANT !== 'crypto' && SITE_VARIANT !== 'nba') return;
 
   const hash = window.location.hash.replace('#/', '');
   if (hash.startsWith('trade')) {
@@ -47,7 +47,7 @@ export function getCurrentPage(): PageId {
 }
 
 export function navigateTo(page: PageId, token?: string, address?: string, chain?: string): void {
-  if (SITE_VARIANT !== 'crypto') return;
+  if (SITE_VARIANT !== 'crypto' && SITE_VARIANT !== 'nba') return;
   currentPage = page;
   if (page === 'trade' && token) {
     pendingToken = token;
@@ -117,7 +117,7 @@ function updateTabButtons(): void {
 }
 
 export function setupPageTabs(): void {
-  if (SITE_VARIANT !== 'crypto') return;
+  if (SITE_VARIANT !== 'crypto' && SITE_VARIANT !== 'nba') return;
 
   document.querySelectorAll('.page-tab').forEach(btn => {
     btn.addEventListener('click', () => {

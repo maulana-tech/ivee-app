@@ -274,7 +274,17 @@
     "panelCatMining": "Mining & Supply Chain",
     "panelCatCommodityEcon": "Economy & Trade",
     "panelCatHappyNews": "Good News",
-    "panelCatHappyPlanet": "Planet & Giving"
+    "panelCatHappyPlanet": "Planet & Giving",
+    "panelCatWhaleIntel": "Whale Intelligence",
+    "panelCatCryptoPortfolio": "Portfolio",
+    "panelCatCryptoMarkets": "Crypto Markets",
+    "panelCatNbaLive": "Live Games",
+    "panelCatNbaAnalysis": "Analysis & Stats",
+    "panelCatNbaMarkets": "Prediction Markets",
+    "panelCatNbaStrategy": "Strategy & P&L",
+    "sourceRegionNbaNews": "NBA News",
+    "sourceRegionNbaAnalytics": "Analytics",
+    "sourceRegionNbaMarkets": "Markets"
   },
   "panels": {
     "liveNews": "Live News",

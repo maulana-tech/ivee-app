@@ -1,2 +1,2 @@
-export const SITE_VARIANT: string = 'crypto';
+export const SITE_VARIANT: string = 'nba';
 export default SITE_VARIANT;

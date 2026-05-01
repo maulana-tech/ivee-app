@@ -1,20 +1,5 @@
-# Dependencies
 node_modules/
-
-# Build outputs
 dist/
-
-# Environment
 .env
-.env.local
-
-# IDE
-.idea/
-.vscode/
-.cursor/
-.claude/
-
-# System
-.DS_Store
-*.log
-.vercel
+.canon/execution/
+*.tsbuildinfo

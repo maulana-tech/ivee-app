@@ -15,9 +15,11 @@ const _variantMeta = VARIANT_META[SITE_VARIANT];
 const variantMeta = _variantMeta && _variantMeta.title ? _variantMeta : VARIANT_META.full;
 const CRYPTO_TITLE = 'IVEE - Crypto Trading Dashboard';
 const CRYPTO_DESCRIPTION = 'Real-time crypto trading dashboard with whale alerts, trading signals, portfolio tracking, and market intelligence powered by AVE.';
+const NBA_TITLE = 'IVEE - NBA Playoffs Prediction Market Dashboard';
+const NBA_DESCRIPTION = 'Real-time NBA Playoffs prediction market dashboard with live scores, AI game predictions, arbitrage scanning, and automated trading strategies.';
 const BASE_URL = variantMeta.url.replace(/\/$/, '');
-const effectiveTitle = SITE_VARIANT === 'crypto' ? CRYPTO_TITLE : variantMeta.title;
-const effectiveDesc = SITE_VARIANT === 'crypto' ? CRYPTO_DESCRIPTION : variantMeta.description;
+const effectiveTitle = SITE_VARIANT === 'crypto' ? CRYPTO_TITLE : SITE_VARIANT === 'nba' ? NBA_TITLE : variantMeta.title;
+const effectiveDesc = SITE_VARIANT === 'crypto' ? CRYPTO_DESCRIPTION : SITE_VARIANT === 'nba' ? NBA_DESCRIPTION : variantMeta.description;
 const API_ORIGIN = getCanonicalApiOrigin();
 const DEFAULT_IMAGE = `${BASE_URL}/favico/${SITE_VARIANT === 'full' ? '' : SITE_VARIANT + '/'}og-image.png`;
 

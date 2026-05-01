@@ -1174,22 +1174,11 @@ async function createDevMarketHandlers() {
         fedRate: '4.50%',
       });
     },
-    '/api/market/v1/ai-analyze': async (req: Request) => {
-      const url = new URL(req.url);
-      const token = url.searchParams.get('token') || 'WETH';
-      const { runAllAnalysts, runDebate, makeDecision, checkRisk } = await import('./src/services/ave/ai-agent.ts');
-      
-      const analysts = await runAllAnalysts(token);
-      const debate = await runDebate(analysts);
-      const decision = await makeDecision(token, debate);
-      const risk = await checkRisk(decision);
-      
-      return json({ token, analysts, debate, decision, risk });
+    '/api/market/v1/ai-analyze': async (_req: Request) => {
+      return json({ error: 'Not available' });
     },
     '/api/market/v1/ai-tokens': async (_req: Request) => {
-      const { getDemoTokens } = await import('./src/services/ave/ai-agent.ts');
-      const tokens = await getDemoTokens();
-      return json({ tokens });
+      return json({ tokens: [] });
     },
   };
 }

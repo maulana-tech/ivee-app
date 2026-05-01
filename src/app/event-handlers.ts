@@ -350,33 +350,6 @@ export class EventHandlerManager implements AppModule {
     this.initDownloadDropdown();
     this.initFooterDownload();
 
-    document.getElementById('walletConnectBtn')?.addEventListener('click', async () => {
-      const { connectWallet, getWalletStatus, switchToBaseNetwork } = await import('@/services/ave/trading');
-      const btn = document.getElementById('walletConnectBtn');
-      const label = btn?.querySelector('.wallet-btn-label');
-      try {
-        const status = await connectWallet();
-        if (status.connected && status.address) {
-          if (label) label.textContent = status.address.slice(0, 6) + '...' + status.address.slice(-4);
-          btn?.classList.add('connected');
-        }
-      } catch {
-        if (label) label.textContent = 'Connect';
-      }
-    });
-
-    // Check if wallet already connected on load
-    (async () => {
-      const { getWalletStatus } = await import('@/services/ave/trading');
-      const status = await getWalletStatus();
-      const btn = document.getElementById('walletConnectBtn');
-      const label = btn?.querySelector('.wallet-btn-label');
-      if (status.connected && status.address) {
-        if (label) label.textContent = status.address.slice(0, 6) + '...' + status.address.slice(-4);
-        btn?.classList.add('connected');
-      }
-    })();
-
     this.boundStorageHandler = (e: StorageEvent) => {
       if (e.key === STORAGE_KEYS.panels && e.newValue) {
         try {

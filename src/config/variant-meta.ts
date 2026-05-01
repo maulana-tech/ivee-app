@@ -1,4 +1,4 @@
-// AVE Claw Hackathon - Crypto Trading Dashboard
+// DEGA NBA Playoffs Prediction Market Hackathon
 export interface VariantMeta {
   title: string;
   description: string;
@@ -149,6 +149,31 @@ export const VARIANT_META: { full: VariantMeta; [k: string]: VariantMeta } = {
       'Logistics infrastructure',
       'Commodity market news',
       'Futures market data',
+    ],
+  },
+  nba: {
+    title: 'IVEE - NBA Playoffs Prediction Market Dashboard',
+    description: 'Real-time NBA Playoffs prediction market dashboard with live scores, AI game predictions, arbitrage scanning, cross-market analysis, and automated trading strategies using DEGA Canon CLI.',
+    keywords: 'NBA playoffs, prediction markets, Polymarket, sports betting, arbitrage, NBA scores, basketball, AI predictions, trading automation, Canon CLI, DEGA, sports analytics, playoff bracket, NBA stats',
+    url: 'https://ivee-apps.vercel.app/',
+    siteName: 'IVEE',
+    shortName: 'IVEE',
+    subject: 'NBA Playoffs Prediction Market Intelligence and Trading Automation',
+    classification: 'Prediction Market Dashboard, NBA Analytics, Trading Automation',
+    categories: ['sports', 'finance'],
+    features: [
+      'Live NBA game scores and updates',
+      'AI-powered game predictions',
+      'Prediction market monitoring (Polymarket, Kalshi)',
+      'Arbitrage opportunity scanning',
+      'Cross-market correlation analysis',
+      'Speed-based stat opportunities',
+      'Team and player statistics',
+      'Injury report tracking',
+      'Playoff bracket visualization',
+      'Momentum and streak analysis',
+      'Strategy dashboard with P&L tracking',
+      'Canon CLI integration for automation',
     ],
   },
 };

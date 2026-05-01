@@ -1,38 +1,36 @@
-# Ivee - AVE Claw Hackathon
+# Canon Strategy Development
 
-Crypto trading dashboard built with AVE Skills API.
+## Quick Reference
+- Framework config: `.canon/config.yaml`
+- Ralph Loop config: `dega-core.yaml`
+- Agent personas: `.canon/agents/`
+- Skills (domain knowledge): `.canon/skills/`
 
-## Quick Start
+## Available Agents
 
-```bash
-npm install
-npm run dev
-# or with crypto variant
-VITE_VARIANT=crypto npm run dev
-```
+| Agent | Role | Load When |
+|-------|------|-----------|
+| strategy-architect | Designs strategies from market analysis | Starting a new strategy |
+| market-analyst | Interprets market data, finds opportunities | Exploring markets |
+| dev | Implements strategies in TypeScript | Writing code |
+| qa | Validates quality and standards compliance | Reviewing before registration |
+| risk-analyst | Evaluates risk and portfolio impact | Before registration |
+| deployment-ops | Registers on Arena, monitors tracked performance | Registering a strategy |
 
-## Project Structure
+## Available Commands
 
-```
-src/
-├── components/ave/    # Crypto trading panels
-├── services/ave/     # AVE API integration
-└── config/           # Variant configs
+| Command | Purpose |
+|---------|---------|
+| `/canon-start` | Guided workflow — detects project state, drives full pipeline |
+| `/develop` | Scaffold, implement, test, iterate (full build cycle) |
+| `/ralph-cycle` | Execute success criteria checks and iterate until SHIP |
+| `/discover` | Market analysis, opportunity identification, strategy design |
+| `/register` | Risk review, pre-registration checks, Arena tracking |
+| `/quick-dev` | Small changes with lightweight validation |
 
-api/                  # Vercel Edge Functions
-server/               # Server handlers
-proto/                # Protocol Buffers
-```
-
-## Commands
-
-```bash
-npm run dev           # Dev server
-npm run build         # Production build
-npm run lint          # Lint check
-npm run typecheck     # TypeScript check
-```
-
-## Environment
-
-Copy `.env.example` to `.env.local` and add your `AVE_API_KEY` from https://cloud.ave.ai
+## Non-Negotiable Rules
+1. All strategies implement TradeSignal + RiskInterface
+2. Position size never >5% of portfolio
+3. Domain layering: Types -> Config -> Repo -> Service -> Runtime -> UI
+4. Error messages include what/why/how
+5. "If it's not in the repo, it doesn't exist"

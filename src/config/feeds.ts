@@ -930,6 +930,46 @@ const COMMODITY_FEEDS: Record<string, Feed[]> = {
   ],
 };
 
+const NBA_FEEDS: Record<string, Feed[]> = {
+  politics: [
+    { name: 'ESPN NBA', url: rss('https://www.espn.com/espn/rss/nba/news') },
+    { name: 'NBA.com', url: rss('https://www.nba.com/rss/nba-rss.xml') },
+    { name: 'The Athletic NBA', url: rss('https://news.google.com/rss/search?q=site:theathletic.com+NBA+playoffs&hl=en-US&gl=US&ceid=US:en') },
+    { name: 'Bleacher Report', url: rss('https://news.google.com/rss/search?q=site:bleacherreport.com+NBA&hl=en-US&gl=US&ceid=US:en') },
+    { name: 'CBS Sports NBA', url: rss('https://www.cbssports.com/rss/headlines/nba/') },
+    { name: 'Yahoo Sports NBA', url: rss('https://sports.yahoo.com/nba/rss/') },
+    { name: 'SI NBA', url: rss('https://www.si.com/rss/nba') },
+    { name: 'NBC Sports NBA', url: rss('https://nba.nbcsports.com/feed/') },
+  ],
+  crisis: [
+    { name: 'Shams Charania', url: rss('https://news.google.com/rss/search?q=Shams+Charania+NBA+when:1d&hl=en-US&gl=US&ceid=US:en') },
+    { name: 'Adrian Wojnarowski', url: rss('https://news.google.com/rss/search?q=Wojnarowski+NBA+when:1d&hl=en-US&gl=US&ceid=US:en') },
+    { name: 'NBA Injury News', url: rss('https://news.google.com/rss/search?q=NBA+injury+report+when:1d&hl=en-US&gl=US&ceid=US:en') },
+    { name: 'NBA Trades', url: rss('https://news.google.com/rss/search?q=NBA+trade+when:1d&hl=en-US&gl=US&ceid=US:en') },
+    { name: 'NBA Breaking', url: rss('https://news.google.com/rss/search?q=NBA+breaking+when:1d&hl=en-US&gl=US&ceid=US:en') },
+  ],
+  tech: [
+    { name: 'RotoWire NBA', url: rss('https://www.rotowire.com/rss/news.htm?sport=NBA') },
+    { name: 'Rotoworld NBA', url: rss('https://news.google.com/rss/search?q=site:rotoworld.com+NBA&hl=en-US&gl=US&ceid=US:en') },
+    { name: 'FiveThirtyEight NBA', url: rss('https://news.google.com/rss/search?q=site:fivethirtyeight.com+NBA&hl=en-US&gl=US&ceid=US:en') },
+    { name: 'Cleaning the Glass', url: rss('https://news.google.com/rss/search?q=site:cleaningtheglass.com+NBA&hl=en-US&gl=US&ceid=US:en') },
+    { name: 'Basketball Reference', url: rss('https://news.google.com/rss/search?q=site:basketball-reference.com+NBA&hl=en-US&gl=US&ceid=US:en') },
+  ],
+  finance: [
+    { name: 'Polymarket NBA', url: rss('https://news.google.com/rss/search?q=Polymarket+NBA+prediction&hl=en-US&gl=US&ceid=US:en') },
+    { name: 'Kalshi Sports', url: rss('https://news.google.com/rss/search?q=Kalshi+sports+prediction+market&hl=en-US&gl=US&ceid=US:en') },
+    { name: 'Prediction Markets', url: rss('https://news.google.com/rss/search?q=prediction+market+NBA+playoffs&hl=en-US&gl=US&ceid=US:en') },
+    { name: 'Sports Betting News', url: rss('https://news.google.com/rss/search?q=sports+betting+NBA+odds&hl=en-US&gl=US&ceid=US:en') },
+    { name: 'Action Network', url: rss('https://news.google.com/rss/search?q=site:actionnetwork.com+NBA&hl=en-US&gl=US&ceid=US:en') },
+  ],
+  markets: [
+    { name: 'CNBC', url: rss('https://www.cnbc.com/id/100003114/device/rss/rss.html') },
+    { name: 'Reuters Sports Biz', url: rss('https://news.google.com/rss/search?q=site:reuters.com+sports+business&hl=en-US&gl=US&ceid=US:en') },
+    { name: 'Forbes Sports', url: rss('https://news.google.com/rss/search?q=site:forbes.com+NBA+business&hl=en-US&gl=US&ceid=US:en') },
+    { name: 'Sportico', url: rss('https://news.google.com/rss/search?q=site:sportico.com+NBA&hl=en-US&gl=US&ceid=US:en') },
+  ],
+};
+
 // Variant-aware exports
 const variant = SITE_VARIANT as string;
 export const FEEDS = variant === 'tech'
@@ -942,7 +982,9 @@ export const FEEDS = variant === 'tech'
       ? HAPPY_FEEDS
       : variant === 'commodity'
         ? COMMODITY_FEEDS
-        : FULL_FEEDS;
+        : variant === 'nba'
+          ? NBA_FEEDS
+          : FULL_FEEDS;
 
 export const SOURCE_REGION_MAP: Record<string, { labelKey: string; feedKeys: string[] }> = {
   // Full (geopolitical) variant regions
@@ -975,6 +1017,11 @@ export const SOURCE_REGION_MAP: Record<string, { labelKey: string; feedKeys: str
   dealsCorpFin: { labelKey: 'header.sourceRegionDeals', feedKeys: ['institutional', 'derivatives'] },
   finRegulation: { labelKey: 'header.sourceRegionFinRegulation', feedKeys: ['fin-regulation'] },
   gulfMena: { labelKey: 'header.sourceRegionGulfMena', feedKeys: ['gccNews'] },
+
+  // NBA variant regions
+  nbaNews: { labelKey: 'header.sourceRegionNbaNews', feedKeys: ['politics', 'crisis'] },
+  nbaAnalytics: { labelKey: 'header.sourceRegionNbaAnalytics', feedKeys: ['tech'] },
+  nbaMarketsRegion: { labelKey: 'header.sourceRegionNbaMarkets', feedKeys: ['finance', 'markets'] },
 };
 
 export const INTEL_SOURCES: Feed[] = [

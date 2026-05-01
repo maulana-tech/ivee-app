@@ -1034,6 +1034,51 @@ const COMMODITY_MOBILE_MAP_LAYERS: MapLayers = {
 };
 
 // ============================================
+// NBA VARIANT (NBA Playoffs Prediction Markets)
+// ============================================
+const NBA_PANELS: Record<string, PanelConfig> = {
+  'nba-live': { name: 'Live Games', enabled: true, priority: 1 },
+  'live-news': { name: 'NBA News', enabled: true, priority: 1 },
+  insights: { name: 'AI Predictions', enabled: true, priority: 1 },
+  'nba-markets': { name: 'Prediction Markets', enabled: true, priority: 1 },
+  'nba-teams': { name: 'Team Stats', enabled: true, priority: 1 },
+  'nba-players': { name: 'Player Stats', enabled: true, priority: 1 },
+  'nba-injuries': { name: 'Injury Report', enabled: true, priority: 1 },
+  'nba-bracket': { name: 'Playoff Bracket', enabled: true, priority: 1 },
+  'nba-momentum': { name: 'Momentum', enabled: true, priority: 1 },
+  'nba-arb': { name: 'Arbitrage Scanner', enabled: true, priority: 1 },
+  'nba-cross': { name: 'Cross-Market', enabled: true, priority: 1 },
+  'nba-speed': { name: 'Speed Ops', enabled: true, priority: 1 },
+  'nba-heatmap': { name: 'Market Heatmap', enabled: true, priority: 2 },
+  'nba-strategy': { name: 'Strategy Dashboard', enabled: true, priority: 1 },
+  'nba-performance': { name: 'P&L Tracker', enabled: true, priority: 1 },
+  'nba-automation': { name: 'Automation Engine', enabled: true, priority: 1 },
+  'nba-fear-greed': { name: 'Market Sentiment', enabled: true, priority: 2 },
+  'nba-schedule': { name: 'Schedule', enabled: true, priority: 2 },
+  'nba-standings': { name: 'Standings', enabled: true, priority: 2 },
+  monitors: { name: 'My Monitors', enabled: true, priority: 2 },
+};
+
+const NBA_MAP_LAYERS: MapLayers = {
+  gpsJamming: false, satellites: false, conflicts: false, bases: false,
+  cables: false, pipelines: false, hotspots: false, ais: false, nuclear: false,
+  irradiators: false, sanctions: false, weather: false, economic: false,
+  waterways: false, outages: false, cyberThreats: false, datacenters: false,
+  protests: false, flights: false, military: false, natural: false,
+  spaceports: false, minerals: false, fires: false, ucdpEvents: false,
+  displacement: false, climate: false, startupHubs: false, cloudRegions: false,
+  accelerators: false, techHQs: false, techEvents: false, stockExchanges: false,
+  financialCenters: false, centralBanks: false, commodityHubs: false,
+  gulfInvestments: false, positiveEvents: false, kindness: false, happiness: false,
+  speciesRecovery: false, renewableInstallations: false, tradeRoutes: false,
+  iranAttacks: false, ciiChoropleth: false, resilienceScore: false, dayNight: false,
+  miningSites: false, processingPlants: false, commodityPorts: false,
+  webcams: false, diseaseOutbreaks: false,
+};
+
+const NBA_MOBILE_MAP_LAYERS = { ...NBA_MAP_LAYERS };
+
+// ============================================
 // UNIFIED PANEL REGISTRY
 // ============================================
 
@@ -1055,6 +1100,7 @@ export const VARIANT_DEFAULTS: Record<string, string[]> = {
   commodity: Object.keys(COMMODITY_PANELS),
   crypto:    Object.keys(CRYPTO_PANELS),
   happy:     Object.keys(HAPPY_PANELS),
+  nba:       Object.keys(NBA_PANELS),
 };
 
 /**
@@ -1084,6 +1130,11 @@ export const VARIANT_PANEL_OVERRIDES: Partial<Record<string, Partial<Record<stri
   },
   happy: {
     map:         { name: 'World Map' },
+  },
+  nba: {
+    map:         { name: 'NBA Arena Map' },
+    'live-news': { name: 'NBA News' },
+    insights:    { name: 'AI Game Predictions' },
   },
 };
 
@@ -1138,7 +1189,9 @@ export const DEFAULT_MAP_LAYERS = SITE_VARIANT === 'happy'
         ? COMMODITY_MAP_LAYERS
         : SITE_VARIANT === 'crypto'
           ? CRYPTO_MAP_LAYERS
-          : FULL_MAP_LAYERS;
+          : SITE_VARIANT === 'nba'
+            ? NBA_MAP_LAYERS
+            : FULL_MAP_LAYERS;
 
 export const MOBILE_DEFAULT_MAP_LAYERS = SITE_VARIANT === 'happy' 
   ? HAPPY_MOBILE_MAP_LAYERS 
@@ -1150,7 +1203,9 @@ export const MOBILE_DEFAULT_MAP_LAYERS = SITE_VARIANT === 'happy'
         ? COMMODITY_MOBILE_MAP_LAYERS
         : SITE_VARIANT === 'crypto'
           ? CRYPTO_MOBILE_MAP_LAYERS
-          : FULL_MOBILE_MAP_LAYERS;
+          : SITE_VARIANT === 'nba'
+            ? NBA_MOBILE_MAP_LAYERS
+            : FULL_MOBILE_MAP_LAYERS;
 
 /** Maps map-layer toggle keys to their data-freshness source IDs (single source of truth). */
 export const LAYER_TO_SOURCE: Partial<Record<keyof MapLayers, DataSourceId[]>> = {
@@ -1292,6 +1347,24 @@ export const PANEL_CATEGORY_MAP: Record<string, { labelKey: string; panelKeys: s
   cryptoMarkets: {
     labelKey: 'header.panelCatCryptoMarkets',
     panelKeys: ['markets', 'heatmap', 'etf-flows', 'macro-signals', 'fear-greed', 'economic-calendar'],
+  },
+
+  // NBA variant
+  nbaLive: {
+    labelKey: 'header.panelCatNbaLive',
+    panelKeys: ['nba-live', 'nba-schedule', 'nba-standings', 'nba-injuries'],
+  },
+  nbaAnalysis: {
+    labelKey: 'header.panelCatNbaAnalysis',
+    panelKeys: ['nba-teams', 'nba-players', 'nba-momentum', 'nba-bracket'],
+  },
+  nbaMarkets: {
+    labelKey: 'header.panelCatNbaMarkets',
+    panelKeys: ['nba-markets', 'nba-arb', 'nba-cross', 'nba-speed', 'nba-heatmap', 'nba-fear-greed'],
+  },
+  nbaStrategy: {
+    labelKey: 'header.panelCatNbaStrategy',
+    panelKeys: ['nba-strategy', 'nba-performance'],
   },
 };
 
