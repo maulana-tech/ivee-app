@@ -1283,3 +1283,38 @@
 
 .nba-perf-profit.positive { color: #00ff88; }
 .nba-perf-profit.negative { color: #ff4444; }
+
+/* Server Status */
+.nba-server-status {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border, #333);
+}
+
+.nba-server-badge {
+  font-size: 9px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.nba-server-badge.connected {
+  background: rgba(0, 255, 136, 0.15);
+  color: #00ff88;
+  border: 1px solid rgba(0, 255, 136, 0.3);
+}
+
+.nba-server-badge.disconnected {
+  background: rgba(136, 136, 136, 0.15);
+  color: #888;
+  border: 1px solid rgba(136, 136, 136, 0.3);
+}
+
+.nba-server-badge.running {
+  background: rgba(68, 136, 255, 0.15);
+  color: #4488ff;
+  border: 1px solid rgba(68, 136, 255, 0.3);
+}

@@ -8,6 +8,7 @@ import {
   type PipelineStep,
 } from '@/services/nba/automation-engine';
 import { degasRankService, type DegaPerformance, type DegaLeaderboard } from '@/services/nba/dega-rank';
+import { canonServerAPI, type StrategyStatus, type StrategyPerformance } from '@/services/nba/server-api';
 
 const AGENT_ICONS: Record<string, string> = {
   'market-analyst': '&#128200;',
@@ -34,12 +35,79 @@ export class NbaAutomationPanel extends Panel {
   private unsubscribePerf: (() => void) | null = null;
   private performance: DegaPerformance | null = null;
   private leaderboard: DegaLeaderboard[] = [];
+  private serverConnected = false;
+  private serverStrategies: StrategyStatus[] = [];
+  private serverPerformance: StrategyPerformance | null = null;
+  private pollInterval: number | null = null;
 
   constructor(options: { id: string; title: string }) {
     super(options);
     this.element.classList.add('nba-automation-panel');
     this.performance = degasRankService.getPerformance();
     this.leaderboard = degasRankService.getLeaderboard();
+    this.checkServerConnection();
+  }
+
+  private async checkServerConnection(): Promise<void> {
+    try {
+      const available = await canonServerAPI.isServerAvailable();
+      this.serverConnected = available;
+      if (available) {
+        this.serverStrategies = await canonServerAPI.getStrategies();
+        this.serverPerformance = await canonServerAPI.getPerformance();
+        this.startPolling();
+        console.log('[NbaAutomationPanel] Connected to Canon server');
+      }
+    } catch {
+      this.serverConnected = false;
+      console.log('[NbaAutomationPanel] Using local automation engine (server not available)');
+    }
+  }
+
+  private startPolling(): void {
+    if (this.pollInterval) return;
+    this.pollInterval = window.setInterval(async () => {
+      if (!this.serverConnected) return;
+      try {
+        this.serverStrategies = await canonServerAPI.getStrategies();
+        this.serverPerformance = await canonServerAPI.getPerformance();
+        this.updateFromServer();
+      } catch (err) {
+        console.error('[NbaAutomationPanel] Poll error:', err);
+      }
+    }, 5000);
+  }
+
+  private updateFromServer(): void {
+    const perfEl = this.element.querySelector('#autoPerformance');
+    if (perfEl && this.serverPerformance) {
+      const pnlClass = this.serverPerformance.totalPnl >= 0 ? 'positive' : 'negative';
+      const html = `
+        <div class="nba-perf-grid">
+          <div class="nba-perf-card main">
+            <div class="nba-perf-label">Total P&L (Canon)</div>
+            <div class="nba-perf-value ${pnlClass}">$${this.serverPerformance.totalPnl.toFixed(2)}</div>
+            <div class="nba-perf-percent ${pnlClass}">${this.serverPerformance.totalPnl >= 0 ? '+' : ''}${this.serverPerformance.totalPnlPercent.toFixed(1)}%</div>
+          </div>
+          <div class="nba-perf-card">
+            <div class="nba-perf-label">Open Positions</div>
+            <div class="nba-perf-value">${this.serverPerformance.openPositions}</div>
+          </div>
+          <div class="nba-perf-card">
+            <div class="nba-perf-label">Volume</div>
+            <div class="nba-perf-value">$${this.serverPerformance.totalVolume}</div>
+          </div>
+          <div class="nba-perf-card">
+            <div class="nba-perf-label">Win Rate</div>
+            <div class="nba-perf-value">${this.serverPerformance.winRate}%</div>
+          </div>
+        </div>
+        <div class="nba-server-status">
+          <span class="nba-server-badge connected">Canon Server Connected</span>
+        </div>
+      `;
+      perfEl.innerHTML = html;
+    }
   }
 
   protected renderContent(): void {
@@ -144,6 +212,12 @@ export class NbaAutomationPanel extends Panel {
             </div>
           `).join('')}
         </div>
+      </div>
+      <div class="nba-server-status">
+        <span class="nba-server-badge ${this.serverConnected ? 'connected' : 'disconnected'}">
+          ${this.serverConnected ? '● Canon Server Connected' : '○ Using Local Engine'}
+        </span>
+        ${this.serverConnected ? `<span class="nba-server-badge running">${this.serverStrategies.filter(s => s.status === 'running').length} Active</span>` : ''}
       </div>
     `;
   }
@@ -287,14 +361,41 @@ export class NbaAutomationPanel extends Panel {
 
   private attachEvents(): void {
     this.element.querySelectorAll('.nba-auto-start-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', async () => {
         const type = (btn as HTMLElement).dataset.type as StrategyConfig['type'];
         const template = getStrategyTemplates().find(t => t.type === type);
-        if (template) {
-          this.activeRun = null;
-          this.agentLog = [];
-          const terminal = this.element.querySelector('#autoTerminal');
-          if (terminal) terminal.innerHTML = '';
+        if (!template) return;
+
+        this.activeRun = null;
+        this.agentLog = [];
+        const terminal = this.element.querySelector('#autoTerminal');
+        if (terminal) terminal.innerHTML = '';
+
+        if (this.serverConnected) {
+          try {
+            const strategy = await canonServerAPI.startStrategy(type);
+            this.appendAgentLog({
+              role: 'system',
+              content: `Canon Server: Started ${strategy.name}`,
+              timestamp: new Date().toISOString(),
+              phase: 'fetching',
+            });
+            this.appendAgentLog({
+              role: 'developer',
+              content: `API call: POST /api/strategies/${type}/start`,
+              timestamp: new Date().toISOString(),
+              phase: 'fetching',
+            });
+          } catch (err) {
+            this.appendAgentLog({
+              role: 'system',
+              content: `Server error: ${err instanceof Error ? err.message : 'Unknown'}`,
+              timestamp: new Date().toISOString(),
+              phase: 'error',
+            });
+            automationEngine.startStrategy(template);
+          }
+        } else {
           automationEngine.startStrategy(template);
         }
       });
@@ -304,6 +405,9 @@ export class NbaAutomationPanel extends Panel {
   public dispose(): void {
     this.unsubscribePipeline?.();
     this.unsubscribeAgent?.();
+    if (this.pollInterval) {
+      clearInterval(this.pollInterval);
+    }
   }
 
   public async refresh(): Promise<void> {
