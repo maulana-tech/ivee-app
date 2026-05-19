@@ -413,6 +413,7 @@ export class DataLoaderManager implements AppModule {
   }
 
   async loadAllData(forceAll = false): Promise<void> {
+    if (SITE_VARIANT === 'nba') return this.loadAllDataNba();
     const runGuarded = async (name: string, fn: () => Promise<void>): Promise<void> => {
       if (this.ctx.isDestroyed || this.ctx.inFlight.has(name)) return;
       this.ctx.inFlight.add(name);
@@ -457,6 +458,10 @@ export class DataLoaderManager implements AppModule {
       }
     }
 
+    this.updateSearchIndex();
+  }
+
+  private async loadAllDataNba(): Promise<void> {
     this.updateSearchIndex();
   }
 

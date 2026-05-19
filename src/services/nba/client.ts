@@ -86,7 +86,12 @@ interface InjuryReport {
   team: NbaTeam;
 }
 
+const PAID_ENDPOINTS = new Set(['/standings', '/injuries']);
+
 async function nbaFetch<T>(endpoint: string, params: Record<string, string> = {}): Promise<T> {
+  if (PAID_ENDPOINTS.has(endpoint) && !NBA_API_KEY) {
+    throw new Error('API key required for this endpoint');
+  }
   const url = new URL(`${BALLDONTLIE_BASE}${endpoint}`);
   Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
 
@@ -165,7 +170,7 @@ export async function getInjuries(): Promise<InjuryReport[]> {
     const data = await nbaFetch<{ data: InjuryReport[] }>('/injuries');
     return data.data || [];
   } catch {
-    return [];
+    return getMockInjuries();
   }
 }
 
@@ -241,6 +246,35 @@ function getMockStandings(): TeamStanding[] {
     road_record: `${27 - i}-${7 + i}`,
     streak: i < 4 ? 3 - i : -(i - 3),
   }));
+}
+
+function getMockInjuries(): InjuryReport[] {
+  return [
+    {
+      id: 1, status: 'Out', comment: 'Left knee soreness',
+      date: new Date().toISOString(), return_date: null,
+      player: { id: 1, first_name: 'Jayson', last_name: 'Tatum', position: 'F', height: '6-8', weight: '210', jersey_number: '0', college: 'Duke', country: 'USA', draft_year: 2017, draft_round: 1, draft_number: 3, team: { id: 1, conference: 'East', division: 'Atlantic', city: 'Boston', name: 'Celtics', full_name: 'Boston Celtics', abbreviation: 'BOS' } },
+      team: { id: 1, conference: 'East', division: 'Atlantic', city: 'Boston', name: 'Celtics', full_name: 'Boston Celtics', abbreviation: 'BOS' },
+    },
+    {
+      id: 2, status: 'Questionable', comment: 'Ankle sprain — game time decision',
+      date: new Date().toISOString(), return_date: null,
+      player: { id: 2, first_name: 'Jimmy', last_name: 'Butler', position: 'F', height: '6-7', weight: '230', jersey_number: '22', college: 'Marquette', country: 'USA', draft_year: 2011, draft_round: 1, draft_number: 30, team: { id: 6, conference: 'East', division: 'Southeast', city: 'Miami', name: 'Heat', full_name: 'Miami Heat', abbreviation: 'MIA' } },
+      team: { id: 6, conference: 'East', division: 'Southeast', city: 'Miami', name: 'Heat', full_name: 'Miami Heat', abbreviation: 'MIA' },
+    },
+    {
+      id: 3, status: 'Probable', comment: 'Back spasms — expected to play',
+      date: new Date().toISOString(), return_date: null,
+      player: { id: 3, first_name: 'Donovan', last_name: 'Mitchell', position: 'G', height: '6-3', weight: '215', jersey_number: '45', college: 'Louisville', country: 'USA', draft_year: 2017, draft_round: 1, draft_number: 13, team: { id: 2, conference: 'East', division: 'Central', city: 'Cleveland', name: 'Cavaliers', full_name: 'Cleveland Cavaliers', abbreviation: 'CLE' } },
+      team: { id: 2, conference: 'East', division: 'Central', city: 'Cleveland', name: 'Cavaliers', full_name: 'Cleveland Cavaliers', abbreviation: 'CLE' },
+    },
+    {
+      id: 4, status: 'Day-To-Day', comment: 'Concussion protocol',
+      date: new Date().toISOString(), return_date: new Date(Date.now() + 86400000 * 2).toISOString(),
+      player: { id: 4, first_name: 'Jamal', last_name: 'Murray', position: 'G', height: '6-4', weight: '215', jersey_number: '27', college: 'Kentucky', country: 'Canada', draft_year: 2016, draft_round: 1, draft_number: 7, team: { id: 4, conference: 'West', division: 'Northwest', city: 'Denver', name: 'Nuggets', full_name: 'Denver Nuggets', abbreviation: 'DEN' } },
+      team: { id: 4, conference: 'West', division: 'Northwest', city: 'Denver', name: 'Nuggets', full_name: 'Denver Nuggets', abbreviation: 'DEN' },
+    },
+  ];
 }
 
 export type { NbaGame, NbaTeam, NbaPlayer, PlayerStats, TeamStanding, InjuryReport };

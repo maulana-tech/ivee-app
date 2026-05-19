@@ -1,3 +1,4 @@
+export { NbaMainPanel } from './NbaMainPanel';
 export { NbaLivePanel } from './NbaLivePanel';
 export { NbaMarketsPanel } from './NbaMarketsPanel';
 export { NbaTeamsPanel } from './NbaTeamsPanel';

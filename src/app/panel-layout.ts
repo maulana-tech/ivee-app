@@ -7,35 +7,7 @@ import type { RelatedAsset } from '@/types';
 import {
   MapContainer,
   NewsPanel,
-  MarketPanel,
-  CryptoPanel,
-  CryptoHeatmapPanel,
-  DefiTokensPanel,
-  AiTokensPanel,
-  OtherTokensPanel,
-  EconomicCalendarPanel,
-  YieldCurvePanel,
-  EarningsCalendarPanel,
-  CotPositioningPanel,
-  SupplyChainPanel,
-  TechEventsPanel,
-  DailyMarketBriefPanel,
-  MarketImplicationsPanel,
-  ETFFlowsPanel,
-  StablecoinPanel,
-  FearGreedPanel,
-  MacroSignalsPanel,
-  CountersPanel,
-  TechHubsPanel,
-  StatusPanel,
-  EconomicPanel,
-  MonitorPanel,
 } from '@/components';
-import { HeatmapPanel } from '@/components/HeatmapPanel';
-import { NbaLivePanel, NbaMarketsPanel, NbaTeamsPanel, NbaArbPanel, NbaStrategyPanel, NbaInjuryPanel, NbaMomentumPanel, NbaBracketPanel, NbaSpeedPanel, NbaPerformancePanel, NbaAutomationPanel } from '@/components/nba';
-import { InsightsPanel } from '@/components/InsightsPanel';
-import { LiveNewsPanel } from '@/components/LiveNewsPanel';
-import { RuntimeConfigPanel } from '@/components/RuntimeConfigPanel';
 import { debounce, saveToStorage, loadFromStorage } from '@/utils';
 import {
   FEEDS,
@@ -205,57 +177,12 @@ export class PanelLayoutManager implements AppModule {
           <button class="hamburger-btn" id="hamburgerBtn" aria-label="Menu">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
           </button>
-          <div class="variant-switcher">${(() => {
-        const local = this.ctx.isDesktopApp || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
-        const inIframe = window.self !== window.top;
-        const vHref = (v: string, prod: string) => local || SITE_VARIANT === v ? '#' : prod;
-        const vTarget = (v: string) => !local && SITE_VARIANT !== v && inIframe ? 'target="_blank" rel="noopener"' : '';
-        return `
-            <a href="${vHref('full', 'https://ivee.app')}"
-               class="variant-option ${SITE_VARIANT === 'full' ? 'active' : ''}"
-               data-variant="full"
-               ${vTarget('full')}
-               title="${t('header.world')}${SITE_VARIANT === 'full' ? ` ${t('common.currentVariant')}` : ''}">
-              <span class="variant-icon">🌍</span>
-              <span class="variant-label">${t('header.world')}</span>
-            </a>
-            <span class="variant-divider"></span>
-            <a href="${vHref('tech', 'https://tech.ivee.app')}"
-               class="variant-option ${SITE_VARIANT === 'tech' ? 'active' : ''}"
-               data-variant="tech"
-               ${vTarget('tech')}
-               title="${t('header.tech')}${SITE_VARIANT === 'tech' ? ` ${t('common.currentVariant')}` : ''}">
-              <span class="variant-icon">💻</span>
-              <span class="variant-label">${t('header.tech')}</span>
-            </a>
-            <span class="variant-divider"></span>
-            <a href="${vHref('finance', 'https://finance.ivee.app')}"
-               class="variant-option ${SITE_VARIANT === 'finance' ? 'active' : ''}"
-               data-variant="finance"
-               ${vTarget('finance')}
-               title="${t('header.finance')}${SITE_VARIANT === 'finance' ? ` ${t('common.currentVariant')}` : ''}">
-              <span class="variant-icon">📈</span>
-              <span class="variant-label">${t('header.finance')}</span>
-            </a>
-            <span class="variant-divider"></span>
-            <a href="${vHref('commodity', 'https://commodity.ivee.app')}"
-               class="variant-option ${SITE_VARIANT === 'commodity' ? 'active' : ''}"
-               data-variant="commodity"
-               ${vTarget('commodity')}
-               title="${t('header.commodity')}${SITE_VARIANT === 'commodity' ? ` ${t('common.currentVariant')}` : ''}">
-              <span class="variant-icon">⛏️</span>
-              <span class="variant-label">${t('header.commodity')}</span>
-            </a>
-            <span class="variant-divider"></span>
-            <a href="${vHref('happy', 'https://happy.ivee.app')}"
-               class="variant-option ${SITE_VARIANT === 'happy' ? 'active' : ''}"
-               data-variant="happy"
-               ${vTarget('happy')}
-               title="Good News${SITE_VARIANT === 'happy' ? ` ${t('common.currentVariant')}` : ''}">
-              <span class="variant-icon">☀️</span>
-              <span class="variant-label">Good News</span>
-            </a>`;
-      })()}</div>
+          <div class="variant-switcher">
+            <span class="variant-option active" title="NBA Playoffs Prediction Market">
+              <span class="variant-icon">🏀</span>
+              <span class="variant-label">NBA Playoffs</span>
+            </span>
+          </div>
           <span class="logo">IVEE</span><span class="logo-mobile">IVEE</span><span class="version">v${__APP_VERSION__}</span>${BETA_MODE ? '<span class="beta-badge">BETA</span>' : ''}
           <button class="mobile-settings-btn" id="mobileSettingsBtn" title="${t('header.settings')}">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
@@ -282,16 +209,12 @@ export class PanelLayoutManager implements AppModule {
         </div>
           <div class="header-center"><div class="price-ticker" id="priceTicker"></div></div>
           <div class="header-right">
-           ${SITE_VARIANT === 'crypto' ? `
-           <div class="page-tabs">
-             <button class="page-tab active" data-page="watch"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>Watch</button>
-             <button class="page-tab" data-page="trade"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>Trade</button>
-           </div>` : ''}
+
             <button class="search-btn" id="searchBtn"><kbd>⌘K</kbd> ${t('header.search')}</button>
           ${this.ctx.isDesktopApp ? '' : `<button class="copy-link-btn" id="copyLinkBtn">${t('header.copyLink')}</button>`}
           ${this.ctx.isDesktopApp ? '' : `<button class="fullscreen-btn" id="fullscreenBtn" title="${t('header.fullscreen')}">⛶</button>`}
-          ${SITE_VARIANT === 'happy' ? `<button class="tv-mode-btn" id="tvModeBtn" title="TV Mode (Shift+T)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></button>` : ''}
-<span id="unifiedSettingsMount"></span>
+          ${`}
+          <span id="unifiedSettingsMount"></span>
            <span id="authWidgetMount"></span>
            <button class="wallet-connect-btn" id="walletConnectBtn" title="Connect Wallet">
              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M16 12h.01"/><path d="M2 10h20"/></svg>
@@ -308,22 +231,11 @@ export class PanelLayoutManager implements AppModule {
           </button>
         </div>
         <div class="mobile-menu-divider"></div>
-        ${(() => {
-        const variants = [
-          { key: 'full', icon: '🌍', label: t('header.world') },
-          { key: 'tech', icon: '💻', label: t('header.tech') },
-          { key: 'finance', icon: '📈', label: t('header.finance') },
-          { key: 'commodity', icon: '⛏️', label: t('header.commodity') },
-          { key: 'happy', icon: '☀️', label: 'Good News' },
-        ];
-        return variants.map(v =>
-          `<button class="mobile-menu-item mobile-menu-variant ${v.key === SITE_VARIANT ? 'active' : ''}" data-variant="${v.key}">
-            <span class="mobile-menu-item-icon">${v.icon}</span>
-            <span class="mobile-menu-item-label">${v.label}</span>
-            ${v.key === SITE_VARIANT ? '<span class="mobile-menu-check">✓</span>' : ''}
-          </button>`
-        ).join('');
-      })()}
+        <button class="mobile-menu-item active">
+          <span class="mobile-menu-item-icon">🏀</span>
+          <span class="mobile-menu-item-label">NBA Playoffs</span>
+          <span class="mobile-menu-check">✓</span>
+        </button>
         <div class="mobile-menu-divider"></div>
         <button class="mobile-menu-item" id="mobileMenuRegion">
           <span class="mobile-menu-item-icon">🌐</span>
@@ -364,28 +276,12 @@ export class PanelLayoutManager implements AppModule {
       </div>
       <div class="main-content${this.ctx.isDesktopApp ? ' desktop-grid' : ''}">
         <div class="map-section" id="mapSection">
-          ${SITE_VARIANT === 'crypto' ? `
           <div class="panel-header">
             <div class="panel-header-left">
-              <span class="panel-title">Trade Chart</span>
+              <span class="panel-title">AI Agent Dashboard</span>
             </div>
             <span class="header-clock" id="headerClock" translate="no"></span>
             <div class="map-header-actions">
-              <button class="map-pin-btn" id="mapFullscreenBtn" title="Fullscreen">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
-              </button>
-            </div>
-          </div>` : `
-          <div class="panel-header">
-            <div class="panel-header-left">
-              <span class="panel-title">${SITE_VARIANT === 'tech' ? t('panels.techMap') : SITE_VARIANT === 'happy' ? 'Good News Map' : t('panels.map')}</span>
-            </div>
-            <span class="header-clock" id="headerClock" translate="no"></span>
-            <div class="map-header-actions">
-              <div class="map-dimension-toggle" id="mapDimensionToggle">
-                <button class="map-dim-btn${loadFromStorage<string>(STORAGE_KEYS.mapMode, 'flat') === 'globe' ? '' : ' active'}" data-mode="flat" title="2D Map">2D</button>
-                <button class="map-dim-btn${loadFromStorage<string>(STORAGE_KEYS.mapMode, 'flat') === 'globe' ? ' active' : ''}" data-mode="globe" title="3D Globe">3D</button>
-              </div>
               <button class="map-pin-btn" id="mapFullscreenBtn" title="Fullscreen">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
               </button>
@@ -397,7 +293,6 @@ export class PanelLayoutManager implements AppModule {
             </div>
           </div>`}
           <div class="map-container" id="mapContainer"></div>
-          ${SITE_VARIANT === 'happy' ? '<button class="tv-exit-btn" id="tvExitBtn">Exit TV Mode</button>' : ''}
           <div class="map-resize-handle" id="mapResizeHandle"></div>
           <div class="map-bottom-grid" id="mapBottomGrid"></div>
         </div>
@@ -522,25 +417,15 @@ export class PanelLayoutManager implements AppModule {
   private createPanels(): void {
     const panelsGrid = document.getElementById('panelsGrid')!;
 
-    // Replace map with TradeChart for crypto variant
     const mapContainer = document.getElementById('mapContainer') as HTMLElement;
-    if (mapContainer && SITE_VARIANT === 'crypto') {
+    if (mapContainer && SITE_VARIANT === 'nba') {
       mapContainer.innerHTML = '';
-      mapContainer.style.height = '360px';
-      mapContainer.style.minHeight = '360px';
-      const chartPanel = new TradeChartPanel();
-      (mapContainer as any).appendChild((chartPanel as any).element);
-      (chartPanel as any).renderContent();
-      this.ctx.panels['trade-chart'] = chartPanel;
-    } else if (mapContainer && SITE_VARIANT === 'nba') {
-      mapContainer.innerHTML = '';
-      mapContainer.style.height = '360px';
-      mapContainer.style.minHeight = '360px';
-      const nbaLive = new NbaLivePanel({ id: 'nba-live', title: 'Live Games' });
-      (mapContainer as any).appendChild((nbaLive as any).element);
-      (nbaLive as any).renderContent();
-      this.ctx.panels['nba-live'] = nbaLive;
-      nbaLive.startAutoRefresh(30000);
+      mapContainer.style.height = '480px';
+      mapContainer.style.minHeight = '480px';
+      const nbaMain = new NbaMainPanel({ id: 'nba-main', title: 'AI Agent Dashboard' });
+      (mapContainer as any).appendChild((nbaMain as any).element);
+      (nbaMain as any).renderContent();
+      this.ctx.panels['nba-main'] = nbaMain;
     } else if (mapContainer) {
       const preferGlobe = loadFromStorage<string>(STORAGE_KEYS.mapMode, 'flat') === 'globe';
       this.ctx.map = new MapContainer(mapContainer, {
@@ -559,17 +444,6 @@ export class PanelLayoutManager implements AppModule {
       this.ctx.map.initEscalationGetters();
       this.ctx.currentTimeRange = this.ctx.map.getTimeRange();
     }
-
-    this.createPanel('heatmap', () => new HeatmapPanel());
-    this.createPanel('markets', () => new MarketPanel());
-
-    this.createPanel('monitors', () => new MonitorPanel(this.ctx.monitors));
-
-    this.createPanel('crypto', () => new CryptoPanel());
-    this.createPanel('crypto-heatmap', () => new CryptoHeatmapPanel());
-    this.createPanel('defi-tokens', () => new DefiTokensPanel());
-    this.createPanel('ai-tokens', () => new AiTokensPanel());
-    this.createPanel('other-tokens', () => new OtherTokensPanel());
 
     // NBA panels
     this.createPanel('nba-live', () => new NbaLivePanel({ id: 'nba-live', title: 'Live Games' }));
@@ -741,10 +615,6 @@ export class PanelLayoutManager implements AppModule {
     }
 
     window.addEventListener('resize', () => this.ensureCorrectZones());
-
-    if (SITE_VARIANT === 'crypto') {
-      import('./keyboard').then(m => m.setupKeyboardShortcuts(this.ctx));
-    }
 
     this.ctx.map?.onTimeRangeChanged((range) => {
       this.ctx.currentTimeRange = range;
@@ -1447,20 +1317,9 @@ export class PanelLayoutManager implements AppModule {
 
   getAllSourceNames(): string[] {
     const sources = new Set<string>();
-    
-    // For crypto variant, FEEDS is already CRYPTO_FEEDS — just show all
-    if (SITE_VARIANT === 'crypto') {
-      Object.values(FEEDS).forEach(feeds => {
-        if (feeds) feeds.forEach(f => sources.add(f.name));
-      });
-    } else {
-      // Full variant - show all feeds and intel sources
-      Object.values(FEEDS).forEach(feeds => {
-        if (feeds) feeds.forEach(f => sources.add(f.name));
-      });
-      INTEL_SOURCES.forEach(f => sources.add(f.name));
-    }
-    
+    Object.values(FEEDS).forEach(feeds => {
+      if (feeds) feeds.forEach(f => sources.add(f.name));
+    });
     return Array.from(sources).sort((a, b) => a.localeCompare(b));
   }
 }
