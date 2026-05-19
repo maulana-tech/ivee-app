@@ -1,1 +1,0 @@
-export const predictionHandler = async () => new Response('Not implemented', { status: 501 });

@@ -1,1 +1,0 @@
-export const naturalHandler = async () => new Response('Not implemented', { status: 501 });

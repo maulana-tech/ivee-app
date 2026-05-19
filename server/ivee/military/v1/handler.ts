@@ -1,1 +1,0 @@
-export const militaryHandler = async () => new Response('Not implemented', { status: 501 });

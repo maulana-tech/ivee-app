@@ -1,1 +1,0 @@
-export const cyberHandler = async () => new Response('Not implemented', { status: 501 });
