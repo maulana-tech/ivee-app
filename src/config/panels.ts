@@ -1090,6 +1090,7 @@ export const ALL_PANELS: Record<string, PanelConfig> = {
   ...CRYPTO_PANELS,
   ...FINANCE_PANELS,
   ...FULL_PANELS,
+  ...NBA_PANELS,
 };
 
 /** Per-variant canonical panel order (keys = which panels are enabled by default). */
