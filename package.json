@@ -10,6 +10,7 @@
     "test": "vitest run",
     "check": "tsc --noEmit && oxlint . && vitest run",
     "server": "tsx server/index.ts",
+    "build": "vite build",
     "dev": "vite",
     "dev:all": "concurrently \"npm run server\" \"npm run dev\""
   },
