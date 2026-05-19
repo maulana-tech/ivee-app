@@ -10,12 +10,11 @@ export { SITE_VARIANT } from './variant';
 export {
   IDLE_PAUSE_MS,
   REFRESH_INTERVALS,
-  MONITOR_COLORS,
   STORAGE_KEYS,
 } from './variants/base';
 
 // Market data (shared)
-export { SECTORS, COMMODITIES, MARKET_SYMBOLS, CRYPTO_MAP } from './markets';
+export { SECTORS, COMMODITIES, MARKET_SYMBOLS } from './markets';
 
 // Geo data (shared base)
 export { UNDERSEA_CABLES, MAP_URLS } from './geo';
@@ -81,7 +80,6 @@ export { APT_GROUPS } from './apt-groups';
 export { GAMMA_IRRADIATORS } from './irradiators';
 export { PIPELINES, PIPELINE_COLORS } from './pipelines';
 export { PORTS } from './ports';
-export { MONITORED_AIRPORTS, FAA_AIRPORTS } from './airports';
 export {
   ENTITY_REGISTRY,
   getEntityById,
@@ -93,13 +91,6 @@ export {
 export { TECH_COMPANIES } from './tech-companies';
 export { AI_RESEARCH_LABS } from './ai-research-labs';
 export { STARTUP_ECOSYSTEMS } from './startup-ecosystems';
-export {
-  AI_REGULATIONS,
-  REGULATORY_ACTIONS,
-  COUNTRY_REGULATION_PROFILES,
-  getUpcomingDeadlines,
-  getRecentActions,
-} from './ai-regulations';
 export {
   STARTUP_HUBS,
   ACCELERATORS,
@@ -126,18 +117,8 @@ export {
 // Gulf FDI investment database
 export { GULF_INVESTMENTS } from './gulf-fdi';
 
-// Commodity variant - these are included in commodity builds
-export {
-  COMMODITY_PRICES,
-  COMMODITY_MARKET_SYMBOLS,
-} from './commodity-markets';
-
 export {
   MINING_SITES,
   PROCESSING_PLANTS,
   COMMODITY_PORTS,
 } from './commodity-geo';
-
-// COMMODITY_MINERS: 30+ mining company HQs — not yet rendered on map.
-// Uncomment when a miners layer is added to DeckGLMap.ts.
-// export { COMMODITY_MINERS, type CommodityMiner } from './commodity-miners';
