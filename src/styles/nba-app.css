@@ -762,7 +762,20 @@
 .nba-auto-layout {
   display: flex;
   height: 100%;
-  min-height: 500px;
+  min-height: 550px;
+}
+
+.nba-auto-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.nba-auto-pipeline {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .nba-auto-sidebar {
@@ -1156,3 +1169,117 @@
 .nba-auto-terminal-line.strategy-architect { color: #ffaa00; }
 .nba-auto-terminal-line.developer { color: #00ff88; }
 .nba-auto-terminal-line.qa { color: #ff44ff; }
+
+/* Performance Section */
+.nba-auto-performance {
+  padding: 10px;
+  border-bottom: 1px solid var(--border, #333);
+  background: var(--bg-card, rgba(0,0,0,0.2));
+}
+
+.nba-perf-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.nba-perf-card {
+  background: var(--bg-hover, rgba(255,255,255,0.03));
+  border: 1px solid var(--border, #333);
+  border-radius: 6px;
+  padding: 8px;
+  text-align: center;
+}
+
+.nba-perf-card.main {
+  grid-column: span 1;
+}
+
+.nba-perf-label {
+  font-size: 9px;
+  text-transform: uppercase;
+  color: var(--text-secondary, #666);
+  margin-bottom: 4px;
+}
+
+.nba-perf-value {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.nba-perf-value.positive { color: #00ff88; }
+.nba-perf-value.negative { color: #ff4444; }
+
+.nba-perf-percent {
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.nba-perf-percent.positive { color: #00ff88; }
+.nba-perf-percent.negative { color: #ff4444; }
+
+.nba-perf-leaderboard {
+  background: var(--bg-hover, rgba(255,255,255,0.03));
+  border: 1px solid var(--border, #333);
+  border-radius: 6px;
+  padding: 8px;
+}
+
+.nba-perf-leaderboard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.nba-perf-leaderboard-header h4 {
+  font-size: 11px;
+  margin: 0;
+  color: var(--text-primary, #e0e0e0);
+}
+
+.nba-perf-badge {
+  font-size: 9px;
+  background: #00ff88;
+  color: #000;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-weight: 700;
+}
+
+.nba-perf-leaderboard-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.nba-perf-leaderboard-row {
+  display: flex;
+  align-items: center;
+  padding: 4px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+}
+
+.nba-perf-leaderboard-row.highlight {
+  background: rgba(68, 136, 255, 0.15);
+  border: 1px solid rgba(68, 136, 255, 0.3);
+}
+
+.nba-perf-rank {
+  width: 30px;
+  color: var(--text-secondary, #888);
+}
+
+.nba-perf-user {
+  flex: 1;
+  font-weight: 600;
+}
+
+.nba-perf-profit {
+  text-align: right;
+}
+
+.nba-perf-profit.positive { color: #00ff88; }
+.nba-perf-profit.negative { color: #ff4444; }

@@ -7,6 +7,7 @@ import {
   type AgentMessage,
   type PipelineStep,
 } from '@/services/nba/automation-engine';
+import { degasRankService, type DegaPerformance, type DegaLeaderboard } from '@/services/nba/dega-rank';
 
 const AGENT_ICONS: Record<string, string> = {
   'market-analyst': '&#128200;',
@@ -30,10 +31,15 @@ export class NbaAutomationPanel extends Panel {
   private agentLog: AgentMessage[] = [];
   private unsubscribePipeline: (() => void) | null = null;
   private unsubscribeAgent: (() => void) | null = null;
+  private unsubscribePerf: (() => void) | null = null;
+  private performance: DegaPerformance | null = null;
+  private leaderboard: DegaLeaderboard[] = [];
 
   constructor(options: { id: string; title: string }) {
     super(options);
     this.element.classList.add('nba-automation-panel');
+    this.performance = degasRankService.getPerformance();
+    this.leaderboard = degasRankService.getLeaderboard();
   }
 
   protected renderContent(): void {
@@ -51,6 +57,8 @@ export class NbaAutomationPanel extends Panel {
   private renderDashboard(): void {
     const templates = getStrategyTemplates();
     const activeRun = automationEngine.getActiveRun();
+    const perf = this.performance || degasRankService.getPerformance();
+    const lb = this.leaderboard.length ? this.leaderboard : degasRankService.getLeaderboard();
 
     const html = `
       <div class="nba-auto-layout">
@@ -70,6 +78,9 @@ export class NbaAutomationPanel extends Panel {
           </div>
         </div>
         <div class="nba-auto-main">
+          <div class="nba-auto-performance" id="autoPerformance">
+            ${this.renderPerformance(perf, lb)}
+          </div>
           <div class="nba-auto-pipeline" id="autoPipeline">
             ${activeRun ? this.renderPipeline(activeRun) : this.renderIdleState()}
           </div>
@@ -94,6 +105,47 @@ export class NbaAutomationPanel extends Panel {
     `;
     this.setContent(html);
     this.attachEvents();
+  }
+
+  private renderPerformance(perf: DegaPerformance, lb: DegaLeaderboard[]): string {
+    const pnlClass = perf.totalPnl >= 0 ? 'positive' : 'negative';
+    
+    return `
+      <div class="nba-perf-grid">
+        <div class="nba-perf-card main">
+          <div class="nba-perf-label">Total P&L</div>
+          <div class="nba-perf-value ${pnlClass}">$${perf.totalPnl.toFixed(2)}</div>
+          <div class="nba-perf-percent ${pnlClass}">${perf.totalPnl >= 0 ? '+' : ''}${perf.totalPnlPercent.toFixed(1)}%</div>
+        </div>
+        <div class="nba-perf-card">
+          <div class="nba-perf-label">Open Positions</div>
+          <div class="nba-perf-value">${perf.openPositions}</div>
+        </div>
+        <div class="nba-perf-card">
+          <div class="nba-perf-label">Volume</div>
+          <div class="nba-perf-value">$${perf.totalVolume}</div>
+        </div>
+        <div class="nba-perf-card">
+          <div class="nba-perf-label">Win Rate</div>
+          <div class="nba-perf-value">${perf.winRate.toFixed(0)}%</div>
+        </div>
+      </div>
+      <div class="nba-perf-leaderboard">
+        <div class="nba-perf-leaderboard-header">
+          <h4>DEGA Rank Leaderboard</h4>
+          <span class="nba-perf-badge">Live</span>
+        </div>
+        <div class="nba-perf-leaderboard-list">
+          ${lb.slice(0, 5).map((entry, i) => `
+            <div class="nba-perf-leaderboard-row ${entry.username === 'IVEE_Bot' ? 'highlight' : ''}">
+              <span class="nba-perf-rank">#${entry.rank}</span>
+              <span class="nba-perf-user">${entry.username}</span>
+              <span class="nba-perf-profit ${entry.profit >= 0 ? 'positive' : 'negative'}">${entry.profit >= 0 ? '+' : ''}$${entry.profit.toFixed(2)} (${entry.profitPercent.toFixed(1)}%)</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
   }
 
   private renderTemplateCard(template: StrategyConfig): string {
