@@ -698,6 +698,19 @@ export class PanelLayoutManager implements AppModule {
       }
     });
 
+    // Trigger renderContent on NBA panels once they're in the DOM
+    if (SITE_VARIANT === 'nba') {
+      const nbaPanelIds = ['nba-markets', 'nba-teams', 'nba-arb', 'nba-strategy', 'nba-injuries', 'nba-momentum', 'nba-bracket', 'nba-speed', 'nba-performance', 'nba-automation'];
+      requestAnimationFrame(() => {
+        for (const id of nbaPanelIds) {
+          const p = this.ctx.panels[id];
+          if (p && typeof (p as any).renderContent === 'function') {
+            (p as any).renderContent();
+          }
+        }
+      });
+    }
+
     // "+" Add Panel block at the end of the grid
     const addPanelBlock = document.createElement('button');
     addPanelBlock.className = 'add-panel-block';
