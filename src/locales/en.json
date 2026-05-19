@@ -387,7 +387,24 @@
     "airlineIntel": "✈️ Airline Intelligence",
     "consumerPrices": "Consumer Prices",
     "fearGreed": "Fear & Greed",
-    "climateNews": "Climate News"
+    "climateNews": "Climate News",
+    "nbaLive": "Live Games",
+    "nbaMarkets": "Prediction Markets",
+    "nbaTeams": "Team Stats",
+    "nbaPlayers": "Player Stats",
+    "nbaInjuries": "Injury Report",
+    "nbaBracket": "Playoff Bracket",
+    "nbaMomentum": "Momentum",
+    "nbaArb": "Arbitrage Scanner",
+    "nbaCross": "Cross-Market",
+    "nbaSpeed": "Speed Ops",
+    "nbaHeatmap": "Market Heatmap",
+    "nbaStrategy": "Strategy Dashboard",
+    "nbaPerformance": "P&L Tracker",
+    "nbaAutomation": "Automation Engine",
+    "nbaFearGreed": "Market Sentiment",
+    "nbaSchedule": "Schedule",
+    "nbaStandings": "Standings"
   },
   "commands": {
     "prefixes": {
