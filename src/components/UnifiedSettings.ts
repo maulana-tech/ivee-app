@@ -246,13 +246,14 @@ export class UnifiedSettings {
         </div>
         <div class="unified-settings-tabs" role="tablist" aria-label="Settings">
           <button class="${tabClass('settings')}" data-tab="settings" role="tab" aria-selected="${this.activeTab === 'settings'}" id="us-tab-settings" aria-controls="us-tab-panel-settings">${t('header.tabSettings')}</button>
-          <button class="${tabClass('panels')}" data-tab="panels" role="tab" aria-selected="${this.activeTab === 'panels'}" id="us-tab-panels" aria-controls="us-tab-panel-panels">${t('header.tabPanels')}</button>
-          <button class="${tabClass('sources')}" data-tab="sources" role="tab" aria-selected="${this.activeTab === 'sources'}" id="us-tab-sources" aria-controls="us-tab-panel-sources">${t('header.tabSources')}</button>
+          ${SITE_VARIANT !== 'nba' ? `<button class="${tabClass('panels')}" data-tab="panels" role="tab" aria-selected="${this.activeTab === 'panels'}" id="us-tab-panels" aria-controls="us-tab-panel-panels">${t('header.tabPanels')}</button>
+          <button class="${tabClass('sources')}" data-tab="sources" role="tab" aria-selected="${this.activeTab === 'sources'}" id="us-tab-sources" aria-controls="us-tab-panel-sources">${t('header.tabSources')}</button>` : ''}
         </div>
         <div class="unified-settings-tab-panel${this.activeTab === 'settings' ? ' active' : ''}" data-panel-id="settings" id="us-tab-panel-settings" role="tabpanel" aria-labelledby="us-tab-settings">
           ${prefs.html}
-          ${this.renderUpgradeSection()}
+          ${SITE_VARIANT !== 'nba' ? this.renderUpgradeSection() : ''}
         </div>
+        ${SITE_VARIANT !== 'nba' ? `
         <div class="unified-settings-tab-panel${this.activeTab === 'panels' ? ' active' : ''}" data-panel-id="panels" id="us-tab-panel-panels" role="tabpanel" aria-labelledby="us-tab-panels">
           <div class="unified-settings-region-wrapper">
             <div class="unified-settings-region-bar" id="usPanelCatBar"></div>
@@ -281,6 +282,7 @@ export class UnifiedSettings {
             <button class="sources-select-none">${t('common.selectNone')}</button>
           </div>
         </div>
+        ` : ''}
       </div>
     `;
 
