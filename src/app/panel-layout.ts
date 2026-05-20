@@ -5,6 +5,20 @@ import { getAlertsNearLocation } from '@/services/geo-convergence';
 import type { ClusteredEvent } from '@/types';
 import type { RelatedAsset } from '@/types';
 import {
+  NbaMainPanel,
+  NbaLivePanel,
+  NbaMarketsPanel,
+  NbaTeamsPanel,
+  NbaArbPanel,
+  NbaStrategyPanel,
+  NbaInjuryPanel,
+  NbaMomentumPanel,
+  NbaBracketPanel,
+  NbaSpeedPanel,
+  NbaPerformancePanel,
+  NbaAutomationPanel,
+} from '@/components/nba';
+import {
   MapContainer,
   NewsPanel,
 } from '@/components';

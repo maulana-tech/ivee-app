@@ -38,7 +38,7 @@ import { CountryIntelManager } from '@/app/country-intel';
 import { SearchManager } from '@/app/search-manager';
 import { RefreshScheduler } from '@/app/refresh-scheduler';
 import { PanelLayoutManager } from '@/app/panel-layout';
-import { DataLoaderManager } from '@/app/data-loader';
+import { DataLoaderManagerNba } from '@/app/data-loader-nba';
 import { EventHandlerManager } from '@/app/event-handlers';
 import { resolveUserRegion, resolvePreciseUserCoordinates, type PreciseCoordinates } from '@/utils/user-location';
 import { initAuthState, subscribeAuthState } from '@/services/auth-state';
@@ -57,7 +57,7 @@ export class App {
   private pendingDeepLinkStoryCode: string | null = null;
 
   private panelLayout: PanelLayoutManager;
-  private dataLoader: DataLoaderManager;
+  private dataLoader: DataLoaderManagerNba;
   private eventHandlers: EventHandlerManager;
   private searchManager: SearchManager;
   private countryIntel: CountryIntelManager;
@@ -337,7 +337,8 @@ export class App {
     this.countryIntel = new CountryIntelManager(this.state);
     this.desktopUpdater = new DesktopUpdater(this.state);
 
-    this.dataLoader = new DataLoaderManager(this.state, {
+    // Use NBA-specific data loader for NBA variant (no heavy dependencies)
+    this.dataLoader = new DataLoaderManagerNba(this.state, {
       renderCriticalBanner: (postures) => this.panelLayout.renderCriticalBanner(postures),
       refreshOpenCountryBrief: () => this.countryIntel.refreshOpenBrief(),
     });
