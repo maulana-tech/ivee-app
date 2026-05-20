@@ -460,18 +460,21 @@ export class PanelLayoutManager implements AppModule {
     }
 
     // NBA panels
-    this.createPanel('nba-live', () => new NbaLivePanel({ id: 'nba-live', title: 'Live Games' }));
-    this.createPanel('nba-markets', () => new NbaMarketsPanel({ id: 'nba-markets', title: 'Prediction Markets' }));
-    this.createPanel('nba-teams', () => new NbaTeamsPanel({ id: 'nba-teams', title: 'Team Stats & Standings' }));
-    this.createPanel('nba-arb', () => new NbaArbPanel({ id: 'nba-arb', title: 'Arbitrage Scanner' }));
-    this.createPanel('nba-strategy', () => new NbaStrategyPanel({ id: 'nba-strategy', title: 'Strategy Dashboard' }));
-    this.createPanel('nba-injuries', () => new NbaInjuryPanel({ id: 'nba-injuries', title: 'Injury Report' }));
-    this.createPanel('nba-momentum', () => new NbaMomentumPanel({ id: 'nba-momentum', title: 'Momentum' }));
-    this.createPanel('nba-bracket', () => new NbaBracketPanel({ id: 'nba-bracket', title: 'Playoff Bracket' }));
-    this.createPanel('nba-speed', () => new NbaSpeedPanel({ id: 'nba-speed', title: 'Speed Ops' }));
-    this.createPanel('nba-performance', () => new NbaPerformancePanel({ id: 'nba-performance', title: 'P&L Tracker' }));
-    this.createPanel('nba-automation', () => new NbaAutomationPanel({ id: 'nba-automation', title: 'Automation Engine' }));
+    if (SITE_VARIANT === 'nba') {
+      this.createPanel('nba-live', () => new NbaLivePanel({ id: 'nba-live', title: 'Live Games' }));
+      this.createPanel('nba-markets', () => new NbaMarketsPanel({ id: 'nba-markets', title: 'Prediction Markets' }));
+      this.createPanel('nba-teams', () => new NbaTeamsPanel({ id: 'nba-teams', title: 'Team Stats & Standings' }));
+      this.createPanel('nba-arb', () => new NbaArbPanel({ id: 'nba-arb', title: 'Arbitrage Scanner' }));
+      this.createPanel('nba-strategy', () => new NbaStrategyPanel({ id: 'nba-strategy', title: 'Strategy Dashboard' }));
+      this.createPanel('nba-injuries', () => new NbaInjuryPanel({ id: 'nba-injuries', title: 'Injury Report' }));
+      this.createPanel('nba-momentum', () => new NbaMomentumPanel({ id: 'nba-momentum', title: 'Momentum' }));
+      this.createPanel('nba-bracket', () => new NbaBracketPanel({ id: 'nba-bracket', title: 'Playoff Bracket' }));
+      this.createPanel('nba-speed', () => new NbaSpeedPanel({ id: 'nba-speed', title: 'Speed Ops' }));
+      this.createPanel('nba-performance', () => new NbaPerformancePanel({ id: 'nba-performance', title: 'P&L Tracker' }));
+      this.createPanel('nba-automation', () => new NbaAutomationPanel({ id: 'nba-automation', title: 'Automation Engine' }));
+    }
 
+    if (SITE_VARIANT !== 'nba') {
     for (const key of Object.keys(FEEDS)) {
       if (this.ctx.newsPanels[key]) continue;
       if (!Array.isArray((FEEDS as Record<string, unknown>)[key])) continue;
@@ -503,6 +506,7 @@ export class PanelLayoutManager implements AppModule {
     if (this.ctx.isDesktopApp) {
       const runtimeConfigPanel = new RuntimeConfigPanel({ mode: 'alert' });
       this.ctx.panels['runtime-config'] = runtimeConfigPanel;
+    }
     }
 
     const variantOrder = (VARIANT_DEFAULTS[SITE_VARIANT] ?? VARIANT_DEFAULTS['full'] ?? []).filter(k => k !== 'map');
