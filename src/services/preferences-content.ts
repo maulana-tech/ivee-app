@@ -151,51 +151,53 @@ export function renderPreferences(host: PreferencesHost): PreferencesResult {
   html += `</select>`;
 
   // Map tile provider
-  const currentProvider = getMapProvider();
-  html += `<div class="ai-flow-toggle-row">
-    <div class="ai-flow-toggle-label-wrap">
-      <div class="ai-flow-toggle-label">${t('preferences.mapProvider')}</div>
-      <div class="ai-flow-toggle-desc">${t('preferences.mapProviderDesc')}</div>
-    </div>
-  </div>`;
-  html += `<select class="unified-settings-select" id="us-map-provider">`;
-  for (const opt of MAP_PROVIDER_OPTIONS) {
-    const selected = opt.value === currentProvider ? ' selected' : '';
-    html += `<option value="${opt.value}"${selected}>${escapeHtml(opt.label)}</option>`;
-  }
-  html += `</select>`;
+  if (SITE_VARIANT !== 'nba') {
+    const currentProvider = getMapProvider();
+    html += `<div class="ai-flow-toggle-row">
+      <div class="ai-flow-toggle-label-wrap">
+        <div class="ai-flow-toggle-label">${t('preferences.mapProvider')}</div>
+        <div class="ai-flow-toggle-desc">${t('preferences.mapProviderDesc')}</div>
+      </div>
+    </div>`;
+    html += `<select class="unified-settings-select" id="us-map-provider">`;
+    for (const opt of MAP_PROVIDER_OPTIONS) {
+      const selected = opt.value === currentProvider ? ' selected' : '';
+      html += `<option value="${opt.value}"${selected}>${escapeHtml(opt.label)}</option>`;
+    }
+    html += `</select>`;
 
-  // Map theme
-  const currentMapTheme = getMapTheme(currentProvider);
-  html += `<div class="ai-flow-toggle-row">
-    <div class="ai-flow-toggle-label-wrap">
-      <div class="ai-flow-toggle-label">${t('preferences.mapTheme')}</div>
-      <div class="ai-flow-toggle-desc">${t('preferences.mapThemeDesc')}</div>
-    </div>
-  </div>`;
-  html += `<select class="unified-settings-select" id="us-map-theme">`;
-  for (const opt of MAP_THEME_OPTIONS[currentProvider]) {
-    const selected = opt.value === currentMapTheme ? ' selected' : '';
-    html += `<option value="${opt.value}"${selected}>${escapeHtml(opt.label)}</option>`;
-  }
-  html += `</select>`;
+    // Map theme
+    const currentMapTheme = getMapTheme(currentProvider);
+    html += `<div class="ai-flow-toggle-row">
+      <div class="ai-flow-toggle-label-wrap">
+        <div class="ai-flow-toggle-label">${t('preferences.mapTheme')}</div>
+        <div class="ai-flow-toggle-desc">${t('preferences.mapThemeDesc')}</div>
+      </div>
+    </div>`;
+    html += `<select class="unified-settings-select" id="us-map-theme">`;
+    for (const opt of MAP_THEME_OPTIONS[currentProvider]) {
+      const selected = opt.value === currentMapTheme ? ' selected' : '';
+      html += `<option value="${opt.value}"${selected}>${escapeHtml(opt.label)}</option>`;
+    }
+    html += `</select>`;
 
-  html += toggleRowHtml('us-map-flash', t('components.insights.mapFlashLabel'), t('components.insights.mapFlashDesc'), settings.mapNewsFlash);
+    html += toggleRowHtml('us-map-flash', t('components.insights.mapFlashLabel'), t('components.insights.mapFlashDesc'), settings.mapNewsFlash);
 
-  // 3D Globe Visual Preset
-  const currentPreset = getGlobeVisualPreset();
-  html += `<div class="ai-flow-toggle-row">
-    <div class="ai-flow-toggle-label-wrap">
-      <div class="ai-flow-toggle-label">${t('preferences.globePreset')}</div>
-      <div class="ai-flow-toggle-desc">${t('preferences.globePresetDesc')}</div>
-    </div>
-  </div>`;
-  html += `<select class="unified-settings-select" id="us-globe-visual-preset">`;
-  for (const opt of GLOBE_VISUAL_PRESET_OPTIONS) {
-    const selected = opt.value === currentPreset ? ' selected' : '';
-    html += `<option value="${opt.value}"${selected}>${escapeHtml(opt.label)}</option>`;
+    // 3D Globe Visual Preset
+    const currentPreset = getGlobeVisualPreset();
+    html += `<div class="ai-flow-toggle-row">
+      <div class="ai-flow-toggle-label-wrap">
+        <div class="ai-flow-toggle-label">${t('preferences.globePreset')}</div>
+        <div class="ai-flow-toggle-desc">${t('preferences.globePresetDesc')}</div>
+      </div>
+    </div>`;
+    html += `<select class="unified-settings-select" id="us-globe-visual-preset">`;
+    for (const opt of GLOBE_VISUAL_PRESET_OPTIONS) {
+      const selected = opt.value === currentPreset ? ' selected' : '';
+      html += `<option value="${opt.value}"${selected}>${escapeHtml(opt.label)}</option>`;
+    }
+    html += `</select>`;
   }
-  html += `</select>`;
 
   // Language
   html += `<div class="ai-flow-section-label">${t('header.languageLabel')}</div>`;
@@ -210,6 +212,9 @@ export function renderPreferences(host: PreferencesHost): PreferencesResult {
   }
 
   html += `</div></details>`;
+
+  // ── Not NBA sections ──
+  if (SITE_VARIANT !== 'nba') {
 
   // ── Intelligence group ──
   html += `<details class="wm-pref-group">`;
@@ -332,6 +337,8 @@ export function renderPreferences(host: PreferencesHost): PreferencesResult {
 
   html += `</div></details>`;
 
+  } // end SITE_VARIANT !== 'nba'
+
   // ── Panels group ──
   html += `<details class="wm-pref-group">`;
   html += `<summary>${t('preferences.panels')}</summary>`;
@@ -358,7 +365,7 @@ export function renderPreferences(host: PreferencesHost): PreferencesResult {
   html += `</div></details>`;
 
   // ── Notifications group (web-only, signed-in, PRO only) ──
-  if (!host.isDesktopApp) {
+  if (SITE_VARIANT !== 'nba' && !host.isDesktopApp) {
     if (!host.isSignedIn) {
       html += `<div class="ai-flow-toggle-desc us-notif-signin">Sign in to link notification channels.</div>`;
     } else if (getEntitlementState() !== null && !hasTier(1)) {
@@ -379,7 +386,7 @@ export function renderPreferences(host: PreferencesHost): PreferencesResult {
   }
 
   // AI status footer (web-only)
-  if (!host.isDesktopApp) {
+  if (SITE_VARIANT !== 'nba' && !host.isDesktopApp) {
     html += `<div class="ai-flow-popup-footer"><span class="ai-flow-status-dot" id="usStatusDot"></span><span class="ai-flow-status-text" id="usStatusText"></span></div>`;
   }
 
@@ -624,10 +631,10 @@ export function renderPreferences(host: PreferencesHost): PreferencesResult {
         }
       }, { signal });
 
-      if (!host.isDesktopApp) updateAiStatus(container);
+      if (SITE_VARIANT !== 'nba' && !host.isDesktopApp) updateAiStatus(container);
 
       // ── Notifications section ──
-      if (!host.isDesktopApp && host.isSignedIn && getEntitlementState() !== null && !hasTier(1)) {
+      if (SITE_VARIANT !== 'nba' && !host.isDesktopApp && host.isSignedIn && getEntitlementState() !== null && !hasTier(1)) {
         const upgradeBtn = container.querySelector<HTMLButtonElement>('#usNotifUpgradeBtn');
         if (upgradeBtn) {
           upgradeBtn.addEventListener('click', () => {
@@ -637,7 +644,7 @@ export function renderPreferences(host: PreferencesHost): PreferencesResult {
           }, { signal });
         }
       }
-      if (!host.isDesktopApp && host.isSignedIn && (getEntitlementState() === null || hasTier(1))) {
+      if (SITE_VARIANT !== 'nba' && !host.isDesktopApp && host.isSignedIn && (getEntitlementState() === null || hasTier(1))) {
         let notifPollInterval: ReturnType<typeof setInterval> | null = null;
 
         function clearNotifPoll(): void {
