@@ -1,4 +1,5 @@
 import { Panel } from '../Panel';
+import { getPlayoffGames, type NbaGame, type NbaTeam } from '@/services/nba/client';
 
 interface BracketSeries {
   round: number;
@@ -15,18 +16,98 @@ interface BracketSeries {
 
 export class NbaBracketPanel extends Panel {
   private series: BracketSeries[] = [];
+  private isLiveData = false;
 
   constructor(options: { id: string; title: string }) {
     super(options);
     this.element.classList.add('nba-bracket-panel');
-    this.series = this.getMockBracket();
   }
 
   protected renderContent(): void {
+    this.setContent('<div class="nba-loading">Loading bracket...</div>');
+    this.loadData();
+  }
+
+  private async loadData(): Promise<void> {
+    try {
+      const games = await getPlayoffGames(2025);
+      if (games.length) {
+        this.series = this.buildSeriesFromGames(games);
+        this.isLiveData = true;
+      } else {
+        this.series = this.getMockBracket();
+        this.isLiveData = false;
+      }
+    } catch {
+      this.series = this.getMockBracket();
+      this.isLiveData = false;
+    }
     this.renderBracket();
   }
 
+  private buildSeriesFromGames(games: NbaGame[]): BracketSeries[] {
+    const seriesMap = new Map<string, {
+      teamA: NbaTeam; teamB: NbaTeam;
+      winsA: number; winsB: number;
+    }>();
+
+    for (const game of games) {
+      if (game.status !== 'Final') continue;
+
+      const abbrs = [game.home_team.abbreviation, game.visitor_team.abbreviation].sort();
+      const key = abbrs.join('-');
+
+      if (!seriesMap.has(key)) {
+        const [first, second] = abbrs[0] === game.home_team.abbreviation
+          ? [game.home_team, game.visitor_team]
+          : [game.visitor_team, game.home_team];
+        seriesMap.set(key, { teamA: first, teamB: second, winsA: 0, winsB: 0 });
+      }
+
+      const s = seriesMap.get(key)!;
+      const homeWon = game.home_team_score > game.visitor_team_score;
+      const winnerAbbr = homeWon ? game.home_team.abbreviation : game.visitor_team.abbreviation;
+
+      if (winnerAbbr === s.teamA.abbreviation) s.winsA++;
+      else s.winsB++;
+    }
+
+    return Array.from(seriesMap.values()).map((s, i) => ({
+      round: 0,
+      seed_high: 0,
+      seed_low: 0,
+      high_team: s.teamA.full_name,
+      low_team: s.teamB.full_name,
+      high_abbr: s.teamA.abbreviation,
+      low_abbr: s.teamB.abbreviation,
+      high_wins: s.winsA,
+      low_wins: s.winsB,
+      format: 'Bo7',
+    }));
+  }
+
   private renderBracket(): void {
+    if (this.isLiveData) {
+      this.renderLiveSeries();
+    } else {
+      this.renderRoundBracket();
+    }
+  }
+
+  private renderLiveSeries(): void {
+    const html = `
+      <div class="nba-bracket-header">
+        <h3>2025 NBA Playoffs</h3>
+        <span class="nba-live-badge">LIVE</span>
+      </div>
+      <div class="nba-bracket-series-list">
+        ${this.series.map(s => this.renderSeries(s)).join('') || '<p class="nba-empty">No completed playoff games yet</p>'}
+      </div>
+    `;
+    this.setContent(html);
+  }
+
+  private renderRoundBracket(): void {
     const round1 = this.series.filter(s => s.round === 1);
     const round2 = this.series.filter(s => s.round === 2);
     const round3 = this.series.filter(s => s.round === 3);
@@ -65,12 +146,12 @@ export class NbaBracketPanel extends Panel {
     return `
       <div class="nba-bracket-series ${isOver ? 'completed' : ''}">
         <div class="nba-series-team ${highLeading ? 'leading' : ''}">
-          <span class="nba-series-seed">${series.seed_high}</span>
+          ${series.seed_high ? `<span class="nba-series-seed">${series.seed_high}</span>` : ''}
           <span class="nba-series-abbr">${series.high_abbr}</span>
           <span class="nba-series-wins">${series.high_wins}</span>
         </div>
         <div class="nba-series-team ${!highLeading ? 'leading' : ''}">
-          <span class="nba-series-seed">${series.seed_low}</span>
+          ${series.seed_low ? `<span class="nba-series-seed">${series.seed_low}</span>` : ''}
           <span class="nba-series-abbr">${series.low_abbr}</span>
           <span class="nba-series-wins">${series.low_wins}</span>
         </div>
@@ -92,6 +173,6 @@ export class NbaBracketPanel extends Panel {
   }
 
   public async refresh(): Promise<void> {
-    this.renderBracket();
+    this.loadData();
   }
 }
