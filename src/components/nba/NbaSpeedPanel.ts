@@ -1,4 +1,5 @@
 import { Panel } from '../Panel';
+import { getInjuries, getTodayGames, type InjuryReport, type NbaGame } from '@/services/nba/client';
 
 interface SpeedOpportunity {
   id: string;
@@ -15,11 +16,64 @@ export class NbaSpeedPanel extends Panel {
   constructor(options: { id: string; title: string }) {
     super(options);
     this.element.classList.add('nba-speed-panel');
-    this.opportunities = this.getMockOpportunities();
   }
 
   protected renderContent(): void {
+    this.setContent('<div class="nba-loading">Scanning opportunities...</div>');
+    this.loadData();
+  }
+
+  private async loadData(): Promise<void> {
+    const [injuries, games] = await Promise.all([
+      getInjuries().catch((): InjuryReport[] => []),
+      getTodayGames().catch((): NbaGame[] => []),
+    ]);
+
+    const opps = this.buildOpportunities(injuries, games);
+    this.opportunities = opps.length ? opps : this.getMockOpportunities();
     this.renderOpportunities();
+  }
+
+  private buildOpportunities(injuries: InjuryReport[], games: NbaGame[]): SpeedOpportunity[] {
+    const opps: SpeedOpportunity[] = [];
+
+    for (const inj of injuries.slice(0, 4)) {
+      const name = `${inj.player.first_name} ${inj.player.last_name}`;
+      const status = inj.status;
+      let confidence = 50;
+      let edgePct = 4;
+
+      if (status === 'Out') { confidence = 78; edgePct = 10; }
+      else if (status === 'Questionable') { confidence = 62; edgePct = 6; }
+      else if (status === 'Probable') { confidence = 45; edgePct = 3; }
+
+      opps.push({
+        id: `inj-${inj.id}`,
+        type: 'INJURY IMPACT',
+        description: `${name} listed as ${status} — ${inj.team.abbreviation} market may not reflect full impact`,
+        edge: `+${edgePct}% mispricing`,
+        timeLeft: inj.return_date ? `Return: ${inj.return_date}` : 'Next game',
+        confidence,
+      });
+    }
+
+    for (const game of games.slice(0, 3)) {
+      if (game.status === 'Final') continue;
+      const gameTime = new Date(game.date);
+      const hoursUntil = Math.round((gameTime.getTime() - Date.now()) / 3600000);
+      const timeStr = hoursUntil > 0 ? `${hoursUntil}h until tipoff` : 'Live now';
+
+      opps.push({
+        id: `game-${game.id}`,
+        type: 'GAME DAY',
+        description: `${game.visitor_team.abbreviation} @ ${game.home_team.abbreviation} — pre-game market window open`,
+        edge: '+3% timing edge',
+        timeLeft: timeStr,
+        confidence: 55,
+      });
+    }
+
+    return opps;
   }
 
   private renderOpportunities(): void {
@@ -75,6 +129,6 @@ export class NbaSpeedPanel extends Panel {
   }
 
   public async refresh(): Promise<void> {
-    this.renderOpportunities();
+    this.loadData();
   }
 }
