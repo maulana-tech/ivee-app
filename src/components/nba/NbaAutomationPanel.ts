@@ -7,6 +7,7 @@ import {
   type AgentMessage,
   type PipelineStep,
 } from '@/services/nba/automation-engine';
+import { automationResultToTradeSignal } from '@/services/nba/canon-bridge';
 import { degasRankService, type DegaPerformance, type DegaLeaderboard } from '@/services/nba/dega-rank';
 import { canonServerAPI, type StrategyStatus, type StrategyPerformance } from '@/services/nba/server-api';
 
@@ -33,6 +34,7 @@ export class NbaAutomationPanel extends Panel {
   private unsubscribePipeline: (() => void) | null = null;
   private unsubscribeAgent: (() => void) | null = null;
   private unsubscribePerf: (() => void) | null = null;
+  private unsubscribeAutoRun: (() => void) | null = null;
   private performance: DegaPerformance | null = null;
   private leaderboard: DegaLeaderboard[] = [];
   private serverConnected = false;
@@ -115,10 +117,24 @@ export class NbaAutomationPanel extends Panel {
     this.unsubscribePipeline = automationEngine.onPipelineUpdate((run) => {
       this.activeRun = run;
       this.updatePipeline();
+      // When a run completes, sync the result with DegaRank via the canon bridge
+      if (run?.status === 'completed' && run.result) {
+        const templates = getStrategyTemplates();
+        const config = templates.find(t => t.type === run.strategyType);
+        if (config) {
+          const signal = automationResultToTradeSignal(run.result, config);
+          if (signal) {
+            degasRankService.syncWithCanon(signal).catch(() => {});
+          }
+        }
+      }
     });
     this.unsubscribeAgent = automationEngine.onAgentMessage((msg) => {
       this.agentLog.push(msg);
       this.appendAgentLog(msg);
+    });
+    this.unsubscribeAutoRun = automationEngine.onAutoRunChange(() => {
+      this.updateAutoRunBadges();
     });
   }
 
@@ -230,6 +246,7 @@ export class NbaAutomationPanel extends Panel {
       'speed': 'Speed',
       'custom': 'Custom',
     };
+    const isAutoRunning = automationEngine.isAutoRunning(template.type);
 
     return `
       <div class="nba-auto-template ${template.type}" data-type="${template.type}">
@@ -243,7 +260,12 @@ export class NbaAutomationPanel extends Panel {
           <span>Risk: $${template.riskLimit}</span>
           <span>Max: $${template.maxSize}</span>
         </div>
-        <button class="nba-auto-start-btn" data-type="${template.type}">Start</button>
+        <div class="nba-auto-template-actions">
+          <button class="nba-auto-start-btn" data-type="${template.type}">&#9654; Run Once</button>
+          <button class="nba-auto-toggle-btn ${isAutoRunning ? 'active' : ''}" data-type="${template.type}" title="${isAutoRunning ? 'Stop auto-run' : 'Enable auto-run on schedule'}">
+            ${isAutoRunning ? '&#9646;&#9646; Auto ON' : '&#8635; Auto'}
+          </button>
+        </div>
       </div>
     `;
   }
@@ -380,19 +402,7 @@ export class NbaAutomationPanel extends Panel {
               timestamp: new Date().toISOString(),
               phase: 'fetching',
             });
-            this.appendAgentLog({
-              role: 'developer',
-              content: `API call: POST /api/strategies/${type}/start`,
-              timestamp: new Date().toISOString(),
-              phase: 'fetching',
-            });
-          } catch (err) {
-            this.appendAgentLog({
-              role: 'system',
-              content: `Server error: ${err instanceof Error ? err.message : 'Unknown'}`,
-              timestamp: new Date().toISOString(),
-              phase: 'error',
-            });
+          } catch {
             automationEngine.startStrategy(template);
           }
         } else {
@@ -400,14 +410,38 @@ export class NbaAutomationPanel extends Panel {
         }
       });
     });
+
+    this.element.querySelectorAll('.nba-auto-toggle-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const type = (btn as HTMLElement).dataset.type as StrategyConfig['type'];
+        const template = getStrategyTemplates().find(t => t.type === type);
+        if (!template) return;
+
+        if (automationEngine.isAutoRunning(type)) {
+          automationEngine.stopAutoRun(type);
+        } else {
+          const terminal = this.element.querySelector('#autoTerminal');
+          if (terminal) terminal.innerHTML = '';
+          automationEngine.startAutoRun(template);
+        }
+      });
+    });
+  }
+
+  private updateAutoRunBadges(): void {
+    this.element.querySelectorAll('.nba-auto-toggle-btn').forEach(btn => {
+      const type = (btn as HTMLElement).dataset.type as StrategyConfig['type'];
+      const running = automationEngine.isAutoRunning(type);
+      btn.classList.toggle('active', running);
+      btn.innerHTML = running ? '&#9646;&#9646; Auto ON' : '&#8635; Auto';
+    });
   }
 
   public dispose(): void {
     this.unsubscribePipeline?.();
     this.unsubscribeAgent?.();
-    if (this.pollInterval) {
-      clearInterval(this.pollInterval);
-    }
+    this.unsubscribeAutoRun?.();
+    if (this.pollInterval) clearInterval(this.pollInterval);
   }
 
   public async refresh(): Promise<void> {
