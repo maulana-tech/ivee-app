@@ -1,187 +1,148 @@
-# AVE Crypto Dashboard - Deployment Plan
+# IVEE NBA - Deployment Guide
 
 ## Current Build Status
 ```
 ✓ Build: Success
-✓ Dev Server: Running (localhost:3000)
-✓ All 22 Crypto Panels: Registered
+✓ TypeScript: 0 errors
+✓ Variant: nba (DEGA NBA Playoffs Prediction Market)
+✓ All 16 NBA Panels: Registered
 ```
 
 ---
 
-## 1. Build Configuration
+## 1. Quick Deploy
 
 ```bash
-# Production build
-npm run build
+# Install dependencies
+npm install
 
-# Output: dist/
-# - index.html
-# - assets/main-*.js
-# - sw.js (PWA service worker)
-```
-
-### Vite Config (Production)
-- Mode: `production`
-- PWA: Enabled (62 entries precached)
-- Chunking: Enabled (large chunk warning is OK)
-
----
-
-## 2. Environment Variables Required
-
-### Required:
-```
-VITE_AVE_API_KEY=4jFc0Luq30MboTRHof15K7frDMkPZ8xW6Y9JGmEUlXK4dKoVcqrHMzRjF8FTfEAM
-VITE_AVE_ENABLED=true
-```
-
-### Optional (for production data):
-```
-# CoinGecko (free tier) - already built-in fallback
-# AVE API - premium features only
-
-# Redis (optional, for caching)
-REDIS_URL=redis://...
-
-# Analytics (optional)
-VITE_UMAMI_ID=...
-```
-
----
-
-## 3. Deploy Target
-
-### Vercel (Recommended)
-```bash
-# Install Vercel CLI
-npm i -g vercel
-
-# Deploy
-vercel --prod
-
-# Or connect GitHub repo and deploy automatically
-```
-
-**Project Settings:**
-- Framework: Vite
-- Build Command: `npm run build`
-- Output Directory: `dist`
-- Install Command: `npm install`
-
-### Alternative: Node.js Server
-```bash
 # Build
 npm run build
 
-# Serve with any static server
-npx serve dist -p 3000
+# Deploy to Vercel (production)
+npx vercel --prod --yes
 ```
 
 ---
 
-## 4. Production API Endpoints
+## 2. Environment Variables
 
-| Endpoint | Source | Status |
-|----------|--------|--------|
-| `/api/market/v1/*` | Dev middleware → CoinGecko | ✅ |
-| `/api/ave/*` | Vite proxy → prod.ave-api.com | ✅ |
-| `/api/ai/analyze` | AI Agent service | ✅ |
+### Required for full functionality:
+```
+VITE_NBA_API_KEY=       # balldontlie.io — needed for /standings and /injuries endpoints
+                        # Free endpoints (games, teams) work without key
+```
 
-### Note for Production:
-- Dev middleware works in Vercel Edge Functions
-- For production, recommend:
-  1. Use Vercel KV (Redis) for caching, OR
-  2. Use external API with longer cache headers
+### Optional:
+```
+VITE_SENTRY_DSN=        # Error tracking
+VITE_AVE_API_KEY=       # AVE Data API (crypto variant only)
+```
+
+> **Note:** Polymarket Gamma API is public — no key needed. All panels have mock fallbacks for when APIs are unavailable.
 
 ---
 
-## 5. Domain Configuration
+## 3. Vercel Project Settings
 
-### Option A: Subdomain (Recommended)
+| Setting | Value |
+|---------|-------|
+| Framework | Vite |
+| Build Command | `npm run build` |
+| Output Directory | `dist` |
+| Install Command | `npm install` |
+| Node Version | 18+ |
+
+---
+
+## 4. Data Sources & Panel Status
+
+| Panel | Data Source | API Key Required | Fallback |
+|-------|------------|-----------------|---------|
+| Live Games | balldontlie.io `/games` | No | Mock games |
+| Standings | balldontlie.io `/standings` | Yes | Mock standings |
+| Injuries | balldontlie.io `/injuries` | Yes | Mock injuries |
+| Schedule | balldontlie.io `/games` | No | Mock schedule |
+| Markets | Polymarket Gamma API | No | Mock markets |
+| Arbitrage | Polymarket Gamma API | No | Mock arb |
+| Momentum | Polymarket Gamma API | No | Mock momentum |
+| Speed Opps | injuries + games API | Yes (injuries) | Mock opportunities |
+| Fear & Greed | Computed from markets | No | Computed |
+| Teams | balldontlie.io `/teams` | No | Mock teams |
+| Bracket | balldontlie.io `/games?postseason=true` | No | Mock bracket |
+| Cross-Market | Polymarket + NBA | No | Mock |
+| Strategy | DEGA Rank positions | No | Mock positions |
+| Performance | DEGA Rank positions | No | Mock positions |
+| Automation | AutomationEngine + Polymarket | No | — |
+| Execution Logs | localStorage (browser) | No | — |
+
+---
+
+## 5. Canon CLI Integration
+
+The app integrates with DEGA Canon CLI for AI trading agents:
+
 ```
-crypto.ave.ai → Vercel deployment
+.canon/
+  agents/          # AI agent definitions
+  skills/          # Reusable strategy skills
+  workflows/       # Automation pipelines
 ```
 
-### Option B: Custom Domain
-```bash
-# Add domain in Vercel dashboard
-# Then update DNS records
-```
+Execution logs are stored in `localStorage` key `canon-execution-log` and exportable as JSONL from the Execution Logs panel.
 
 ---
 
 ## 6. Pre-Deploy Checklist
 
-- [x] Build succeeds
-- [x] All panels render without crash
-- [x] Wallet connect works (dev)
-- [x] PWA configuration enabled
-- [ ] Update API key for production (if needed)
-- [ ] Set environment variables in Vercel
-- [ ] Test production build locally
+- [x] TypeScript: 0 errors (`npm run typecheck`)
+- [x] Build succeeds (`npm run build`)
+- [x] All 16 panels registered
+- [x] Real API calls with mock fallbacks
+- [x] Auto-run cron intervals working
+- [x] Execution log persistence (localStorage)
+- [x] Section nav (Live / Markets / Analysis / Strategy / Automation / Logs)
+- [ ] Set `VITE_NBA_API_KEY` in Vercel environment variables
+- [ ] Test production build: `npm run build && npx serve dist`
+- [ ] Verify Polymarket panels load (no key needed)
 
 ---
 
-## 7. Quick Deploy Commands
+## 7. Local Development
 
 ```bash
-# Clone repo
-git clone https://github.com/anomalyco/worldmonitor-main.git
-cd worldmonitor-main
+# Dev server (Vite, port 5173)
+npm run dev
 
-# Install
-npm install
+# Full stack (Vite + Express)
+npm run dev:all
 
-# Set env
-echo "VITE_AVE_API_KEY=4jFc0Luq30MboTRHof15K7frDMkPZ8xW6Y9JGmEUlXK4dKoVcqrHMzRjF8FTfEAM" > .env.local
-echo "VITE_AVE_ENABLED=true" >> .env.local
+# Type check
+npm run typecheck
 
-# Build
-npm run build
+# Run tests
+npm run test
 
-# Deploy to Vercel
-npx vercel --prod
+# Full gate (typecheck + lint + tests)
+npm run check
 ```
 
 ---
 
 ## 8. Post-Deploy Verification
 
-1. **Load test** - Check dashboard loads in <3s
-2. **Wallet connect** - Test MetaMask connection
-3. **Panel loading** - Scroll through all panels
-4. **AI analysis** - Run Risk Scanner analysis
-5. **Trade execution** - Test simulate trade
+1. **Section nav** — click all 6 tabs (Live, Markets, Analysis, Strategy, Automation, Logs)
+2. **Live data** — Live Games panel shows today's games or "No games today"
+3. **Markets panel** — Polymarket data loads (no key needed)
+4. **Automation** — Run Once on any strategy produces an Execution Log entry
+5. **Auto-run** — Toggle Auto on a strategy; badge turns green
+6. **Execution Logs** — Entries appear after running automation; JSONL download works
 
 ---
 
-## 9. Monitoring (Optional)
+## 9. Architecture Notes
 
-```bash
-# Add to Vercel Dashboard:
-- Vercel Analytics (free)
-- Sentry for error tracking
-- Raygun for performance
-```
-
----
-
-## Success Criteria
-
-- [ ] Dashboard loads on crypto.yourdomain.com
-- [ ] All 22 panels visible and responsive
-- [ ] Wallet connect works with MetaMask
-- [ ] AI Risk Scanner shows analysis
-- [ ] Trade execution flow works
-- [ ] PWA installable on mobile
-
----
-
-## Next Steps
-
-1. Choose deployment target (Vercel recommended)
-2. Add environment variables
-3. Deploy
-4. Test in production
-5. Monitor and fix issues
+- **Variant system**: `VITE_VARIANT=nba` sets NBA mode. Other variants (crypto, finance, etc.) exist but are not the focus.
+- **No React/Vue**: Pure TypeScript + Vite, DOM via class-based Panel components.
+- **Domain layering**: Types → Config → Services → Components → App (no upward imports).
+- **Risk limits**: Max position size 5% of portfolio, enforced in `BrowserRiskAdapter`.
