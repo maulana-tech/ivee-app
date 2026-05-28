@@ -1,5 +1,6 @@
 import type { TradeSignal } from "../../TradeSignal";
 import type { Portfolio, Position, RiskDecision } from "../../RiskInterface";
+import { browserExecutionLog } from "./browser-execution-log";
 
 export interface DegaPosition {
   id: string;
@@ -178,7 +179,41 @@ export class DegaRankService {
   }
 
   async syncWithCanon(signal: TradeSignal): Promise<void> {
-    console.log('[DegaRank] Syncing signal with Canon runner:', signal.automation_id);
+    const positionId = `pos-${Date.now()}`;
+    const newPosition: DegaPosition = {
+      id: positionId,
+      marketId: signal.market.market_id,
+      question: signal.market.question,
+      side: signal.direction === 'buy_yes' ? 'yes' : 'no',
+      size: signal.size,
+      entryPrice: 0.5,
+      currentPrice: 0.5,
+      pnl: 0,
+      pnlPercent: 0,
+      openedAt: signal.timestamp.toISOString(),
+      status: 'open',
+    };
+
+    this.positions.push(newPosition);
+
+    browserExecutionLog.appendEntry({
+      timestamp: new Date().toISOString(),
+      type: 'order_submit',
+      automation_id: signal.automation_id,
+      market_id: signal.market.market_id,
+      payload: {
+        position_id: positionId,
+        direction: signal.direction,
+        size: signal.size,
+        confidence: signal.confidence,
+        urgency: signal.urgency,
+        question: signal.market.question,
+        source: 'canon-bridge',
+      },
+    });
+
+    const perf = this.getPerformance();
+    this.listeners.forEach(fn => fn(perf));
   }
 
   onPerformanceUpdate(fn: (perf: DegaPerformance) => void): () => void {
