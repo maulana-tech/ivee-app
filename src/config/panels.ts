@@ -1053,6 +1053,7 @@ const NBA_PANELS: Record<string, PanelConfig> = {
   'nba-strategy': { name: 'Strategy Dashboard', enabled: true, priority: 1 },
   'nba-performance': { name: 'P&L Tracker', enabled: true, priority: 1 },
   'nba-automation': { name: 'Automation Engine', enabled: true, priority: 1 },
+  'nba-execution-logs': { name: 'Execution Logs', enabled: true, priority: 1 },
   'nba-fear-greed': { name: 'Market Sentiment', enabled: true, priority: 2 },
   'nba-schedule': { name: 'Schedule', enabled: true, priority: 2 },
   'nba-standings': { name: 'Standings', enabled: true, priority: 2 },
@@ -1366,6 +1367,10 @@ export const PANEL_CATEGORY_MAP: Record<string, { labelKey: string; panelKeys: s
   nbaStrategy: {
     labelKey: 'header.panelCatNbaStrategy',
     panelKeys: ['nba-strategy', 'nba-performance'],
+  },
+  nbaAutomation: {
+    labelKey: 'header.panelCatNbaAutomation',
+    panelKeys: ['nba-automation', 'nba-execution-logs'],
   },
 };
 
