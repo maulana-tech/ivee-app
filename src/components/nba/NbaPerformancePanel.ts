@@ -1,5 +1,6 @@
 import { Panel } from '../Panel';
-import { getMockPositions, calculatePortfolioSummary } from '@/services/nba/predictions';
+import { calculatePortfolioSummary, getMockPositions, type StrategyPosition } from '@/services/nba/predictions';
+import { degasRankService, type DegaPosition } from '@/services/nba/dega-rank';
 
 export class NbaPerformancePanel extends Panel {
   constructor(options: { id: string; title: string }) {
@@ -8,12 +9,41 @@ export class NbaPerformancePanel extends Panel {
   }
 
   protected renderContent(): void {
-    const positions = getMockPositions();
+    this.setContent('<div class="nba-loading">Loading performance data...</div>');
+    this.loadData();
+  }
+
+  private async loadData(): Promise<void> {
+    let positions: StrategyPosition[];
+    try {
+      const degas = await degasRankService.fetchPositions();
+      const source = degas.length ? degas : degasRankService.getMockPositions();
+      positions = this.mapToStrategyPositions(source);
+    } catch {
+      positions = getMockPositions();
+    }
     const summary = calculatePortfolioSummary(positions);
     this.renderPerformance(summary, positions);
   }
 
-  private renderPerformance(summary: ReturnType<typeof calculatePortfolioSummary>, positions: any[]): void {
+  private mapToStrategyPositions(degas: DegaPosition[]): StrategyPosition[] {
+    return degas.map(pos => ({
+      id: pos.id,
+      market: pos.marketId,
+      question: pos.question,
+      side: pos.side,
+      entryPrice: pos.entryPrice,
+      currentPrice: pos.currentPrice,
+      size: pos.size,
+      pnl: pos.pnl,
+      pnlPercent: pos.pnlPercent,
+      status: pos.status === 'settled' ? (pos.pnl > 0 ? 'won' : 'lost') : pos.status as 'open' | 'closed',
+      strategy: 'IVEE Trading',
+      openedAt: pos.openedAt,
+    }));
+  }
+
+  private renderPerformance(summary: ReturnType<typeof calculatePortfolioSummary>, positions: StrategyPosition[]): void {
     const unrealizedColor = summary.unrealizedPnl >= 0 ? '#00ff88' : '#ff4444';
     const realizedColor = summary.realizedPnl >= 0 ? '#00ff88' : '#ff4444';
 
@@ -55,7 +85,7 @@ export class NbaPerformancePanel extends Panel {
     this.setContent(html);
   }
 
-  private renderStrategyBreakdown(positions: any[]): string {
+  private renderStrategyBreakdown(positions: StrategyPosition[]): string {
     const byStrategy: Record<string, { pnl: number; count: number; wins: number }> = {};
     for (const p of positions) {
       const strat = p.strategy || 'Unknown';
@@ -78,6 +108,6 @@ export class NbaPerformancePanel extends Panel {
   }
 
   public async refresh(): Promise<void> {
-    this.renderContent();
+    this.loadData();
   }
 }
