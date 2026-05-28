@@ -1,5 +1,6 @@
 import { Panel } from '../Panel';
-import { getMockPositions, calculatePortfolioSummary, type StrategyPosition } from '@/services/nba/predictions';
+import { calculatePortfolioSummary, getMockPositions, type StrategyPosition } from '@/services/nba/predictions';
+import { degasRankService, type DegaPosition } from '@/services/nba/dega-rank';
 
 export class NbaStrategyPanel extends Panel {
   private positions: StrategyPosition[] = [];
@@ -10,10 +11,36 @@ export class NbaStrategyPanel extends Panel {
   }
 
   protected renderContent(): void {
-    if (this.positions.length === 0) {
+    this.setContent('<div class="nba-loading">Loading positions...</div>');
+    this.loadData();
+  }
+
+  private async loadData(): Promise<void> {
+    try {
+      const degas = await degasRankService.fetchPositions();
+      const source = degas.length ? degas : degasRankService.getMockPositions();
+      this.positions = this.mapToStrategyPositions(source);
+    } catch {
       this.positions = getMockPositions();
     }
     this.renderDashboard();
+  }
+
+  private mapToStrategyPositions(degas: DegaPosition[]): StrategyPosition[] {
+    return degas.map(pos => ({
+      id: pos.id,
+      market: pos.marketId,
+      question: pos.question,
+      side: pos.side,
+      entryPrice: pos.entryPrice,
+      currentPrice: pos.currentPrice,
+      size: pos.size,
+      pnl: pos.pnl,
+      pnlPercent: pos.pnlPercent,
+      status: pos.status === 'settled' ? (pos.pnl > 0 ? 'won' : 'lost') : pos.status as 'open' | 'closed',
+      strategy: 'IVEE Trading',
+      openedAt: pos.openedAt,
+    }));
   }
 
   private renderDashboard(): void {
@@ -45,11 +72,11 @@ export class NbaStrategyPanel extends Panel {
       </div>
       <div class="nba-strategy-positions">
         <h4>Active Positions</h4>
-        ${this.positions.filter(p => p.status === 'open').map(p => this.renderPosition(p)).join('')}
+        ${this.positions.filter(p => p.status === 'open').map(p => this.renderPosition(p)).join('') || '<p class="nba-empty">No open positions</p>'}
       </div>
       <div class="nba-strategy-closed">
         <h4>Recent Results</h4>
-        ${this.positions.filter(p => p.status !== 'open').map(p => this.renderPosition(p)).join('')}
+        ${this.positions.filter(p => p.status !== 'open').map(p => this.renderPosition(p)).join('') || '<p class="nba-empty">No closed positions</p>'}
       </div>
     `;
     this.setContent(html);
@@ -84,6 +111,6 @@ export class NbaStrategyPanel extends Panel {
   }
 
   public async refresh(): Promise<void> {
-    this.renderDashboard();
+    this.loadData();
   }
 }
