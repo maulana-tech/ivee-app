@@ -2,11 +2,21 @@ import type { TradeSignal, MarketReference } from "../../TradeSignal";
 import type { RiskInterface, Portfolio, RiskDecision } from "../../RiskInterface";
 import type { AutomationResult, StrategyConfig } from "./automation-engine";
 import { degasRankService, type DegaPosition } from "./dega-rank";
+import { browserExecutionLog } from "./browser-execution-log";
+
+function actionToDirection(action: AutomationResult['action']): TradeSignal['direction'] | null {
+  if (action === 'buy_yes') return 'buy_yes';
+  if (action === 'buy_no') return 'buy_no';
+  return null;
+}
 
 export function automationResultToTradeSignal(
   result: AutomationResult,
   config: StrategyConfig
-): TradeSignal {
+): TradeSignal | null {
+  const direction = actionToDirection(result.action);
+  if (!direction) return null;
+
   const marketRef: MarketReference = {
     platform: 'polymarket',
     market_id: result.market,
@@ -17,10 +27,10 @@ export function automationResultToTradeSignal(
     automation_id: config.name.toLowerCase().replace(/\s+/g, '-'),
     timestamp: new Date(),
     market: marketRef,
-    direction: result.action as TradeSignal['direction'],
+    direction,
     size: config.maxSize,
     confidence: result.confidence / 100,
-    urgency: 'normal',
+    urgency: result.confidence >= 75 ? 'immediate' : result.confidence >= 55 ? 'normal' : 'opportunistic',
     metadata: {
       edge: result.edge,
       expectedPnl: result.expectedPnl,
@@ -75,7 +85,24 @@ export class BrowserRiskAdapter implements RiskInterface {
   }
 
   private getDailyLoss(): number {
-    return -15.20;
+    try {
+      const raw = localStorage.getItem('canon-daily-pnl');
+      if (!raw) return 0;
+      const data = JSON.parse(raw) as { date: string; pnl: number };
+      const today = new Date().toISOString().split('T')[0];
+      return data.date === today ? data.pnl : 0;
+    } catch {
+      return 0;
+    }
+  }
+
+  recordDailyPnl(pnl: number): void {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const current = this.getDailyLoss();
+      localStorage.setItem('canon-daily-pnl', JSON.stringify({ date: today, pnl: current + pnl }));
+    } catch {
+    }
   }
 }
 
