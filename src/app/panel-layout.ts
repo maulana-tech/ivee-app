@@ -17,6 +17,7 @@ import {
   NbaSpeedPanel,
   NbaPerformancePanel,
   NbaAutomationPanel,
+  NbaExecutionLogsPanel,
 } from '@/components/nba';
 import {
   MapContainer,
@@ -288,6 +289,15 @@ export class PanelLayoutManager implements AppModule {
         </button>`
       ).join('')}
       </div>
+      ${SITE_VARIANT === 'nba' ? `
+      <nav class="nba-section-nav" id="nbaSectionNav">
+        <button class="nba-section-tab active" data-section="live">🏀 Live</button>
+        <button class="nba-section-tab" data-section="markets">📊 Markets</button>
+        <button class="nba-section-tab" data-section="analysis">🔬 Analysis</button>
+        <button class="nba-section-tab" data-section="strategy">🎯 Strategy</button>
+        <button class="nba-section-tab" data-section="automation">🤖 Automation</button>
+        <button class="nba-section-tab" data-section="logs">📋 Logs</button>
+      </nav>` : ''}
       <div class="main-content${this.ctx.isDesktopApp ? ' desktop-grid' : ''}">
         <div class="map-section" id="mapSection">
           <div class="panel-header">
@@ -332,6 +342,68 @@ export class PanelLayoutManager implements AppModule {
     if (this.ctx.isMobile) {
       this.setupMobileMapToggle();
     }
+
+    if (SITE_VARIANT === 'nba') {
+      this.setupNbaSectionNav();
+    }
+  }
+
+  private readonly NBA_SECTIONS: Record<string, string[]> = {
+    live:       ['nba-live', 'nba-standings', 'nba-injuries', 'nba-schedule'],
+    markets:    ['nba-markets', 'nba-arb', 'nba-momentum', 'nba-speed', 'nba-fear-greed'],
+    analysis:   ['nba-teams', 'nba-bracket', 'nba-cross'],
+    strategy:   ['nba-strategy', 'nba-performance'],
+    automation: ['nba-automation'],
+    logs:       ['nba-execution-logs'],
+  };
+
+  private activeNbaSection = 'live';
+
+  private setupNbaSectionNav(): void {
+    const nav = document.getElementById('nbaSectionNav');
+    if (!nav) return;
+
+    const saved = localStorage.getItem('nba-active-section');
+    if (saved && this.NBA_SECTIONS[saved]) {
+      this.activeNbaSection = saved;
+      nav.querySelectorAll('.nba-section-tab').forEach(btn => {
+        btn.classList.toggle('active', (btn as HTMLElement).dataset.section === saved);
+      });
+    }
+
+    this.applyNbaSection(this.activeNbaSection);
+
+    nav.addEventListener('click', (e) => {
+      const btn = (e.target as HTMLElement).closest('.nba-section-tab') as HTMLElement | null;
+      if (!btn) return;
+      const section = btn.dataset.section;
+      if (!section || !this.NBA_SECTIONS[section]) return;
+
+      this.activeNbaSection = section;
+      localStorage.setItem('nba-active-section', section);
+
+      nav.querySelectorAll('.nba-section-tab').forEach(b => b.classList.toggle('active', b === btn));
+      this.applyNbaSection(section);
+    });
+  }
+
+  private applyNbaSection(section: string): void {
+    const panelsInSection = this.NBA_SECTIONS[section] ?? [];
+    const allNbaPanelIds = Object.values(this.NBA_SECTIONS).flat();
+
+    const grid = document.getElementById('panelsGrid');
+    if (!grid) return;
+
+    allNbaPanelIds.forEach(id => {
+      const panel = this.ctx.panels[id];
+      if (!panel) return;
+      const el = (panel as { element?: HTMLElement }).element;
+      if (!el) return;
+      const show = panelsInSection.includes(id);
+      el.style.display = show ? '' : 'none';
+    });
+
+    grid.scrollTop = 0;
   }
 
   private setupMobileMapToggle(): void {
@@ -472,6 +544,7 @@ export class PanelLayoutManager implements AppModule {
       this.createPanel('nba-speed', () => new NbaSpeedPanel({ id: 'nba-speed', title: 'Speed Ops' }));
       this.createPanel('nba-performance', () => new NbaPerformancePanel({ id: 'nba-performance', title: 'P&L Tracker' }));
       this.createPanel('nba-automation', () => new NbaAutomationPanel({ id: 'nba-automation', title: 'Automation Engine' }));
+      this.createPanel('nba-execution-logs', () => new NbaExecutionLogsPanel({ id: 'nba-execution-logs', title: 'Execution Logs' }));
     }
 
     if (SITE_VARIANT !== 'nba') {
@@ -592,7 +665,7 @@ export class PanelLayoutManager implements AppModule {
 
     // Trigger renderContent on NBA panels once they're in the DOM
     if (SITE_VARIANT === 'nba') {
-      const nbaPanelIds = ['nba-markets', 'nba-teams', 'nba-arb', 'nba-strategy', 'nba-injuries', 'nba-momentum', 'nba-bracket', 'nba-speed', 'nba-performance', 'nba-automation'];
+      const nbaPanelIds = ['nba-markets', 'nba-teams', 'nba-arb', 'nba-strategy', 'nba-injuries', 'nba-momentum', 'nba-bracket', 'nba-speed', 'nba-performance', 'nba-automation', 'nba-execution-logs'];
       requestAnimationFrame(() => {
         for (const id of nbaPanelIds) {
           const p = this.ctx.panels[id];
@@ -600,6 +673,8 @@ export class PanelLayoutManager implements AppModule {
             (p as any).renderContent();
           }
         }
+        // Apply section nav after all panels are in DOM
+        this.applyNbaSection(this.activeNbaSection);
       });
     }
 
