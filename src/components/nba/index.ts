@@ -10,3 +10,4 @@ export { NbaBracketPanel } from './NbaBracketPanel';
 export { NbaSpeedPanel } from './NbaSpeedPanel';
 export { NbaPerformancePanel } from './NbaPerformancePanel';
 export { NbaAutomationPanel } from './NbaAutomationPanel';
+export { NbaExecutionLogsPanel } from './NbaExecutionLogsPanel';
