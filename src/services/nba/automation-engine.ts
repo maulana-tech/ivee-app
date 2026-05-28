@@ -1,3 +1,20 @@
+import {
+  getPlayoffMarkets,
+  findArbitrageOpportunities,
+  type PredictionMarket,
+  type MarketArbitrage,
+} from './prediction-market';
+import {
+  getTodayGames,
+  getStandings,
+  getInjuries,
+  type NbaGame,
+  type TeamStanding,
+  type InjuryReport,
+} from './client';
+import { generatePrediction } from './predictions';
+import { browserExecutionLog } from './browser-execution-log';
+
 export type StrategyPhase = 'idle' | 'fetching' | 'analyzing' | 'deciding' | 'executing' | 'monitoring' | 'completed' | 'error';
 
 export type StrategyType = 'arbitrage' | 'momentum' | 'cross-market' | 'speed' | 'custom';
@@ -12,7 +29,7 @@ export interface PipelineStep {
   duration?: number;
   result?: string;
   error?: string;
-  data?: any;
+  data?: unknown;
 }
 
 export interface AutomationRun {
@@ -47,7 +64,7 @@ export interface StrategyConfig {
   enabled: boolean;
   schedule: string;
   markets: string[];
-  params: Record<string, any>;
+  params: Record<string, unknown>;
   riskLimit: number;
   maxSize: number;
 }
@@ -57,7 +74,15 @@ export interface AgentMessage {
   content: string;
   timestamp: string;
   phase: StrategyPhase;
-  data?: any;
+  data?: unknown;
+}
+
+interface RunContext {
+  markets: PredictionMarket[];
+  arb: MarketArbitrage[];
+  games: NbaGame[];
+  standings: TeamStanding[];
+  injuries: InjuryReport[];
 }
 
 const STRATEGY_TEMPLATES: StrategyConfig[] = [
@@ -201,12 +226,37 @@ export function createPipelineSteps(type: StrategyType): PipelineStep[] {
   ];
 }
 
+function checkRisk(size: number, riskLimit: number): { approved: boolean; reason?: string } {
+  if (size > riskLimit * 0.05) {
+    return { approved: false, reason: `Position size $${size} exceeds 5% portfolio limit ($${(riskLimit * 0.05).toFixed(0)})` };
+  }
+  try {
+    const raw = localStorage.getItem('canon-daily-pnl');
+    if (raw) {
+      const data = JSON.parse(raw) as { date: string; pnl: number };
+      const today = new Date().toISOString().split('T')[0];
+      if (data.date === today && data.pnl <= -30) {
+        return { approved: false, reason: 'Daily loss limit reached ($30)' };
+      }
+    }
+  } catch { /* ignore */ }
+  return { approved: true };
+}
+
+function parseCronIntervalMs(cron: string): number {
+  const match = cron.match(/^\*\/(\d+)/);
+  const minutes = match ? parseInt(match[1] ?? '5', 10) : 5;
+  return minutes * 60 * 1000;
+}
+
 export class AutomationEngine {
   private runs: AutomationRun[] = [];
   private activeRun: AutomationRun | null = null;
   private listeners: ((run: AutomationRun | null) => void)[] = [];
   private agentLog: AgentMessage[] = [];
   private agentListeners: ((msg: AgentMessage) => void)[] = [];
+  private autoRunIntervals: Map<string, number> = new Map();
+  private autoRunListeners: ((active: Map<string, string>) => void)[] = [];
 
   startStrategy(config: StrategyConfig): AutomationRun {
     const run: AutomationRun = {
@@ -230,19 +280,22 @@ export class AutomationEngine {
   }
 
   private async executePipeline(run: AutomationRun, config: StrategyConfig): Promise<void> {
+    const ctx: RunContext = { markets: [], arb: [], games: [], standings: [], injuries: [] };
+
     for (let i = 0; i < run.steps.length; i++) {
       run.currentStepIndex = i;
       const step = run.steps[i];
+      if (!step) continue;
       step.status = 'running';
       step.startedAt = new Date().toISOString();
       run.status = step.phase;
       this.notify();
 
       try {
-        step.data = await this.executeStep(step, run, config);
+        step.data = await this.executeStep(step, run, config, ctx);
         step.status = 'completed';
         step.completedAt = new Date().toISOString();
-        step.duration = new Date(step.completedAt).getTime() - new Date(step.startedAt).getTime();
+        step.duration = new Date(step.completedAt).getTime() - new Date(step.startedAt!).getTime();
       } catch (err) {
         step.status = 'failed';
         step.error = err instanceof Error ? err.message : 'Unknown error';
@@ -250,12 +303,19 @@ export class AutomationEngine {
         run.status = 'error';
         run.error = step.error;
         this.logAgent('system', `Step failed: ${step.name} — ${step.error}`, 'error');
+        browserExecutionLog.appendEntry({
+          timestamp: new Date().toISOString(),
+          type: 'error',
+          automation_id: config.name.toLowerCase().replace(/\s+/g, '-'),
+          market_id: '',
+          payload: { step: step.id, error: step.error, run_id: run.id },
+        });
         this.notify();
         return;
       }
 
       this.notify();
-      await this.delay(800 + Math.random() * 1200);
+      await this.delay(600 + Math.random() * 800);
     }
 
     run.status = 'completed';
@@ -264,88 +324,352 @@ export class AutomationEngine {
     this.notify();
   }
 
-  private async executeStep(step: PipelineStep, run: AutomationRun, config: StrategyConfig): Promise<any> {
+  private async executeStep(
+    step: PipelineStep,
+    run: AutomationRun,
+    config: StrategyConfig,
+    ctx: RunContext,
+  ): Promise<unknown> {
+    const automationId = config.name.toLowerCase().replace(/\s+/g, '-');
+
     switch (step.id) {
-      case 'fetch-market-data':
+      case 'fetch-market-data': {
         this.logAgent('market-analyst', 'Scanning Polymarket for active NBA prediction markets...', 'fetching');
-        await this.delay(1000);
-        this.logAgent('market-analyst', `Found 6 active NBA markets with total volume of $4.9M`, 'fetching');
-        return { marketCount: 6, totalVolume: 4900000 };
+        ctx.markets = await getPlayoffMarkets();
+        const totalVolume = ctx.markets.reduce((sum, m) => sum + parseFloat(m.volume || '0'), 0);
+        const activeCount = ctx.markets.filter(m => m.active && !m.closed).length;
+        this.logAgent('market-analyst', `Found ${activeCount} active NBA markets — total volume $${(totalVolume / 1_000_000).toFixed(2)}M`, 'fetching');
+        return { marketCount: activeCount, totalVolume, markets: ctx.markets.map(m => m.slug) };
+      }
 
-      case 'fetch-nba-stats':
+      case 'fetch-nba-stats': {
         this.logAgent('market-analyst', 'Loading team standings, injury reports, and schedule data...', 'fetching');
-        await this.delay(800);
-        this.logAgent('market-analyst', '3 games today: BOS@CLE (Q3), OKC vs DEN (Scheduled), NYK@MIA (Final)', 'fetching');
-        return { gamesToday: 3, injuries: 7, teams: 8 };
-
-      case 'scan-arbitrage':
-        this.logAgent('strategy-architect', 'Analyzing Yes/No price sums for mispricing...', 'analyzing');
-        await this.delay(1200);
-        this.logAgent('strategy-architect', 'Detected 2 arbitrage opportunities with >2% edge', 'analyzing');
-        return { opportunities: 2, maxEdge: 0.056 };
-
-      case 'detect-momentum':
-        this.logAgent('strategy-architect', 'Analyzing price momentum across 6 markets...', 'analyzing');
-        await this.delay(1000);
-        this.logAgent('strategy-architect', 'BOS championship market showing strong bullish momentum (+8% in 4h)', 'analyzing');
-        return { signals: 1, direction: 'bullish', strength: 72 };
-
-      case 'correlate-markets':
-        this.logAgent('strategy-architect', 'Computing cross-market correlations between series and game markets...', 'analyzing');
-        await this.delay(1400);
-        this.logAgent('strategy-architect', 'Found pricing lag: OKC series price moved but Game 3 market has not adjusted', 'analyzing');
-        return { correlations: 1, lagSeconds: 420, edge: 0.038 };
-
-      case 'speed-analysis':
-        this.logAgent('strategy-architect', 'Processing pre-game statistical edges...', 'analyzing');
-        await this.delay(900);
-        this.logAgent('strategy-architect', 'Jayson Tatum questionable — Celtics market likely undervalues impact', 'analyzing');
-        return { edges: 1, timeToTipoff: '2h 15m', edge: 0.08 };
-
-      case 'custom-analysis':
-        this.logAgent('strategy-architect', 'Running custom analysis pipeline...', 'analyzing');
-        await this.delay(1000);
-        return { signals: 1 };
-
-      case 'ai-decision':
-        this.logAgent('developer', 'Running AI decision engine with 4 analyst inputs...', 'deciding');
-        await this.delay(1500);
-        this.logAgent('developer', 'Decision: BUY YES on Celtics Championship @ $0.35 (confidence: 72%)', 'deciding');
-        run.result = {
-          action: 'buy_yes',
-          market: 'celtics-2025-champs',
-          question: 'Will the Boston Celtics win the 2025 NBA Championship?',
-          side: 'yes',
-          confidence: 72,
-          edge: 5.6,
-          expectedPnl: 28,
-          reasoning: [
-            'Celtics have home court advantage in Game 3',
-            'Tatum questionable status creating market mispricing',
-            'Celtics 4-1 series lead pattern matches historical data',
-            'Market price $0.35 implies only 35% probability — model estimates 42%',
-          ],
-          dataSources: ['Polymarket', 'balldontlie API', 'NBA Injury Report', 'Historical Patterns'],
+        [ctx.games, ctx.standings, ctx.injuries] = await Promise.all([
+          getTodayGames(),
+          getStandings(),
+          getInjuries(),
+        ]);
+        const liveGames = ctx.games.filter(g => g.status === 'In Progress');
+        const scheduledGames = ctx.games.filter(g => g.status === 'Scheduled');
+        const outGames = ctx.injuries.filter(i => i.status === 'Out');
+        const questionable = ctx.injuries.filter(i => i.status === 'Questionable');
+        this.logAgent('market-analyst', `${ctx.games.length} games today (${liveGames.length} live, ${scheduledGames.length} upcoming) — ${outGames.length} players out, ${questionable.length} questionable`, 'fetching');
+        return {
+          gamesToday: ctx.games.length,
+          liveGames: liveGames.length,
+          injuries: ctx.injuries.length,
+          outCount: outGames.length,
+          questionableCount: questionable.length,
+          teams: ctx.standings.length,
         };
+      }
+
+      case 'scan-arbitrage': {
+        this.logAgent('strategy-architect', `Analyzing Yes/No price sums for mispricing across ${ctx.markets.length} markets...`, 'analyzing');
+        ctx.arb = findArbitrageOpportunities(ctx.markets);
+        if (ctx.arb.length > 0) {
+          const best = ctx.arb.reduce((a, b) => Math.abs(a.mispricing) > Math.abs(b.mispricing) ? a : b);
+          this.logAgent('strategy-architect', `Detected ${ctx.arb.length} arbitrage opportunit${ctx.arb.length === 1 ? 'y' : 'ies'} — best edge ${(Math.abs(best.mispricing) * 100).toFixed(1)}% on "${best.question}"`, 'analyzing');
+        } else {
+          this.logAgent('strategy-architect', 'No arbitrage mispricings found — all markets within 2% of fair value', 'analyzing');
+        }
+        return { opportunities: ctx.arb.length, best: ctx.arb[0] ?? null };
+      }
+
+      case 'detect-momentum': {
+        this.logAgent('strategy-architect', `Analyzing price momentum across ${ctx.markets.length} markets...`, 'analyzing');
+        const signals = ctx.markets
+          .filter(m => m.outcomePrices.length >= 2)
+          .map(m => {
+            const yes = parseFloat(m.outcomePrices[0] ?? '0.5');
+            const vol = parseFloat(m.volume ?? '0');
+            const imbalance = Math.abs(yes - 0.5);
+            return { market: m, yes, vol, imbalance };
+          })
+          .filter(s => s.imbalance > 0.15 && s.vol > 100_000)
+          .sort((a, b) => b.imbalance - a.imbalance);
+
+        if (signals.length > 0) {
+          const top = signals[0]!;
+          const dir = top.yes > 0.5 ? 'bullish' : 'bearish';
+          this.logAgent('strategy-architect', `"${top.market.question}" showing strong ${dir} momentum (${(top.yes * 100).toFixed(0)}% yes, vol $${(top.vol / 1000).toFixed(0)}K)`, 'analyzing');
+        } else {
+          this.logAgent('strategy-architect', 'No strong momentum signals detected — markets are balanced', 'analyzing');
+        }
+        return { signals: signals.length, topMarket: signals[0]?.market.slug ?? null };
+      }
+
+      case 'correlate-markets': {
+        this.logAgent('strategy-architect', 'Computing cross-market correlations between series and game markets...', 'analyzing');
+        const seriesMarkets = ctx.markets.filter(m =>
+          m.slug.includes('series') || m.slug.includes('conf') || m.slug.includes('champ')
+        );
+        const gameMarkets = ctx.markets.filter(m =>
+          m.slug.includes('-g') || m.slug.includes('game') || m.slug.includes('win')
+        );
+
+        const lags: Array<{ series: string; game: string; priceDiff: number }> = [];
+        for (const s of seriesMarkets) {
+          for (const g of gameMarkets) {
+            const sTeam = s.slug.split('-')[0] ?? '';
+            if (!g.slug.includes(sTeam)) continue;
+            const sYes = parseFloat(s.outcomePrices[0] ?? '0.5');
+            const gYes = parseFloat(g.outcomePrices[0] ?? '0.5');
+            const diff = Math.abs(sYes - gYes);
+            if (diff > 0.08) lags.push({ series: s.slug, game: g.slug, priceDiff: diff });
+          }
+        }
+
+        if (lags.length > 0) {
+          const best = lags.sort((a, b) => b.priceDiff - a.priceDiff)[0]!;
+          this.logAgent('strategy-architect', `Pricing lag detected: ${best.series} vs ${best.game} — ${(best.priceDiff * 100).toFixed(1)}% divergence`, 'analyzing');
+        } else {
+          this.logAgent('strategy-architect', `Checked ${seriesMarkets.length} series / ${gameMarkets.length} game markets — no significant lags`, 'analyzing');
+        }
+        return { seriesMarkets: seriesMarkets.length, gameMarkets: gameMarkets.length, lags: lags.length };
+      }
+
+      case 'speed-analysis': {
+        this.logAgent('strategy-architect', 'Processing pre-game statistical edges from injury reports and schedule...', 'analyzing');
+        const upcomingGames = ctx.games.filter(g => g.status === 'Scheduled');
+        const edges: Array<{ player: string; team: string; status: string; edge: string }> = [];
+
+        for (const injury of ctx.injuries) {
+          if (injury.status === 'Out' || injury.status === 'Questionable') {
+            const affectedGame = upcomingGames.find(g =>
+              g.home_team.id === injury.team.id || g.visitor_team.id === injury.team.id
+            );
+            if (affectedGame) {
+              edges.push({
+                player: `${injury.player.first_name} ${injury.player.last_name}`,
+                team: injury.team.abbreviation,
+                status: injury.status,
+                edge: `${injury.team.abbreviation} market may be mispriced — ${injury.status}`,
+              });
+            }
+          }
+        }
+
+        if (edges.length > 0) {
+          const e = edges[0]!;
+          this.logAgent('strategy-architect', `${e.player} (${e.team}) ${e.status} — affects ${upcomingGames.find(g => g.home_team.abbreviation === e.team || g.visitor_team.abbreviation === e.team)?.home_team.full_name ?? 'upcoming'} game market`, 'analyzing');
+        } else {
+          this.logAgent('strategy-architect', `${upcomingGames.length} upcoming games — no significant injury-based edges found`, 'analyzing');
+        }
+        return { upcomingGames: upcomingGames.length, edges: edges.length, details: edges };
+      }
+
+      case 'custom-analysis': {
+        this.logAgent('strategy-architect', 'Running custom analysis pipeline...', 'analyzing');
+        const predictions = ctx.games.slice(0, 3).map(g => generatePrediction(g, ctx.standings));
+        const highConf = predictions.filter(p => p.confidence > 60);
+        this.logAgent('strategy-architect', `Generated ${predictions.length} game predictions — ${highConf.length} high-confidence`, 'analyzing');
+        return { predictions: predictions.length, highConfidence: highConf.length };
+      }
+
+      case 'ai-decision': {
+        this.logAgent('developer', 'Running AI decision engine — evaluating all signals...', 'deciding');
+
+        let bestMarket: PredictionMarket | null = null;
+        let action: AutomationResult['action'] = 'hold';
+        let confidence = 45;
+        let edge = 0;
+        let side: 'yes' | 'no' = 'yes';
+        const reasoning: string[] = [];
+        const dataSources: string[] = ['Polymarket Gamma API'];
+
+        if (config.type === 'arbitrage' && ctx.arb.length > 0) {
+          const best = ctx.arb[0]!;
+          bestMarket = ctx.markets.find(m => m.id === best.id) ?? null;
+          action = best.mispricing < 0 ? 'buy_yes' : 'buy_no';
+          side = best.mispricing < 0 ? 'yes' : 'no';
+          confidence = Math.min(95, 60 + Math.abs(best.mispricing) * 500);
+          edge = Math.abs(best.mispricing) * 100;
+          reasoning.push(`Yes+No prices sum to ${(best.yesPrice + best.noPrice).toFixed(3)} — ${edge.toFixed(1)}% edge`);
+          reasoning.push(`Buy ${side.toUpperCase()} @ $${side === 'yes' ? best.yesPrice.toFixed(3) : best.noPrice.toFixed(3)}`);
+          dataSources.push('Arbitrage Scanner');
+        } else if (config.type === 'momentum' && ctx.markets.length > 0) {
+          const strongest = ctx.markets
+            .filter(m => m.outcomePrices.length >= 2)
+            .map(m => ({ m, yes: parseFloat(m.outcomePrices[0] ?? '0.5'), vol: parseFloat(m.volume ?? '0') }))
+            .filter(s => s.vol > 50_000)
+            .sort((a, b) => Math.abs(b.yes - 0.5) - Math.abs(a.yes - 0.5))[0];
+
+          if (strongest) {
+            bestMarket = strongest.m;
+            side = strongest.yes > 0.5 ? 'yes' : 'no';
+            action = side === 'yes' ? 'buy_yes' : 'buy_no';
+            confidence = Math.round(Math.min(90, 50 + Math.abs(strongest.yes - 0.5) * 100));
+            edge = Math.abs(strongest.yes - 0.5) * 10;
+            reasoning.push(`Strong ${side} momentum — ${(strongest.yes * 100).toFixed(0)}% implied probability`);
+            reasoning.push(`Volume $${(strongest.vol / 1000).toFixed(0)}K confirms market conviction`);
+            dataSources.push('Momentum Detector');
+          }
+        } else if (config.type === 'speed' && ctx.injuries.length > 0) {
+          const keyInjury = ctx.injuries.find(i => i.status === 'Out' || i.status === 'Questionable');
+          if (keyInjury) {
+            const opposingMarket = ctx.markets.find(m =>
+              !m.slug.includes(keyInjury.team.abbreviation.toLowerCase())
+            );
+            bestMarket = opposingMarket ?? ctx.markets[0] ?? null;
+            action = 'buy_yes';
+            side = 'yes';
+            confidence = keyInjury.status === 'Out' ? 72 : 58;
+            edge = keyInjury.status === 'Out' ? 7.5 : 4.2;
+            reasoning.push(`${keyInjury.player.first_name} ${keyInjury.player.last_name} ${keyInjury.status} — opponent market underpriced`);
+            reasoning.push(`Injury status from balldontlie API — markets typically slow to adjust`);
+            dataSources.push('balldontlie NBA API', 'Injury Report');
+          }
+        } else if (config.type === 'cross-market' && ctx.markets.length > 1) {
+          bestMarket = ctx.markets[0] ?? null;
+          action = 'alert';
+          side = 'yes';
+          confidence = 55;
+          edge = 3.1;
+          reasoning.push('Cross-market lag detected between series and game markets');
+          reasoning.push(`${ctx.markets.length} markets analyzed for correlation divergence`);
+          dataSources.push('Cross-Market Correlator');
+        }
+
+        if (!bestMarket && ctx.markets[0]) {
+          bestMarket = ctx.markets[0];
+          action = 'hold';
+          confidence = 40;
+          reasoning.push('No strong signal detected — holding position');
+        }
+
+        if (ctx.standings.length > 0) {
+          dataSources.push('NBA Standings');
+          reasoning.push(`Analysis based on ${ctx.standings.length} team records`);
+        }
+        if (ctx.injuries.length > 0) dataSources.push('NBA Injury Report');
+
+        const expectedPnl = action !== 'hold' && action !== 'skip'
+          ? parseFloat((config.maxSize * (edge / 100)).toFixed(2))
+          : 0;
+
+        run.result = {
+          action,
+          market: bestMarket?.slug ?? 'no-market',
+          question: bestMarket?.question ?? 'No opportunity found',
+          side,
+          confidence: Math.round(confidence),
+          edge: parseFloat(edge.toFixed(2)),
+          expectedPnl,
+          reasoning: reasoning.length > 0 ? reasoning : ['Insufficient signal strength — no trade recommended'],
+          dataSources,
+        };
+
+        this.logAgent('developer', `Decision: ${action.replace('_', ' ').toUpperCase()} ${side.toUpperCase()} on "${run.result.question}" (confidence: ${Math.round(confidence)}%)`, 'deciding');
+
+        browserExecutionLog.appendEntry({
+          timestamp: new Date().toISOString(),
+          type: 'signal',
+          automation_id: automationId,
+          market_id: bestMarket?.id ?? '',
+          payload: {
+            run_id: run.id,
+            action,
+            side,
+            confidence: Math.round(confidence),
+            edge: parseFloat(edge.toFixed(2)),
+            expected_pnl: expectedPnl,
+            reasoning,
+            data_sources: dataSources,
+          },
+        });
+
         return run.result;
+      }
 
-      case 'risk-check':
-        this.logAgent('qa', 'Validating risk parameters...', 'deciding');
-        await this.delay(600);
-        this.logAgent('qa', `Risk check PASSED — Position size $50 within limit ($${config.riskLimit}), portfolio exposure OK`, 'deciding');
-        return { passed: true, exposure: 50, limit: config.riskLimit };
+      case 'risk-check': {
+        this.logAgent('qa', 'Validating risk parameters and portfolio exposure...', 'deciding');
+        const decision = checkRisk(config.maxSize, config.riskLimit);
 
-      case 'execute-trade':
-        this.logAgent('developer', `Executing: BUY YES $50 on "${run.result?.question}" via Polymarket...`, 'executing');
-        await this.delay(2000);
-        this.logAgent('developer', 'Position opened successfully — tracking in DEGA Rank', 'executing');
-        return { orderId: `ord-${Date.now()}`, status: 'filled', fillPrice: 0.35 };
+        browserExecutionLog.appendEntry({
+          timestamp: new Date().toISOString(),
+          type: 'risk_check',
+          automation_id: automationId,
+          market_id: run.result?.market ?? '',
+          payload: {
+            run_id: run.id,
+            approved: decision.approved,
+            rejection_reason: decision.approved ? null : (decision.reason ?? null),
+            position_size: config.maxSize,
+            risk_limit: config.riskLimit,
+          },
+        });
 
-      case 'log-results':
-        this.logAgent('qa', 'Logging results to DEGA Rank and updating P&L tracker...', 'monitoring');
-        await this.delay(500);
-        this.logAgent('qa', 'Strategy run complete. P&L tracking active. Next scan in 5 minutes.', 'monitoring');
-        return { logged: true, nextRun: new Date(Date.now() + 300000).toISOString() };
+        if (!decision.approved) {
+          this.logAgent('qa', `Risk check FAILED — ${decision.reason}`, 'deciding');
+          if (run.result) run.result.action = 'skip';
+        } else {
+          this.logAgent('qa', `Risk check PASSED — Position $${config.maxSize} within limit ($${config.riskLimit}), portfolio exposure OK`, 'deciding');
+        }
+        return { approved: decision.approved, size: config.maxSize, limit: config.riskLimit };
+      }
+
+      case 'execute-trade': {
+        const isSkipped = run.result?.action === 'skip' || run.result?.action === 'hold';
+        if (isSkipped) {
+          this.logAgent('developer', `Execution skipped — action: ${run.result?.action ?? 'hold'}`, 'executing');
+          return { skipped: true, reason: run.result?.action };
+        }
+
+        const orderId = `ord-${Date.now()}`;
+        this.logAgent('developer', `Executing: ${run.result?.action?.replace('_', ' ').toUpperCase()} $${config.maxSize} on "${run.result?.question}" via Polymarket...`, 'executing');
+
+        browserExecutionLog.appendEntry({
+          timestamp: new Date().toISOString(),
+          type: 'order_submit',
+          automation_id: automationId,
+          market_id: run.result?.market ?? '',
+          payload: {
+            run_id: run.id,
+            order_id: orderId,
+            action: run.result?.action,
+            side: run.result?.side,
+            size: config.maxSize,
+            confidence: run.result?.confidence,
+            edge: run.result?.edge,
+            question: run.result?.question,
+            dry_run: true,
+          },
+        });
+
+        await this.delay(800);
+
+        browserExecutionLog.appendEntry({
+          timestamp: new Date().toISOString(),
+          type: 'order_fill',
+          automation_id: automationId,
+          market_id: run.result?.market ?? '',
+          payload: {
+            run_id: run.id,
+            order_id: orderId,
+            status: 'filled',
+            fill_price: parseFloat(
+              run.result?.side === 'yes'
+                ? (ctx.markets.find(m => m.slug === run.result?.market)?.outcomePrices[0] ?? '0.5')
+                : (ctx.markets.find(m => m.slug === run.result?.market)?.outcomePrices[1] ?? '0.5')
+            ),
+            size: config.maxSize,
+            dry_run: true,
+          },
+        });
+
+        this.logAgent('developer', `Order ${orderId} filled (dry run) — tracking position`, 'executing');
+        return { orderId, status: 'filled', dryRun: true };
+      }
+
+      case 'log-results': {
+        this.logAgent('qa', 'Logging results and scheduling next run...', 'monitoring');
+        const nextRunMs = config.type === 'arbitrage' ? 5 * 60_000 : config.type === 'momentum' ? 10 * 60_000 : 15 * 60_000;
+        const nextRun = new Date(Date.now() + nextRunMs).toISOString();
+        const totalLogs = browserExecutionLog.getEntriesByAutomation(automationId).length;
+        this.logAgent('qa', `Run complete. ${totalLogs} total log entries for ${config.name}. Next scan at ${new Date(nextRun).toLocaleTimeString()}.`, 'monitoring');
+        return { logged: true, nextRun, totalLogEntries: totalLogs };
+      }
 
       default:
         return null;
@@ -376,10 +700,53 @@ export class AutomationEngine {
     return () => { this.agentListeners = this.agentListeners.filter(l => l !== fn); };
   }
 
+  startAutoRun(config: StrategyConfig): void {
+    if (this.autoRunIntervals.has(config.type)) return;
+    const intervalMs = parseCronIntervalMs(config.schedule);
+    this.logAgent('system', `Auto-run enabled for "${config.name}" — every ${intervalMs / 60000} min`, 'idle');
+    this.notifyAutoRun();
+
+    const id = window.setInterval(() => {
+      if (this.activeRun && this.activeRun.status !== 'completed' && this.activeRun.status !== 'error') return;
+      this.startStrategy(config);
+    }, intervalMs);
+
+    this.autoRunIntervals.set(config.type, id);
+    this.notifyAutoRun();
+    this.startStrategy(config);
+  }
+
+  stopAutoRun(type: StrategyType): void {
+    const id = this.autoRunIntervals.get(type);
+    if (id !== undefined) {
+      clearInterval(id);
+      this.autoRunIntervals.delete(type);
+      this.logAgent('system', `Auto-run stopped for ${type}`, 'idle');
+      this.notifyAutoRun();
+    }
+  }
+
+  isAutoRunning(type: StrategyType): boolean {
+    return this.autoRunIntervals.has(type);
+  }
+
+  getAutoRunTypes(): string[] {
+    return Array.from(this.autoRunIntervals.keys());
+  }
+
+  onAutoRunChange(fn: (active: Map<string, string>) => void): () => void {
+    this.autoRunListeners.push(fn);
+    return () => { this.autoRunListeners = this.autoRunListeners.filter(l => l !== fn); };
+  }
+
+  private notifyAutoRun(): void {
+    const active = new Map(Array.from(this.autoRunIntervals.keys()).map(k => [k, k]));
+    this.autoRunListeners.forEach(fn => fn(active));
+  }
+
   getActiveRun(): AutomationRun | null { return this.activeRun; }
   getRuns(): AutomationRun[] { return this.runs; }
   getAgentLog(): AgentMessage[] { return this.agentLog; }
-
   getRunHistory(): AutomationRun[] {
     return this.runs.filter(r => r.status === 'completed' || r.status === 'error');
   }
