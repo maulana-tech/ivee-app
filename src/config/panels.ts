@@ -1037,6 +1037,7 @@ const COMMODITY_MOBILE_MAP_LAYERS: MapLayers = {
 // NBA VARIANT (NBA Playoffs Prediction Markets)
 // ============================================
 const NBA_PANELS: Record<string, PanelConfig> = {
+  'nba-main': { name: 'AI Agent Dashboard', enabled: true, priority: 1 },
   'nba-live': { name: 'Live Games', enabled: true, priority: 1 },
   'live-news': { name: 'NBA News', enabled: true, priority: 1 },
   insights: { name: 'AI Predictions', enabled: true, priority: 1 },
