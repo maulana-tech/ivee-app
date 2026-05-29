@@ -2152,9 +2152,17 @@
 }
 
 .nba-card-icon {
-  font-size: 28px;
-  margin-bottom: 10px;
-  line-height: 1;
+  width: 28px;
+  height: 28px;
+  margin-bottom: 12px;
+  color: #ff8800;
+  flex-shrink: 0;
+}
+
+.nba-card-icon svg {
+  width: 28px;
+  height: 28px;
+  display: block;
 }
 
 .nba-card-title {
@@ -2276,4 +2284,31 @@
   .nba-card-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* ---- Lucide SVG icon sizing ---- */
+.nba-section-tab svg {
+  width: 14px;
+  height: 14px;
+  display: inline-block;
+  vertical-align: -2px;
+  margin-right: 5px;
+  flex-shrink: 0;
+}
+
+.nba-modal-title svg {
+  width: 15px;
+  height: 15px;
+  display: inline-block;
+  vertical-align: -2px;
+  margin-right: 6px;
+  opacity: 0.85;
+}
+
+.nba-header-badge svg {
+  width: 12px;
+  height: 12px;
+  display: inline-block;
+  vertical-align: -1px;
+  margin-right: 3px;
 }
