@@ -117,6 +117,10 @@ export class NbaAutomationPanel extends Panel {
   }
 
   protected renderContent(): void {
+    this.unsubscribePipeline?.();
+    this.unsubscribeAgent?.();
+    this.unsubscribePerf?.();
+    this.unsubscribeAutoRun?.();
     this.renderDashboard();
     this.unsubscribePipeline = automationEngine.onPipelineUpdate((run) => {
       this.activeRun = run;
@@ -191,7 +195,7 @@ export class NbaAutomationPanel extends Panel {
         </div>
       </div>
     `;
-    this.setContent(html);
+    this.content.innerHTML = html;
     this.attachEvents();
   }
 
