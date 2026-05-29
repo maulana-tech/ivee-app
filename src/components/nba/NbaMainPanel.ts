@@ -1,4 +1,4 @@
-import { Panel } from '../Panel';
+import { Panel, type PanelOptions } from '../Panel';
 import { automationEngine, getStrategyTemplates, type AutomationRun, type AgentMessage, type StrategyConfig } from '@/services/nba/automation-engine';
 
 export class NbaMainPanel extends Panel {
@@ -7,7 +7,7 @@ export class NbaMainPanel extends Panel {
   private unsubscribePipeline: (() => void) | null = null;
   private unsubscribeAgent: (() => void) | null = null;
 
-  constructor(options: { id: string; title: string }) {
+  constructor(options: PanelOptions) {
     super(options);
     this.element.classList.add('nba-main-panel');
   }
