@@ -2241,6 +2241,34 @@
   color: var(--text-primary, #e0e0e0);
 }
 
+.nba-modal-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.nba-modal-expand {
+  background: none;
+  border: none;
+  color: var(--text-secondary, #888);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  transition: color 0.15s;
+  border-radius: 4px;
+}
+
+.nba-modal-expand svg {
+  width: 16px;
+  height: 16px;
+}
+
+.nba-modal-expand:hover {
+  color: var(--text-primary, #e0e0e0);
+  background: rgba(255, 255, 255, 0.06);
+}
+
 .nba-modal-close {
   background: none;
   border: none;
@@ -2254,6 +2282,13 @@
 
 .nba-modal-close:hover {
   color: var(--text-primary, #e0e0e0);
+}
+
+.nba-modal.nba-modal-fullscreen {
+  width: 98vw !important;
+  max-width: 98vw !important;
+  height: 96vh !important;
+  border-radius: 8px;
 }
 
 .nba-modal-body {
