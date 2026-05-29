@@ -51,6 +51,10 @@ export class NbaAutomationPanel extends Panel {
   }
 
   private async checkServerConnection(): Promise<void> {
+    if (!import.meta.env.DEV) {
+      this.serverConnected = false;
+      return;
+    }
     try {
       const available = await canonServerAPI.isServerAvailable();
       this.serverConnected = available;
