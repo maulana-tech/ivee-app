@@ -13,6 +13,8 @@ export class NbaMainPanel extends Panel {
   }
 
   protected renderContent(): void {
+    this.unsubscribePipeline?.();
+    this.unsubscribeAgent?.();
     this.activeRun = automationEngine.getActiveRun();
     this.agentLog = automationEngine.getAgentLog();
     this.renderDashboard();
@@ -53,7 +55,7 @@ export class NbaMainPanel extends Panel {
         </div>
       </div>
     `;
-    this.setContent(html);
+    this.content.innerHTML = html;
     this.attachEvents();
   }
 
