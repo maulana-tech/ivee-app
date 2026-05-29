@@ -64,6 +64,25 @@ export interface PanelLayoutManagerCallbacks {
   loadSecurityAdvisories?: () => Promise<void>;
 }
 
+const _i = (p: string) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+
+const NBA_ICONS = {
+  live:       _i('<circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"/>'),
+  markets:    _i('<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>'),
+  analysis:   _i('<line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/>'),
+  strategy:   _i('<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>'),
+  automation: _i('<rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/>'),
+  logs:       _i('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>'),
+  injuries:   _i('<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>'),
+  teams:      _i('<path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/>'),
+  bracket:    _i('<line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/>'),
+  arb:        _i('<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>'),
+  momentum:   _i('<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>'),
+  speed:      _i('<line x1="10" y1="2" x2="14" y2="2"/><circle cx="12" cy="14" r="8"/><polyline points="12 6 12 14 16 14"/>'),
+  pnl:        _i('<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>'),
+  badge:      _i('<circle cx="12" cy="12" r="10"/><path d="M4.93 4.93c4.08 4.08 4.08 10.06 0 14.14"/><path d="M19.07 4.93c-4.08 4.08-4.08 10.06 0 14.14"/><line x1="2" y1="12" x2="22" y2="12"/>'),
+};
+
 export class PanelLayoutManager implements AppModule {
   private ctx: AppContext;
   private callbacks: PanelLayoutManagerCallbacks;
@@ -89,36 +108,36 @@ export class PanelLayoutManager implements AppModule {
 
   private readonly NBA_CARD_DEFS: Record<string, Array<{panelId: string; icon: string; title: string; desc: string}>> = {
     live: [
-      { panelId: 'nba-injuries',       icon: '🤕', title: 'Injury Report',     desc: 'Active player updates' },
-      { panelId: 'nba-teams',          icon: '🏆', title: 'Team Stats',         desc: 'Standings & performance' },
-      { panelId: 'nba-bracket',        icon: '🗂', title: 'Playoff Bracket',    desc: '2025 series tracker' },
-      { panelId: 'nba-arb',            icon: '⚡', title: 'Arbitrage',          desc: 'Market opportunities' },
+      { panelId: 'nba-injuries',       icon: NBA_ICONS.injuries,   title: 'Injury Report',     desc: 'Active player updates' },
+      { panelId: 'nba-teams',          icon: NBA_ICONS.teams,      title: 'Team Stats',         desc: 'Standings & performance' },
+      { panelId: 'nba-bracket',        icon: NBA_ICONS.bracket,    title: 'Playoff Bracket',    desc: '2025 series tracker' },
+      { panelId: 'nba-arb',            icon: NBA_ICONS.arb,        title: 'Arbitrage',          desc: 'Market opportunities' },
     ],
     markets: [
-      { panelId: 'nba-arb',            icon: '⚡', title: 'Arbitrage',          desc: 'Price spread scanner' },
-      { panelId: 'nba-momentum',       icon: '🌊', title: 'Momentum',           desc: 'Trending directions' },
-      { panelId: 'nba-speed',          icon: '🚀', title: 'Speed Ops',          desc: 'Time-sensitive edges' },
-      { panelId: 'nba-live',           icon: '🏀', title: 'Live Games',         desc: 'Game context' },
+      { panelId: 'nba-arb',            icon: NBA_ICONS.arb,        title: 'Arbitrage',          desc: 'Price spread scanner' },
+      { panelId: 'nba-momentum',       icon: NBA_ICONS.momentum,   title: 'Momentum',           desc: 'Trending directions' },
+      { panelId: 'nba-speed',          icon: NBA_ICONS.speed,      title: 'Speed Ops',          desc: 'Time-sensitive edges' },
+      { panelId: 'nba-live',           icon: NBA_ICONS.live,       title: 'Live Games',         desc: 'Game context' },
     ],
     analysis: [
-      { panelId: 'nba-teams',          icon: '🏆', title: 'Team Stats',         desc: 'Standings & analysis' },
-      { panelId: 'nba-markets',        icon: '📈', title: 'Markets',            desc: 'Polymarket odds' },
-      { panelId: 'nba-arb',            icon: '⚡', title: 'Arbitrage',          desc: 'Market spreads' },
+      { panelId: 'nba-teams',          icon: NBA_ICONS.teams,      title: 'Team Stats',         desc: 'Standings & analysis' },
+      { panelId: 'nba-markets',        icon: NBA_ICONS.markets,    title: 'Markets',            desc: 'Polymarket odds' },
+      { panelId: 'nba-arb',            icon: NBA_ICONS.arb,        title: 'Arbitrage',          desc: 'Market spreads' },
     ],
     strategy: [
-      { panelId: 'nba-performance',    icon: '📉', title: 'P&L Tracker',        desc: 'Portfolio performance' },
-      { panelId: 'nba-markets',        icon: '📈', title: 'Markets',            desc: 'Current odds context' },
-      { panelId: 'nba-arb',            icon: '⚡', title: 'Arbitrage',          desc: 'New opportunities' },
+      { panelId: 'nba-performance',    icon: NBA_ICONS.pnl,        title: 'P&L Tracker',        desc: 'Portfolio performance' },
+      { panelId: 'nba-markets',        icon: NBA_ICONS.markets,    title: 'Markets',            desc: 'Current odds context' },
+      { panelId: 'nba-arb',            icon: NBA_ICONS.arb,        title: 'Arbitrage',          desc: 'New opportunities' },
     ],
     automation: [
-      { panelId: 'nba-automation',     icon: '🤖', title: 'Automation Engine',  desc: 'Strategy controls' },
-      { panelId: 'nba-execution-logs', icon: '📋', title: 'Execution Logs',     desc: 'Pipeline audit trail' },
-      { panelId: 'nba-strategy',       icon: '🎯', title: 'Strategy Dashboard', desc: 'Generated positions' },
+      { panelId: 'nba-automation',     icon: NBA_ICONS.automation, title: 'Automation Engine',  desc: 'Strategy controls' },
+      { panelId: 'nba-execution-logs', icon: NBA_ICONS.logs,       title: 'Execution Logs',     desc: 'Pipeline audit trail' },
+      { panelId: 'nba-strategy',       icon: NBA_ICONS.strategy,   title: 'Strategy Dashboard', desc: 'Generated positions' },
     ],
     logs: [
-      { panelId: 'nba-strategy',       icon: '🎯', title: 'Strategy Dashboard', desc: 'Active positions' },
-      { panelId: 'nba-performance',    icon: '📉', title: 'P&L Tracker',        desc: 'Portfolio performance' },
-      { panelId: 'nba-automation',     icon: '🤖', title: 'Automation Engine',  desc: 'Run new strategies' },
+      { panelId: 'nba-strategy',       icon: NBA_ICONS.strategy,   title: 'Strategy Dashboard', desc: 'Active positions' },
+      { panelId: 'nba-performance',    icon: NBA_ICONS.pnl,        title: 'P&L Tracker',        desc: 'Portfolio performance' },
+      { panelId: 'nba-automation',     icon: NBA_ICONS.automation, title: 'Automation Engine',  desc: 'Run new strategies' },
     ],
   };
 
@@ -407,7 +426,7 @@ export class PanelLayoutManager implements AppModule {
           <div class="nba-header-left">
             <span class="logo">IVEE</span>
             <span class="version">v${__APP_VERSION__}</span>
-            <span class="nba-header-badge">🏀 NBA Playoffs</span>
+            <span class="nba-header-badge">${NBA_ICONS.badge} NBA Playoffs</span>
           </div>
           <div class="nba-header-right">
             <span class="header-clock" id="headerClock" translate="no"></span>
@@ -425,12 +444,12 @@ export class PanelLayoutManager implements AppModule {
           </div>
           <div class="nba-col-right">
             <nav class="nba-section-nav" id="nbaSectionNav">
-              <button class="nba-section-tab active" data-section="live">🏀 Live</button>
-              <button class="nba-section-tab" data-section="markets">📊 Markets</button>
-              <button class="nba-section-tab" data-section="analysis">🔬 Analysis</button>
-              <button class="nba-section-tab" data-section="strategy">🎯 Strategy</button>
-              <button class="nba-section-tab" data-section="automation">🤖 Automation</button>
-              <button class="nba-section-tab" data-section="logs">📋 Logs</button>
+              <button class="nba-section-tab active" data-section="live">${NBA_ICONS.live} Live</button>
+              <button class="nba-section-tab" data-section="markets">${NBA_ICONS.markets} Markets</button>
+              <button class="nba-section-tab" data-section="analysis">${NBA_ICONS.analysis} Analysis</button>
+              <button class="nba-section-tab" data-section="strategy">${NBA_ICONS.strategy} Strategy</button>
+              <button class="nba-section-tab" data-section="automation">${NBA_ICONS.automation} Automation</button>
+              <button class="nba-section-tab" data-section="logs">${NBA_ICONS.logs} Logs</button>
             </nav>
             <div class="nba-card-grid" id="nbaCardGrid"></div>
           </div>
@@ -526,7 +545,7 @@ export class PanelLayoutManager implements AppModule {
     }
 
     const modalTitle = document.getElementById('nbaModalTitle');
-    if (modalTitle) modalTitle.textContent = title;
+    if (modalTitle) modalTitle.innerHTML = title;
 
     const panelEl = (panel as any).element as HTMLElement | undefined;
     if (!panelEl) return;
