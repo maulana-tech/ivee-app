@@ -2013,3 +2013,267 @@
 .nba-exec-empty-state p  { margin: 0; font-size: 12px; max-width: 320px; }
 .nba-exec-empty-sub      { color: #555 !important; font-size: 11px !important; }
 .nba-main-term-agent.qa { color: #ff44ff; }
+
+/* ── Hero panel in left column: fill space, hide resize handles ─────────── */
+
+/* =============================================
+   NBA TWO-COLUMN LAYOUT
+   ============================================= */
+
+.nba-app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--bg-primary, #0a0d12);
+  color: var(--text-primary, #e0e0e0);
+}
+
+/* ---- Header ---- */
+.nba-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  height: 48px;
+  flex-shrink: 0;
+  background: #0e1118;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  z-index: 10;
+}
+
+.nba-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nba-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nba-header-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255, 136, 0, 0.12);
+  border: 1px solid rgba(255, 136, 0, 0.28);
+  color: #ff8800;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.3px;
+}
+
+/* ---- Body ---- */
+.nba-body {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ---- Left column (AI Dashboard) ---- */
+.nba-col-left {
+  width: 42%;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.nba-col-left #mapContainer {
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+.nba-col-left #mapContainer > * {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  flex: 1;
+}
+
+.nba-col-left #mapContainer .panel-resize-handle,
+.nba-col-left #mapContainer .panel-col-resize-handle {
+  display: none !important;
+}
+
+.nba-col-left #mapContainer .panel-header {
+  cursor: default !important;
+}
+
+/* ---- Right column (nav + cards) ---- */
+.nba-col-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* ---- Card grid ---- */
+.nba-card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  padding: 16px;
+  overflow-y: auto;
+  flex: 1;
+  align-content: start;
+}
+
+.nba-card {
+  display: flex;
+  flex-direction: column;
+  background: #141920;
+  border: 1px solid #2a3040;
+  border-radius: 12px;
+  padding: 20px;
+  cursor: pointer;
+  min-height: 160px;
+  transition: border-color 0.18s, transform 0.18s, box-shadow 0.18s;
+  user-select: none;
+  outline: none;
+}
+
+.nba-card:hover,
+.nba-card:focus-visible {
+  border-color: rgba(255, 136, 0, 0.55);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+}
+
+.nba-card-icon {
+  font-size: 28px;
+  margin-bottom: 10px;
+  line-height: 1;
+}
+
+.nba-card-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary, #e8e8e8);
+  margin-bottom: 6px;
+}
+
+.nba-card-desc {
+  font-size: 12px;
+  color: var(--text-secondary, #888);
+  flex: 1;
+  line-height: 1.45;
+}
+
+.nba-card-cta {
+  margin-top: 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #ff8800;
+  letter-spacing: 0.3px;
+}
+
+/* ---- Modal overlay ---- */
+.nba-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+
+.nba-modal-overlay.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.nba-modal {
+  background: #111720;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  width: 700px;
+  max-width: 95vw;
+  height: 80vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+  transform: scale(0.94);
+  transition: transform 0.2s;
+}
+
+.nba-modal-overlay.active .nba-modal {
+  transform: scale(1);
+}
+
+.nba-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+
+.nba-modal-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary, #e0e0e0);
+}
+
+.nba-modal-close {
+  background: none;
+  border: none;
+  color: var(--text-secondary, #888);
+  font-size: 22px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0 4px;
+  transition: color 0.15s;
+}
+
+.nba-modal-close:hover {
+  color: var(--text-primary, #e0e0e0);
+}
+
+.nba-modal-body {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.nba-modal-body > * {
+  flex: 1;
+  min-height: 0;
+}
+
+/* Responsive: stack columns on narrow screens */
+@media (max-width: 900px) {
+  .nba-body {
+    flex-direction: column;
+  }
+
+  .nba-col-left {
+    width: 100%;
+    height: 40vh;
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .nba-card-grid {
+    grid-template-columns: 1fr;
+  }
+}
