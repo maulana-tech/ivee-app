@@ -9,16 +9,22 @@
 ## Before You Record
 
 ```bash
-# 1. Start the dev server
+# 1. Start the dev server (optional — deployed app is live)
 npm run dev
 
-# 2. Open browser → localhost:5173
-# 3. Open terminal side-by-side (for CLI demo)
-# 4. Clear execution logs (optional fresh start)
-#    → Execution Logs panel → "Clear Logs" button
+# 2. Open browser → https://ivee-apps.vercel.app (or localhost:5173)
+# 3. Open terminal side-by-side (for CLI demo at the end)
 ```
 
 Browser: Chrome/Arc fullscreen, zoom 90%. Terminal: dark theme, font size 14+.
+
+---
+
+## Layout Overview
+
+The app has a **two-column layout**:
+- **Left column (42%)** — hero panel, changes per section
+- **Right column** — section nav tabs + card grid. Click any card to open it in a modal.
 
 ---
 
@@ -26,35 +32,41 @@ Browser: Chrome/Arc fullscreen, zoom 90%. Terminal: dark theme, font size 14+.
 
 ### [0:00 – 0:30] Opening — What is IVEE NBA?
 
-> *"IVEE NBA is an AI-powered prediction market automation dashboard for the NBA playoffs, built on Canon CLI. It runs 4 AI agents — market analyst, strategy architect, developer, and QA — to detect arbitrage opportunities and generate trade signals on Polymarket, with full risk management and structured execution logging."*
+> *"IVEE NBA is an AI-powered prediction market automation dashboard for the NBA playoffs, built on Canon CLI. It runs 4 AI agents — Market Analyst, Strategy Architect, Developer, and QA — to detect arbitrage and momentum opportunities on Polymarket, with full risk management and structured execution logging."*
 
-**Show:** Dashboard landing page, section nav tabs at top.
+**Show:** Dashboard landing page. Left = Live Games hero panel. Right = section nav + card grid.
 
 ---
 
 ### [0:30 – 1:00] Live Data — Real NBA + Polymarket feeds
 
-Click **Live** tab.
+The **Live** tab is active by default. Left shows live game scores.
 
-> *"The Live section pulls real data from balldontlie.io — today's playoff games, team standings, and injury reports. All panels fall back to mock data gracefully if the API is unavailable."*
+> *"The Live section pulls real playoff data from balldontlie.io. Today's games, scores, and status are shown in the left panel. If the API is unavailable, we fall back to mock data gracefully."*
 
-Click **Markets** tab.
+Click the **Injury Report** card → modal opens.
 
-> *"The Markets section connects to the Polymarket Gamma API — no key required. We scan active NBA championship, conference, and player award markets. Here you can see live odds, volume, and real-time arbitrage spreads."*
+> *"Each card opens in a full panel modal. Here you can see active player injury statuses — Out vs Questionable — pulled live from balldontlie."*
 
-**Show:** Markets panel (live odds), Arbitrage panel (spread percentages).
+Close modal. Click **Markets** tab.
+
+> *"The Markets section connects to the Polymarket Gamma API — no key required, fully public. Left panel shows live prediction market odds. Click Arbitrage to see real-time price spreads."*
+
+Click the **Arbitrage** card → show the price spread scanner.
 
 ---
 
-### [1:00 – 1:45] Strategy Analysis
+### [1:00 – 1:45] Analysis & Strategy
 
-Click **Analysis** tab.
+Click **Analysis** tab. Left shows the **Playoff Bracket** panel.
 
-> *"Cross-market analysis lets us correlate related NBA outcomes — when the championship market moves, the conference winner markets often lag. The Bracket panel tracks live playoff series from real API data."*
+> *"Analysis shows the live 2025 playoff bracket and cross-market correlation data. The bracket tracks real series results from the API."*
 
-Click **Strategy** tab.
+Click **Strategy** tab. Left shows the **Strategy Dashboard**.
 
-> *"The Strategy Dashboard and P&L Tracker read directly from DEGA Rank — these reflect real positions created by the automation pipeline, not hardcoded values."*
+> *"The Strategy Dashboard and P&L Tracker read from DEGA Rank — these reflect real positions created by the automation pipeline, not hardcoded values."*
+
+Click the **P&L Tracker** card to show portfolio metrics.
 
 ---
 
@@ -62,41 +74,52 @@ Click **Strategy** tab.
 
 Click **Automation** tab.
 
-> *"This is the core of the Canon integration. We have 4 strategy templates — Arbitrage Scanner, Momentum Trader, Cross-Market Correlator, and Speed Opportunity Scanner."*
+Left panel: **AI Agent Dashboard** — shows 4 agents (Market Analyst, Strategy Architect, Developer, QA) and the pipeline terminal.
+
+> *"This is the Canon integration core. The left panel is our AI Agent Dashboard — it shows each agent's live status as the pipeline runs."*
+
+> *"On the right, we have 4 strategy templates registered with the automation engine."*
+
+Click the **Automation Engine** card → modal opens.
+
+> *"The Automation Engine modal shows our strategy templates, pipeline progress, and agent console."*
 
 **Click "▶ Run Once" on Arbitrage Scanner.**
 
-> *"Watch the 8-step pipeline execute. Each phase has a real AI agent behind it."*
+> *"Watch the 8-step pipeline execute in real time. Each step maps to a specific AI agent phase."*
 
 Walk through the steps as they appear:
-1. `fetch-markets` — *"Pulling live NBA markets from Polymarket"*
-2. `fetch-games` — *"Today's playoff schedule from balldontlie"*
-3. `analyze-arb` — *"Market analyst scanning for price spreads"*
-4. `build-signal` — *"Strategy architect designs the entry"*
-5. `risk-check` — *"BrowserRiskAdapter: position size vs 5% portfolio limit"*
-6. `execute` — *"Signal logged, order submitted (dry-run)"*
+1. `Fetch Market Data` — *"Market Analyst: pulling live NBA markets from Polymarket Gamma API"*
+2. `Fetch NBA Statistics` — *"Today's playoff schedule, standings, injury data from balldontlie"*
+3. `Scan Arbitrage Opportunities` — *"Strategy Architect: computing Yes+No price sums, flagging mispricings"*
+4. `AI Decision Engine` — *"Developer agent: evaluating all signals, picks the best market and side"*
+5. `Risk Assessment` — *"BrowserRiskAdapter: position size vs 5% portfolio cap, daily loss limit"*
+6. `Execute Strategy` — *"Signal submitted — dry-run mode, no real funds moved"*
+7. `Log & Monitor` — *"Every decision written to localStorage and .canon/execution/ as JSONL"*
 
-> *"Every step produces a structured log entry — type, timestamp, agent role, payload — written to both localStorage and .canon/execution/."*
+> *"The result: a structured decision — BUY YES or BUY NO — with confidence %, edge %, and expected P&L."*
+
+**Close the modal** — watch the AI Agent Dashboard (left panel) update with agent activity and terminal logs.
 
 ---
 
-### [3:00 – 3:30] Auto-Run — Cron-Based Automation
+### [3:00 – 3:30] Auto-Run — Scheduled Automation
 
-**Click "↻ Auto" on Arbitrage Scanner.**
+Open Automation Engine card again. **Click "↻ Auto" on Arbitrage Scanner.**
 
-> *"Auto-run sets a cron interval — every 5 minutes, the full pipeline re-runs automatically. The badge turns green and stays active until you stop it. This is how you'd run it continuously against live playoff markets."*
+> *"Auto-run sets a cron schedule — every 5 minutes the full 8-step pipeline re-runs automatically. The badge turns active and stays running until you stop it. This is how you'd run it continuously against live playoff markets throughout the day."*
 
-**Show:** Green pulsing badge, strategy running.
+**Show:** Active badge on the Auto button, pipeline re-triggering.
 
 ---
 
 ### [3:30 – 4:00] Execution Logs + CLI Demo
 
-Click **Logs** tab.
+Click **Logs** tab. Left shows the **Execution Logs** panel with all pipeline runs.
 
-> *"Every pipeline run — signal generated, risk decision, order submission — is captured here as structured JSONL. You can filter by type, download the full log, or view the raw entries."*
+> *"Every pipeline run is captured here as structured JSONL entries — signal type, timestamp, agent role, market ID, payload. You can filter by type or download the full log."*
 
-**Click "Download JSONL"** to show the file.
+**Click "Download JSONL"** to show the file export.
 
 Switch to terminal:
 
@@ -104,17 +127,17 @@ Switch to terminal:
 npx tsx scripts/demo.ts --strategy arbitrage
 ```
 
-> *"The same pipeline also runs from the terminal via Canon CLI. Here you can see real Polymarket API calls, 4-agent messages, the TradeSignal produced, risk check result, and the execution log written to .canon/execution/."*
+> *"The identical pipeline also runs from the terminal via Canon CLI. Same Polymarket API calls, same 4 agent messages, same TradeSignal output, same risk check — and the execution log written to .canon/execution/."*
 
-**Show:** Full terminal output — spinner steps, agent messages, summary table, arb opportunities.
+**Show:** Full terminal output — spinner steps, agent messages, summary table, arb opportunities listed.
 
 ---
 
 ### [4:00 – 4:15] Closing
 
-> *"IVEE NBA: real NBA data, live Polymarket odds, Canon-compliant AI agents, full risk management, and structured execution logs — all running in the browser and from the terminal. Thank you."*
+> *"IVEE NBA: real NBA data from balldontlie, live Polymarket prediction market odds, Canon-compliant AI agents, full risk management with the 5% position cap, and structured JSONL execution logs — running both in the browser dashboard and from the terminal. Thank you."*
 
-**Show:** Final dashboard overview with all 6 tabs.
+**Show:** Overview of the 6-tab layout with all sections.
 
 ---
 
@@ -125,8 +148,9 @@ npx tsx scripts/demo.ts --strategy arbitrage
 | Canon compliance | "`TradeSignal` and `RiskInterface` types implemented exactly as Canon spec requires" |
 | Risk management | "Max 5% position size, daily loss circuit breaker, never bypassed" |
 | Real data | "Polymarket Gamma API + balldontlie.io, both called live, mock fallback on error" |
-| Execution logs | "Every decision logged as JSONL to `.canon/execution/` — judges can verify the run" |
-| Innovation | "Full browser-based dashboard with live section nav, auto-run cron, agent message stream" |
+| Execution logs | "Every decision logged as JSONL to `.canon/execution/` — judges can verify each run" |
+| UI innovation | "Two-column live dashboard — contextual left panel per section, card grid with modal drill-down, auto-run cron, agent message stream" |
+| 4 AI agents | "Market Analyst, Strategy Architect, Developer, QA — each logs messages to the terminal as the pipeline progresses" |
 
 ---
 
@@ -135,7 +159,7 @@ npx tsx scripts/demo.ts --strategy arbitrage
 - [ ] Record 3–5 minute screen video using this script
 - [ ] Upload video (YouTube unlisted or Loom)
 - [ ] Confirm GitHub repo is public
-- [ ] Verify `.canon/execution/` has at least one log file
+- [ ] Verify `.canon/execution/` has at least one log file after running the CLI demo
 - [ ] Submit before **May 31, 2026**
 
 ---
@@ -148,5 +172,7 @@ npx tsx scripts/demo.ts                      # Run CLI pipeline (arbitrage, dry-
 npx tsx scripts/demo.ts --strategy momentum  # Momentum strategy
 npx tsx scripts/demo.ts --strategy speed     # Speed opportunity
 npx tsx scripts/demo.ts --live               # Mark log entries as live mode
-npm run typecheck                            # Verify 0 TypeScript errors
+npm run typecheck                            # Verify TypeScript
+npm run build                                # Production build
+npx vercel --prod --yes                      # Deploy to production
 ```
