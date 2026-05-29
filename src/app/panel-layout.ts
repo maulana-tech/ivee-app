@@ -75,6 +75,52 @@ export class PanelLayoutManager implements AppModule {
   private unsubscribeAuth: (() => void) | null = null;
   private unsubscribeEntitlementChange: (() => void) | null = null;
   private unsubscribePaymentFailureBanner: (() => void) | null = null;
+  private currentModalPanelEl: HTMLElement | null = null;
+  private nbaModalCache: HTMLElement | null = null;
+
+  private readonly NBA_HERO_PANELS: Record<string, string> = {
+    live:       'nba-live',
+    markets:    'nba-markets',
+    analysis:   'nba-bracket',
+    strategy:   'nba-strategy',
+    automation: 'nba-main',
+    logs:       'nba-execution-logs',
+  };
+
+  private readonly NBA_CARD_DEFS: Record<string, Array<{panelId: string; icon: string; title: string; desc: string}>> = {
+    live: [
+      { panelId: 'nba-injuries',       icon: '🤕', title: 'Injury Report',     desc: 'Active player updates' },
+      { panelId: 'nba-teams',          icon: '🏆', title: 'Team Stats',         desc: 'Standings & performance' },
+      { panelId: 'nba-bracket',        icon: '🗂', title: 'Playoff Bracket',    desc: '2025 series tracker' },
+      { panelId: 'nba-arb',            icon: '⚡', title: 'Arbitrage',          desc: 'Market opportunities' },
+    ],
+    markets: [
+      { panelId: 'nba-arb',            icon: '⚡', title: 'Arbitrage',          desc: 'Price spread scanner' },
+      { panelId: 'nba-momentum',       icon: '🌊', title: 'Momentum',           desc: 'Trending directions' },
+      { panelId: 'nba-speed',          icon: '🚀', title: 'Speed Ops',          desc: 'Time-sensitive edges' },
+      { panelId: 'nba-live',           icon: '🏀', title: 'Live Games',         desc: 'Game context' },
+    ],
+    analysis: [
+      { panelId: 'nba-teams',          icon: '🏆', title: 'Team Stats',         desc: 'Standings & analysis' },
+      { panelId: 'nba-markets',        icon: '📈', title: 'Markets',            desc: 'Polymarket odds' },
+      { panelId: 'nba-arb',            icon: '⚡', title: 'Arbitrage',          desc: 'Market spreads' },
+    ],
+    strategy: [
+      { panelId: 'nba-performance',    icon: '📉', title: 'P&L Tracker',        desc: 'Portfolio performance' },
+      { panelId: 'nba-markets',        icon: '📈', title: 'Markets',            desc: 'Current odds context' },
+      { panelId: 'nba-arb',            icon: '⚡', title: 'Arbitrage',          desc: 'New opportunities' },
+    ],
+    automation: [
+      { panelId: 'nba-automation',     icon: '🤖', title: 'Automation Engine',  desc: 'Strategy controls' },
+      { panelId: 'nba-execution-logs', icon: '📋', title: 'Execution Logs',     desc: 'Pipeline audit trail' },
+      { panelId: 'nba-strategy',       icon: '🎯', title: 'Strategy Dashboard', desc: 'Generated positions' },
+    ],
+    logs: [
+      { panelId: 'nba-strategy',       icon: '🎯', title: 'Strategy Dashboard', desc: 'Active positions' },
+      { panelId: 'nba-performance',    icon: '📉', title: 'P&L Tracker',        desc: 'Portfolio performance' },
+      { panelId: 'nba-automation',     icon: '🤖', title: 'Automation Engine',  desc: 'Run new strategies' },
+    ],
+  };
 
   constructor(ctx: AppContext, callbacks: PanelLayoutManagerCallbacks) {
     this.ctx = ctx;
@@ -185,6 +231,11 @@ export class PanelLayoutManager implements AppModule {
   }
 
   renderLayout(): void {
+    if (SITE_VARIANT === 'nba') {
+      this.renderNbaLayout();
+      return;
+    }
+
     this.ctx.container.innerHTML = `
       ${this.ctx.isDesktopApp ? '<div class="tauri-titlebar" data-tauri-drag-region></div>' : ''}
       <div class="header">
@@ -348,6 +399,168 @@ export class PanelLayoutManager implements AppModule {
     }
   }
 
+  private renderNbaLayout(): void {
+    this.ctx.container.innerHTML = `
+      ${this.ctx.isDesktopApp ? '<div class="tauri-titlebar" data-tauri-drag-region></div>' : ''}
+      <div class="nba-app">
+        <header class="nba-header">
+          <div class="nba-header-left">
+            <span class="logo">IVEE</span>
+            <span class="version">v${__APP_VERSION__}</span>
+            <span class="nba-header-badge">🏀 NBA Playoffs</span>
+          </div>
+          <div class="nba-header-right">
+            <span class="header-clock" id="headerClock" translate="no"></span>
+            <span id="unifiedSettingsMount"></span>
+            <span id="authWidgetMount"></span>
+            <button class="wallet-connect-btn" id="walletConnectBtn" title="Connect Wallet">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M16 12h.01"/><path d="M2 10h20"/></svg>
+              <span class="wallet-btn-label">Connect</span>
+            </button>
+          </div>
+        </header>
+        <div class="nba-body">
+          <div class="nba-col-left">
+            <div id="mapContainer"></div>
+          </div>
+          <div class="nba-col-right">
+            <nav class="nba-section-nav" id="nbaSectionNav">
+              <button class="nba-section-tab active" data-section="live">🏀 Live</button>
+              <button class="nba-section-tab" data-section="markets">📊 Markets</button>
+              <button class="nba-section-tab" data-section="analysis">🔬 Analysis</button>
+              <button class="nba-section-tab" data-section="strategy">🎯 Strategy</button>
+              <button class="nba-section-tab" data-section="automation">🤖 Automation</button>
+              <button class="nba-section-tab" data-section="logs">📋 Logs</button>
+            </nav>
+            <div class="nba-card-grid" id="nbaCardGrid"></div>
+          </div>
+        </div>
+        <div id="panelsGrid" style="display:none"></div>
+        <div class="nba-modal-overlay" id="nbaModalOverlay">
+          <div class="nba-modal" id="nbaModal">
+            <div class="nba-modal-header">
+              <span class="nba-modal-title" id="nbaModalTitle"></span>
+              <button class="nba-modal-close" id="nbaModalClose" aria-label="Close">&times;</button>
+            </div>
+            <div class="nba-modal-body" id="nbaModalBody"></div>
+          </div>
+        </div>
+        <footer class="site-footer">
+          <div class="site-footer-brand">
+            <img src="/favico/favicon-32x32.png" alt="" width="28" height="28" class="site-footer-icon" />
+            <div class="site-footer-brand-text">
+              <span class="site-footer-name">IVEE</span>
+              <span class="site-footer-sub">v${__APP_VERSION__}</span>
+            </div>
+          </div>
+          <span class="site-footer-copy">&copy; ${new Date().getFullYear()} IVEE</span>
+        </footer>
+      </div>
+    `;
+
+    this.createPanels();
+    this.setupNbaSectionNav();
+    this.setupNbaModal();
+  }
+
+  private renderNbaCards(section: string): void {
+    const grid = document.getElementById('nbaCardGrid');
+    if (!grid) return;
+    const defs = this.NBA_CARD_DEFS[section] ?? [];
+    grid.innerHTML = defs.map(card => `
+      <div class="nba-card" data-panel-id="${card.panelId}" role="button" tabindex="0" aria-label="${card.title}">
+        <div class="nba-card-icon">${card.icon}</div>
+        <div class="nba-card-title">${card.title}</div>
+        <div class="nba-card-desc">${card.desc}</div>
+        <div class="nba-card-cta">View &rarr;</div>
+      </div>
+    `).join('');
+
+    grid.querySelectorAll<HTMLElement>('.nba-card').forEach(cardEl => {
+      const panelId = cardEl.dataset['panelId'] ?? '';
+      const onClick = () => this.openNbaModal(panelId);
+      cardEl.addEventListener('click', onClick);
+      cardEl.addEventListener('keydown', (e: KeyboardEvent) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); }
+      });
+    });
+  }
+
+  private setupNbaModal(): void {
+    // Create hidden cache element where panels live when not in the modal
+    this.nbaModalCache = document.createElement('div');
+    this.nbaModalCache.id = 'nbaModalCache';
+    this.nbaModalCache.style.display = 'none';
+    document.body.appendChild(this.nbaModalCache);
+
+    const overlay = document.getElementById('nbaModalOverlay');
+    const closeBtn = document.getElementById('nbaModalClose');
+
+    closeBtn?.addEventListener('click', () => this.closeNbaModal());
+
+    overlay?.addEventListener('click', (e: MouseEvent) => {
+      if (e.target === overlay) this.closeNbaModal();
+    });
+
+    document.addEventListener('keydown', (e: KeyboardEvent) => {
+      if (e.key === 'Escape') this.closeNbaModal();
+    });
+  }
+
+  private openNbaModal(panelId: string): void {
+    // Return current panel element back to panelsGrid cache
+    const panelsGrid = document.getElementById('panelsGrid');
+    if (this.currentModalPanelEl && panelsGrid) {
+      panelsGrid.appendChild(this.currentModalPanelEl);
+      this.currentModalPanelEl = null;
+    }
+
+    const panel = this.ctx.panels[panelId];
+    if (!panel) return;
+
+    // Find the title from NBA_CARD_DEFS
+    let title = panelId;
+    for (const defs of Object.values(this.NBA_CARD_DEFS)) {
+      const found = defs.find(d => d.panelId === panelId);
+      if (found) { title = `${found.icon} ${found.title}`; break; }
+    }
+
+    const modalTitle = document.getElementById('nbaModalTitle');
+    if (modalTitle) modalTitle.textContent = title;
+
+    const panelEl = (panel as any).element as HTMLElement | undefined;
+    if (!panelEl) return;
+
+    const modalBody = document.getElementById('nbaModalBody');
+    if (!modalBody) return;
+
+    // Move panel element into modal body
+    modalBody.appendChild(panelEl);
+    this.currentModalPanelEl = panelEl;
+
+    // Trigger render
+    if (typeof (panel as any).renderContent === 'function') {
+      (panel as any).renderContent();
+    }
+
+    const overlay = document.getElementById('nbaModalOverlay');
+    overlay?.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+
+  private closeNbaModal(): void {
+    const panelsGrid = document.getElementById('panelsGrid');
+    if (this.currentModalPanelEl && panelsGrid) {
+      panelsGrid.appendChild(this.currentModalPanelEl);
+      this.currentModalPanelEl = null;
+    }
+    const body = document.getElementById('nbaModalBody');
+    if (body) body.innerHTML = '';
+    const overlay = document.getElementById('nbaModalOverlay');
+    overlay?.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
   private readonly NBA_SECTIONS: Record<string, string[]> = {
     live:       ['nba-live', 'nba-standings', 'nba-injuries', 'nba-schedule'],
     markets:    ['nba-markets', 'nba-arb', 'nba-momentum', 'nba-speed', 'nba-fear-greed'],
@@ -387,7 +600,37 @@ export class PanelLayoutManager implements AppModule {
     });
   }
 
+  private swapNbaHeroPanel(section: string): void {
+    const container = document.getElementById('mapContainer');
+    const panelsGrid = document.getElementById('panelsGrid');
+    if (!container || !panelsGrid) return;
+
+    // Move current hero back to panelsGrid (inactive cache)
+    const current = container.firstElementChild as HTMLElement | null;
+    if (current) panelsGrid.appendChild(current);
+
+    // Move new hero into container
+    const heroId = this.NBA_HERO_PANELS[section];
+    if (!heroId) return;
+    const panel = this.ctx.panels[heroId];
+    if (!panel) return;
+
+    const panelEl = (panel as any).element as HTMLElement;
+    container.appendChild(panelEl);
+
+    if (typeof (panel as any).renderContent === 'function') {
+      (panel as any).renderContent();
+    }
+  }
+
   private applyNbaSection(section: string): void {
+    if (SITE_VARIANT === 'nba') {
+      this.closeNbaModal();
+      this.swapNbaHeroPanel(section);
+      this.renderNbaCards(section);
+      return;
+    }
+
     const panelsInSection = this.NBA_SECTIONS[section] ?? [];
     const allNbaPanelIds = Object.values(this.NBA_SECTIONS).flat();
 
@@ -506,12 +749,7 @@ export class PanelLayoutManager implements AppModule {
     const mapContainer = document.getElementById('mapContainer') as HTMLElement;
     if (mapContainer && SITE_VARIANT === 'nba') {
       mapContainer.innerHTML = '';
-      mapContainer.style.height = '480px';
-      mapContainer.style.minHeight = '480px';
-      const nbaMain = new NbaMainPanel({ id: 'nba-main', title: 'AI Agent Dashboard' });
-      (mapContainer as any).appendChild((nbaMain as any).element);
-      (nbaMain as any).renderContent();
-      this.ctx.panels['nba-main'] = nbaMain;
+      // Hero panel is mounted by applyNbaSection via swapNbaHeroPanel
     } else if (mapContainer) {
       const preferGlobe = loadFromStorage<string>(STORAGE_KEYS.mapMode, 'flat') === 'globe';
       this.ctx.map = new MapContainer(mapContainer, {
@@ -533,6 +771,7 @@ export class PanelLayoutManager implements AppModule {
 
     // NBA panels
     if (SITE_VARIANT === 'nba') {
+      this.createPanel('nba-main', () => new NbaMainPanel({ id: 'nba-main', title: 'AI Agent Dashboard', closable: false }));
       this.createPanel('nba-live', () => new NbaLivePanel({ id: 'nba-live', title: 'Live Games' }));
       this.createPanel('nba-markets', () => new NbaMarketsPanel({ id: 'nba-markets', title: 'Prediction Markets' }));
       this.createPanel('nba-teams', () => new NbaTeamsPanel({ id: 'nba-teams', title: 'Team Stats & Standings' }));
@@ -665,7 +904,7 @@ export class PanelLayoutManager implements AppModule {
 
     // Trigger renderContent on NBA panels once they're in the DOM
     if (SITE_VARIANT === 'nba') {
-      const nbaPanelIds = ['nba-markets', 'nba-teams', 'nba-arb', 'nba-strategy', 'nba-injuries', 'nba-momentum', 'nba-bracket', 'nba-speed', 'nba-performance', 'nba-automation', 'nba-execution-logs'];
+      const nbaPanelIds = ['nba-main', 'nba-live', 'nba-markets', 'nba-teams', 'nba-arb', 'nba-strategy', 'nba-injuries', 'nba-momentum', 'nba-bracket', 'nba-speed', 'nba-performance', 'nba-automation', 'nba-execution-logs'];
       requestAnimationFrame(() => {
         for (const id of nbaPanelIds) {
           const p = this.ctx.panels[id];
